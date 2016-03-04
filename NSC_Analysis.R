@@ -454,18 +454,18 @@ med.late.hard <- median(nsc.adult.total.mass$total.nsc[late.h])
 med.total <- median(nsc.adult.total.mass.hard$total.nsc)
 
 ggplot(nsc.adult.total.mass.hard, aes(x = Spp, y=total.nsc, fill=PFT)) + 
-  #geom_boxplot() + 
-  theme(axis.text.x = element_text(angle=90,hjust=1,size=16)) +
-  #geom_point(aes(x = Spp, y=total.nsc, colour = PFT)) + #works to color points
+  geom_boxplot() + 
+  theme(axis.text.x = element_text(angle=90,hjust=1,size=16)) + 
+  #geom_point(aes(x = Spp, y=total.nsc, colour = PFT)) + #works to color points, uncomment for mean + 2SE
   #geom_point(stat = mean, mapping = aes(x = Spp, y=total.nsc, colour = PFT), na.rm = TRUE) +
   #geom_errorbar(ymax = (mean(nsc.adult.total.mass.hard$total.nsc) + sd(nsc.adult.total.mass.hard$total.nsc)), ymin = (mean(nsc.adult.total.mass.hard$total.nsc) - sd(nsc.adult.total.mass.hard$total.nsc))) + theme(axis.text.x = element_text(angle=90,hjust=1,size=16)) +
   theme(axis.text.y = element_text(size=16)) +
   theme(axis.title.x = element_text(size=20)) +
   theme(axis.title.y = element_text(size=20)) +
   theme(legend.text = element_text(size=16)) +
-  stat_summary(mapping = aes(x = Spp, y=total.nsc, colour = PFT), fun.y = mean, geom = "point") + #can't get mean to plot!
+  #stat_summary(mapping = aes(x = Spp, y=total.nsc, colour = PFT), fun.y = mean, geom = "point") + #can't get mean to plot!
   #stat_summary(fun.data = "mean_cl_boot", colour = "red", size = 2)
-  stat_summary(fun.data = mean_se, mult = 2, geom = "errorbar", aes(x = Spp, y=total.nsc, colour = PFT)) +
+  #stat_summary(fun.data = mean_se, mult = 2, geom = "errorbar", aes(x = Spp, y=total.nsc, colour = PFT)) + #uncomment to get mean + 2SE
   stat_summary(fun.data = give.n, geom= "text", aes(y= 160)) + 
   #geom_hline(aes(yintercept=med.total),linetype="longdash") +
   ylab(expression(paste("Total NSC mg g"^"-1"," Sapwood"))) + xlab("Species") +
@@ -534,7 +534,7 @@ nsc.adult.total.mass$Mortality14 <- as.factor(nsc.adult.total.mass$Mortality14)
 b <- boxplot(total.nsc ~ droplevels(Mortality14), data = nsc.adult.total.mass)
 boxplot(total.nsc ~ droplevels(Mortality14) + PFT, data = nsc.adult.total.mass,
         ylab = expression(paste("Total NSC mg g"^"-1")),ylim=c(0,160), las=2)
-text(seq_along(droplevels(nsc.adult.total.mass$Mortality14)), 160, b$n, cex=.9)
+text(seq_along(droplevels(nsc.adult.total.mass$Mortality14)), 160, b$n, cex=.7)
 lm.mort.total <- lm(total.nsc ~ Mortality14, data = nsc.adult.total.mass)
 anova(lm.mort.total)
 summary(lm.mort.total)
@@ -544,6 +544,14 @@ summary(lm.mort.total)
 ggplot(nsc.adult.total.mass, aes(x=Mortality14, y=total.nsc)) + 
   geom_violin() + stat_summary(fun.y=median,geom="point")
 
+#morality boxplot
+ggplot(nsc.adult.total.mass, aes(x=Mortality14, y=total.nsc)) + 
+  geom_boxplot() +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 165)) + 
+  ylab(expression(paste("Total NSC mg g"^"-1"," Sapwood"))) + xlab("Mortality Status")
+  
+  
+  
 # Spp distribution of dead
 #sort dead
 mort.total.sort<-which(nsc.adult.total.mass$Mortality14 == "D")
