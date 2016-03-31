@@ -544,9 +544,11 @@ summary(lm.mort.total)
 ggplot(nsc.adult.total.mass, aes(x=Mortality14, y=total.nsc)) + 
   geom_violin() + stat_summary(fun.y=median,geom="point")
 
-#morality boxplot
+
+#mortality boxplot
 ggplot(nsc.adult.total.mass, aes(x=Mortality14, y=total.nsc)) + 
   geom_boxplot() +
+  scale_x_discrete(limits=c("A","IBS","D")) + #ignores "M" and "NA" for now and reorders plot
   stat_summary(fun.data = give.n, geom= "text", aes(y= 165)) + 
   ylab(expression(paste("Total NSC mg g"^"-1"," Sapwood"))) + xlab("Mortality Status")
   
@@ -585,6 +587,11 @@ anova(lm.starch.tot)
 summary(lm.starch.tot)
 abline(lm.starch.tot,col=2,lwd=2)
 text(x=15,y=140,labels=expression(paste("R"^"2"," = 0.88")))
+
+#starch mortality
+lm.mort.starch <- lm(starch.mg.g ~ Mortality14, data = nsc.adult.total.mass)
+anova(lm.mort.starch)
+summary(lm.mort.starch)
 
 #glucose:total
 plot(nsc.adult.total.mass$glucose.mg.g, nsc.adult.total.mass$total.nsc,
