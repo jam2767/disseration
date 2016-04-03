@@ -561,6 +561,25 @@ count.mort.spp <- count(nsc.adult.total.mass$Spp[mort.total.sort])
 barplot(count.mort.spp[,2],names.arg=count.mort.spp[,1],las=2, ylab = "Number of Trees",
         main="Total NSC Dead")
 
+#size distribution of alive, living, dead
+#alive
+nsc.adult.total.mass.alive <- which(nsc.adult.total.mass$Mortality14 == "A")
+hist(nsc.adult.total.mass$DBH14[nsc.adult.total.mass.alive])
+mean(nsc.adult.total.mass$DBH14[nsc.adult.total.mass.alive])
+median(nsc.adult.total.mass$DBH14[nsc.adult.total.mass.alive])
+
+#IBS
+nsc.adult.total.mass.ibs <- which(nsc.adult.total.mass$Mortality14 == "IBS")
+hist(nsc.adult.total.mass$DBH14[nsc.adult.total.mass.ibs])
+mean(nsc.adult.total.mass$DBH14[nsc.adult.total.mass.ibs])
+median(nsc.adult.total.mass$DBH14[nsc.adult.total.mass.ibs])
+
+#Dead
+nsc.adult.total.mass.dead <- which(nsc.adult.total.mass$Mortality14 == "D")
+hist(nsc.adult.total.mass$DBH14[nsc.adult.total.mass.dead])
+mean(nsc.adult.total.mass$DBH14[nsc.adult.total.mass.dead],na.rm=TRUE)
+median(nsc.adult.total.mass$DBH14[nsc.adult.total.mass.dead],na.rm=TRUE)
+
 #Site violin plot
 ggplot(nsc.adult.total.mass, aes(x=Site, y=total.nsc)) + 
   geom_violin() + stat_summary(fun.y=median,geom="point")
