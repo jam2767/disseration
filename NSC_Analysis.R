@@ -580,6 +580,13 @@ hist(nsc.adult.total.mass$DBH14[nsc.adult.total.mass.dead])
 mean(nsc.adult.total.mass$DBH14[nsc.adult.total.mass.dead],na.rm=TRUE)
 median(nsc.adult.total.mass$DBH14[nsc.adult.total.mass.dead],na.rm=TRUE)
 
+#anova for size and mortality
+lm.mort.size <- lm(DBH14 ~ Mortality14, data = nsc.adult.total.mass)
+anova(lm.mort.size)
+summary(lm.mort.size)
+#Dead and IBS trees are significantly smaller, 6.7 and 3.8 cm respectively
+
+
 #Site violin plot
 ggplot(nsc.adult.total.mass, aes(x=Site, y=total.nsc)) + 
   geom_violin() + stat_summary(fun.y=median,geom="point")
