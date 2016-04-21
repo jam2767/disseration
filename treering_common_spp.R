@@ -27,3 +27,5 @@ spp.site.num <- count(adult.cored, vars = c("Spp","Site"))
 print(spp.site.num)
 write.csv(spp.site.num, file = "/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/species_by_site.csv")
 
+#high priority species:
+#ACSA3, BEPA, CAGL8, CAOV2, CATO6, FAGR, FRAM2, LITU, QUAL, QUMO4, QURU, QUVE, TSCA
