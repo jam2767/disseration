@@ -586,6 +586,45 @@ anova(lm.mort.size)
 summary(lm.mort.size)
 #Dead and IBS trees are significantly smaller, 6.7 and 3.8 cm respectively
 
+#plot total NSC versus size
+plot(nsc.adult.total.mass$DBH14, nsc.adult.total.mass$total.nsc, 
+     ylab = expression(paste("Total NSC mg g"^"-1")),xlab = "DBH cm")
+lm.dbh.total <- lm(total.nsc ~ DBH14, data = nsc.adult.total.mass)
+abline(lm.dbh.total)
+summary(lm.dbh.total) #significant but explains very little
+
+##Canopy status and total NSC ALIVE individuals
+nsc.adult.total.mass$Canopy15 <- as.factor(nsc.adult.total.mass$Canopy15)
+b <- boxplot(total.nsc[nsc.adult.total.mass.alive] ~ Canopy15[nsc.adult.total.mass.alive], data = nsc.adult.total.mass)
+boxplot(total.nsc[nsc.adult.total.mass.alive] ~ Canopy15[nsc.adult.total.mass.alive], data = nsc.adult.total.mass,
+        ylab = expression(paste("Total NSC mg g"^"-1")),ylim=c(0,170), 
+        names = c("Understory","Co-Dominant","Emergent"), main = "Alive")
+text(seq_along(droplevels(nsc.adult.total.mass$Canopy15[nsc.adult.total.mass.alive])), 165, b$n, cex=.7)
+lm.canopy.total.alive <- lm(total.nsc[nsc.adult.total.mass.alive] ~ Canopy15[nsc.adult.total.mass.alive], data = nsc.adult.total.mass)
+anova(lm.canopy.total.alive)
+summary(lm.canopy.total.alive)
+
+##Canopy status and total NSC STRESSED individuals
+nsc.adult.total.mass$Canopy15 <- as.factor(nsc.adult.total.mass$Canopy15)
+b <- boxplot(total.nsc[nsc.adult.total.mass.ibs] ~ Canopy15[nsc.adult.total.mass.ibs], data = nsc.adult.total.mass)
+boxplot(total.nsc[nsc.adult.total.mass.ibs] ~ Canopy15[nsc.adult.total.mass.ibs], data = nsc.adult.total.mass,
+        ylab = expression(paste("Total NSC mg g"^"-1")),ylim=c(0,170), 
+        names = c("Understory","Co-Dominant","Emergent"), main = "Stressed")
+text(seq_along(droplevels(nsc.adult.total.mass$Canopy15[nsc.adult.total.mass.ibs])), 165, b$n, cex=.7)
+lm.canopy.total.ibs <- lm(total.nsc[nsc.adult.total.mass.ibs] ~ Canopy15[nsc.adult.total.mass.ibs], data = nsc.adult.total.mass)
+anova(lm.canopy.total.ibs)
+summary(lm.canopy.total.ibs)
+
+##Canopy status and total NSC DEAD individuals
+nsc.adult.total.mass$Canopy15 <- as.factor(nsc.adult.total.mass$Canopy15)
+b <- boxplot(total.nsc[nsc.adult.total.mass.dead] ~ Canopy15[nsc.adult.total.mass.dead], data = nsc.adult.total.mass)
+boxplot(total.nsc[nsc.adult.total.mass.dead] ~ Canopy15[nsc.adult.total.mass.dead], data = nsc.adult.total.mass,
+        ylab = expression(paste("Total NSC mg g"^"-1")),ylim=c(0,170), 
+        names = c("Understory","Co-Dominant","Emergent"), main = "Dead")
+text(seq_along(droplevels(nsc.adult.total.mass$Canopy15[nsc.adult.total.mass.dead])), 165, b$n, cex=.7)
+lm.canopy.total.dead <- lm(total.nsc[nsc.adult.total.mass.dead] ~ Canopy15[nsc.adult.total.mass.dead], data = nsc.adult.total.mass)
+anova(lm.canopy.total.dead)
+summary(lm.canopy.total.dead)
 
 #Site violin plot
 ggplot(nsc.adult.total.mass, aes(x=Site, y=total.nsc)) + 
