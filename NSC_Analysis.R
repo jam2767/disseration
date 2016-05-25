@@ -22,7 +22,7 @@ cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2",
 adult <- read.csv("/Users/Josh/Dropbox/Dietze_Lab_Undergrads/JAM - Xsite/Field Data Entry/Data Sheets/Adult_Field_Data_JAM_MCD.csv")
 
 #read NSC tracking data - contains sample mass used for assays
-mass <- read.csv("/Users/Josh/Dropbox/NSC_Runs/All/Tracking/NSC_Mass_All_AGU.csv")
+mass <- read.csv("/Users/Josh/Dropbox/NSC_Runs/All/Tracking/NSC_Mass_All.csv")
 
 #all files starch files in one directory
 data.dir.starch = "/Users/Josh/Dropbox/NSC_Runs/All/Starch"
