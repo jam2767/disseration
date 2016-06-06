@@ -638,10 +638,26 @@ ggplot(nsc.adult.total.mass, aes(x=Canopy15, y=total.nsc)) +
 #pairs plots
 #glucose:starch
 plot(nsc.adult.total.mass$glucose.mg.g, nsc.adult.total.mass$starch.mg.g)
+lm.glucose.starch.tot <- lm(glucose.mg.g ~ starch.mg.g, data = nsc.adult.total.mass)
+anova(lm.glucose.starch.tot)
+summary(lm.glucose.starch.tot) #R2 = .03
+abline(lm.glucose.starch.tot,col=2,lwd=2)
+
 #sucrose:starch
-plot(nsc.adult.total.mass$sucrose.mg.g, nsc.adult.total.mass$starch.mg.g)
+plot(nsc.adult.total.mass$starch.mg.g, nsc.adult.total.mass$sucrose.mg.g,
+     xlab = expression(paste("Starch mg g"^"-1")),
+     ylab = expression(paste("Sucrose mg g"^"-1")))
+lm.sucrose.starch.tot <- lm(sucrose.mg.g ~ starch.mg.g, data = nsc.adult.total.mass)
+anova(lm.sucrose.starch.tot)
+summary(lm.sucrose.starch.tot) #R2 = .30
+abline(lm.sucrose.starch.tot,col=2,lwd=2)
+
 #fructose:starch
 plot(nsc.adult.total.mass$fructose.mg.g, nsc.adult.total.mass$starch.mg.g)
+lm.fructose.starch.tot <- lm(fructose.mg.g ~ starch.mg.g, data = nsc.adult.total.mass)
+anova(lm.fructose.starch.tot)
+summary(lm.fructose.starch.tot) #R2 = .08
+abline(lm.fructose.starch.tot,col=2,lwd=2)
 
 #starch:total
 plot(nsc.adult.total.mass$starch.mg.g, nsc.adult.total.mass$total.nsc,
@@ -651,7 +667,7 @@ lm.starch.tot <- lm(total.nsc ~ starch.mg.g, data = nsc.adult.total.mass)
 anova(lm.starch.tot)
 summary(lm.starch.tot)
 abline(lm.starch.tot,col=2,lwd=2)
-text(x=15,y=140,labels=expression(paste("R"^"2"," = 0.88")))
+text(x=15,y=140,labels=expression(paste("R"^"2"," = 0.89")))
 
 #starch mortality
 lm.mort.starch <- lm(starch.mg.g ~ Mortality14, data = nsc.adult.total.mass)
@@ -664,7 +680,7 @@ plot(nsc.adult.total.mass$glucose.mg.g, nsc.adult.total.mass$total.nsc,
      ylab = expression(paste("Total NSC mg g"^"-1")))
 lm.gluc.tot <- lm(total.nsc ~ glucose.mg.g, data = nsc.adult.total.mass)
 anova(lm.gluc.tot)
-summary(lm.gluc.tot)
+summary(lm.gluc.tot) #R2 = .13
 abline(lm.gluc.tot,col=2,lwd=2)
 
 #sucrose:total
@@ -673,7 +689,7 @@ plot(nsc.adult.total.mass$sucrose.mg.g, nsc.adult.total.mass$total.nsc,
      ylab = expression(paste("Total NSC mg g"^"-1")))
 lm.suc.tot <- lm(total.nsc ~ sucrose.mg.g, data = nsc.adult.total.mass)
 anova(lm.suc.tot)
-summary(lm.suc.tot)
+summary(lm.suc.tot) #R2 = .46
 abline(lm.suc.tot,col=2,lwd=2)
 
 #fructose:total
@@ -682,18 +698,8 @@ plot(nsc.adult.total.mass$fructose.mg.g, nsc.adult.total.mass$total.nsc,
      ylab = expression(paste("Total NSC mg g"^"-1")))
 lm.fruc.tot <- lm(total.nsc ~ fructose.mg.g, data = nsc.adult.total.mass)
 anova(lm.fruc.tot)
-summary(lm.fruc.tot)
+summary(lm.fruc.tot) #R2 = .23
 abline(lm.fruc.tot,col=2,lwd=2)
-
-#Starch:Sucrose
-plot(nsc.adult.total.mass$starch.mg.g, nsc.adult.total.mass$sucrose.mg.g,
-     xlab = expression(paste("Starch mg g"^"-1")),
-     ylab = expression(paste("Sucrose mg g"^"-1")))
-lm.sucrose.starch.tot <- lm(sucrose.mg.g ~ starch.mg.g, data = nsc.adult.total.mass)
-anova(lm.sucrose.starch.tot)
-summary(lm.sucrose.starch.tot)
-abline(lm.sucrose.starch.tot,col=2,lwd=2)
-#R^2 =.29, only 0.1 and 0.04 for fructose and glucose
 
 #sucrose:glucose
 plot(nsc.adult.total.mass$sucrose.mg.g, nsc.adult.total.mass$glucose.mg.g,
@@ -701,7 +707,7 @@ plot(nsc.adult.total.mass$sucrose.mg.g, nsc.adult.total.mass$glucose.mg.g,
      ylab = expression(paste("Glucose mg g"^"-1")))
 lm.sucrose.glucose.tot <- lm(glucose.mg.g ~ sucrose.mg.g, data = nsc.adult.total.mass)
 anova(lm.sucrose.glucose.tot)
-summary(lm.sucrose.glucose.tot)
+summary(lm.sucrose.glucose.tot) #R2 = .02
 abline(lm.sucrose.glucose.tot,col=2,lwd=2)
 
 #sucrose:fructose
@@ -710,7 +716,7 @@ plot(nsc.adult.total.mass$sucrose.mg.g, nsc.adult.total.mass$fructose.mg.g,
      ylab = expression(paste("Fructose mg g"^"-1")))
 lm.sucrose.fructose.tot <- lm(fructose.mg.g ~ sucrose.mg.g, data = nsc.adult.total.mass)
 anova(lm.sucrose.fructose.tot)
-summary(lm.sucrose.fructose.tot)
+summary(lm.sucrose.fructose.tot) #R2 = 0.002
 abline(lm.sucrose.fructose.tot,col=2,lwd=2)
 
 #glucose:fructose
@@ -719,9 +725,9 @@ plot(nsc.adult.total.mass$glucose.mg.g, nsc.adult.total.mass$fructose.mg.g,
      ylab = expression(paste("Fructose mg g"^"-1")))
 lm.fructose.glucose.tot <- lm(fructose.mg.g ~ glucose.mg.g, data = nsc.adult.total.mass)
 anova(lm.fructose.glucose.tot)
-summary(lm.fructose.glucose.tot)
+summary(lm.fructose.glucose.tot) #R2 = .635
 abline(lm.fructose.glucose.tot,col=2,lwd=2)
-#Strong positive correlation between fructose and glucose, but not the others. R2=.62
+#Strong positive correlation between fructose and glucose, but not the others.
 
 ############Starch ONLY exploratory Analysis##############
 ##########################################################
@@ -969,7 +975,7 @@ summary(lm.spp.starch)
 nsc.adult.starch.mass$Site <- relevel(nsc.adult.starch.mass$Site, ref = "D")
 b <- boxplot(Starch.mg.g ~ droplevels(Site), data = nsc.adult.starch.mass)
 boxplot(Starch.mg.g ~ droplevels(Site), data = nsc.adult.starch.mass,
-        ylab = expression(paste("Starch mg g"^"-1")),ylim=c(0,100))
+        ylab = expression(paste("Starch mg g"^"-1")),ylim=c(-10,100))
 text(seq_along(droplevels(nsc.adult.sugar.mass$Site)), 99, b$n, cex=.7)
 abline(h=median(nsc.adult.starch.mass$Starch.mg.g, na.rm = TRUE))
 lm.site <- lm(Starch.mg.g ~ Site, data = nsc.adult.starch.mass)
@@ -992,7 +998,7 @@ summary(lm.dbh) #significant but explains very little
 nsc.adult.starch.mass$Mortality14 <- as.factor(nsc.adult.starch.mass$Mortality14)
 b <- boxplot(Starch.mg.g ~ Mortality14, data = nsc.adult.starch.mass)
 boxplot(Starch.mg.g ~ Mortality14, data = nsc.adult.starch.mass,
-        ylab = expression(paste("Starch mg g"^"-1")),ylim=c(0,100))
+        ylab = expression(paste("Starch mg g"^"-1")),ylim=c(-10,100))
 text(seq_along(droplevels(nsc.adult.sugar.mass$Mortality14)), 100, b$n, cex=.9)
 lm.mort <- lm(Starch.mg.g ~ Mortality14, data = nsc.adult.starch.mass)
 anova(lm.mort)
