@@ -51,6 +51,9 @@ for(i in seq_along(HK.files.starch)){
 max.HK.starch <- tapply(X = as.numeric(HK.starch$Meas.), INDEX = HK.starch$Sample, FUN = max)
 HK.starch.id <- unique(HK.starch$Sample)
 
+# Check that samples finished converting all Starch. If not, flag for reanalysis
+dif.HK.starch <- tapply(X = as.numeric(HK.starch$Meas.), INDEX = HK.starch$Sample, FUN = diff)
+
 #difference between baseline and HK
 total.starch <- max.HK.starch-mean.baseline.starch
 
