@@ -250,6 +250,7 @@ Early.Hardwood <- c(
               which(nsc.adult.total.mass$Spp == "BEAL2"),
               which(nsc.adult.total.mass$Spp == "BELE"),
               which(nsc.adult.total.mass$Spp == "BEPA"),
+              which(nsc.adult.total.mass$Spp == "BETUL"),
               which(nsc.adult.total.mass$Spp == "JUCI"),
               which(nsc.adult.total.mass$Spp == "JUNI"),
               which(nsc.adult.total.mass$Spp == "LIST2"),
@@ -259,7 +260,7 @@ Early.Hardwood <- c(
               which(nsc.adult.total.mass$Spp == "PRSE2"),
               which(nsc.adult.total.mass$Spp == "ROPS"),
               which(nsc.adult.total.mass$Spp == "SAAL5")
-              )
+              ) #14 Spp
 
 Mid.Hardwood <- c(
                   which(nsc.adult.total.mass$Spp == "FRAM2"),
@@ -284,15 +285,18 @@ Mid.Hardwood <- c(
                   which(nsc.adult.total.mass$Spp == "QUPH"),
                   which(nsc.adult.total.mass$Spp == "QURU"),
                   which(nsc.adult.total.mass$Spp == "QUVE"),
+                  which(nsc.adult.total.mass$Spp == "QUVI"),
                   which(nsc.adult.total.mass$Spp == "ULAM")
-                  )
+                  ) #23 Spp
 
-Late.Hardwood <- c(which(nsc.adult.total.mass$Spp == "ACSA3"),
+Late.Hardwood <- c(which(nsc.adult.total.mass$Spp == "ACFL"),
+                   which(nsc.adult.total.mass$Spp == "ACSA3"),
+                   which(nsc.adult.total.mass$Spp == "AEGL"),
                    which(nsc.adult.total.mass$Spp == "FAGR"),
                    which(nsc.adult.total.mass$Spp == "NYSY"),
                    which(nsc.adult.total.mass$Spp == "OXAR"),
                    which(nsc.adult.total.mass$Spp == "TIAM")
-                   )
+                   ) #5 Spp
 
 
 #set PFTs
@@ -305,11 +309,12 @@ nsc.adult.total.mass$PFT[Late.Hardwood] <- "Late.Hardwood"
 Early.Conifer <- c(
               which(nsc.adult.total.mass$Spp == "ABBA"),
               which(nsc.adult.total.mass$Spp == "JUVI"),
+              which(nsc.adult.total.mass$Spp == "PIPA2"),
               which(nsc.adult.total.mass$Spp == "PIST"),
               which(nsc.adult.total.mass$Spp == "PIVI"), #should be PIVI2 for Virginia Pine
               which(nsc.adult.total.mass$Spp == "PIRE"),
               which(nsc.adult.total.mass$Spp == "PIRI")
-              )
+              ) #6 Spp
 
 #Mid.Conifer <- c()
 
@@ -320,7 +325,7 @@ Late.Conifer <- c(
               which(nsc.adult.total.mass$Spp == "PIRU"),
               which(nsc.adult.total.mass$Spp == "THOC2"),
               which(nsc.adult.total.mass$Spp == "TSCA")
-              )
+              ) #6 Spp
 
 nsc.adult.total.mass$PFT[Early.Conifer] <- "Early.Conifer"
 nsc.adult.total.mass$PFT[Late.Conifer] <- "Late.Conifer"
@@ -346,12 +351,12 @@ nsc.adult.total.mass.hard$Spp <- as.character(nsc.adult.total.mass.hard$Spp)
 
 nsc.adult.total.mass.hard$Spp <- factor(nsc.adult.total.mass.hard$Spp, 
                   levels = c("ACPE","AIAL","BEAL2","BELE",
-                  "BEPA","JUCI","JUNI","LIST2","LITU","POGR4","POTR5",
+                  "BEPA","BETUL","JUCI","JUNI","LIST2","LITU","POGR4","POTR5",
                   "PRSE2","ROPS","SAAL5","FRAM2","FRNI","FRQU","ACNE2",
                   "ACRU","CACA18","CACO15","CAGL8","CALA21","CAOV2",
                   "CATO6","CECA4","MAAC","MAFR","QUAL","QUCO2","QUIM",
-                  "QUMO4","QUMU","QUPH","QURU","QUVE","ULAM","ACSA3",
-                  "FAGR","NYSY","OXAR","TIAM"), ordered = TRUE)
+                  "QUMO4","QUMU","QUPH","QURU","QUVE","QUVI","ULAM","ACFL",
+                  "ACSA3","AEGL","FAGR","NYSY","OXAR","TIAM"), ordered = TRUE)
 
 #levels(nsc.adult.total.mass.hard$Spp)
 #levels(nsc.adult.total.mass.hard$PFT) <- c("Early.Hardwood","Mid.Hardwood","Late.Hardwood")
@@ -377,7 +382,7 @@ nsc.adult.total.mass.conif$Spp <- as.character(nsc.adult.total.mass.conif$Spp)
 
 #relevel factors
 nsc.adult.total.mass.conif$Spp <- factor(nsc.adult.total.mass.conif$Spp, 
-                              levels = c("ABBA","JUVI","PIST","PIVI","PIRE",
+                              levels = c("ABBA","JUVI","PIPA2","PIST","PIVI","PIRE",
                                          "PIRI","LALA","PIGL","PIMA","PIRU",
                                          "THOC2","TSCA"), ordered = TRUE)
 #########################
@@ -449,7 +454,7 @@ boxplot(total.nsc ~ droplevels(Spp), data = nsc.adult.total.mass.hard,
 #   theme(axis.text.x = element_text(angle=90,hjust=1))
 
 ##########################
-# hardwood ggplot boxplot
+# hardwood ggplot boxplot for ALL individuals
 #median for total.nsc
 med.early.hard <- median(nsc.adult.total.mass$total.nsc[early.h])
 med.mid.hard <- median(nsc.adult.total.mass$total.nsc[mid.h])
@@ -471,7 +476,7 @@ ggplot(nsc.adult.total.mass.hard, aes(x = Spp, y=total.nsc, fill=PFT)) +
   #stat_summary(fun.data = mean_se, mult = 2, geom = "errorbar", aes(x = Spp, y=total.nsc, colour = PFT)) + #uncomment to get mean + 2SE
   stat_summary(fun.data = give.n, geom= "text", aes(y= 160)) + 
   #geom_hline(aes(yintercept=med.total),linetype="longdash") +
-  ylab(expression(paste("Total NSC mg g"^"-1"," Sapwood"))) + xlab("Species") +
+  ylab(expression(paste("Total NSC mg g"^"-1"," Sapwood"))) + xlab("Species") + ggtitle("All") +
   geom_segment(aes(x=0,y=med.early.hard,xend=13.5,
                    yend=med.early.hard),linetype="longdash",color="indianred4") +
   geom_segment(aes(x=13.5,y=med.mid.hard,xend=35.5,
@@ -479,6 +484,163 @@ ggplot(nsc.adult.total.mass.hard, aes(x = Spp, y=total.nsc, fill=PFT)) +
   geom_segment(aes(x=35.5,y=med.late.hard,xend=40.5,
                    yend=med.late.hard),linetype="longdash",color="darkgreen") +
   scale_fill_manual(values=cbPalette)
+
+#species anova within all hardwoods
+spp.hard.lm <- lm(total.nsc ~ Spp, data = nsc.adult.total.mass.hard)
+anova(spp.hard.lm)
+summary(spp.hard.lm)
+
+#pft anova within all hardwoods
+pft.hard.lm <- lm(total.nsc ~ PFT, data = nsc.adult.total.mass.hard)
+anova(pft.hard.lm)
+summary(pft.hard.lm)
+
+##species boxplot for ALIVE individuals only
+nsc.adult.total.mass.alive <- which(nsc.adult.total.mass$Mortality14 == "A")
+hard.alive <- which(nsc.adult.total.mass.hard$Mortality14 == "A")
+nsc.adult.total.mass.hard.alive <- nsc.adult.total.mass.hard[hard.alive,]
+
+early.h.alive <- which(nsc.adult.total.mass.hard.alive$PFT == "Early.Hardwood")
+mid.h.alive <- which(nsc.adult.total.mass.hard.alive$PFT == "Mid.Hardwood")
+late.h.alive <- which(nsc.adult.total.mass.hard.alive$PFT == "Late.Hardwood")
+
+med.early.hard.alive <- median(nsc.adult.total.mass.hard.alive$total.nsc[early.h.alive])
+med.mid.hard.alive <- median(nsc.adult.total.mass.hard.alive$total.nsc[mid.h.alive])
+med.late.hard.alive <- median(nsc.adult.total.mass.hard.alive$total.nsc[late.h.alive])
+med.total.alive <- median(nsc.adult.total.mass.hard$total.nsc[hard.alive])
+
+#plot
+ggplot(nsc.adult.total.mass.hard.alive, aes(x = Spp, y=total.nsc, fill=PFT)) + 
+  geom_boxplot() + 
+  theme(axis.text.x = element_text(angle=90,hjust=1,size=16)) + 
+  #geom_point(aes(x = Spp, y=total.nsc, colour = PFT)) + #works to color points, uncomment for mean + 2SE
+  #geom_point(stat = mean, mapping = aes(x = Spp, y=total.nsc, colour = PFT), na.rm = TRUE) +
+  #geom_errorbar(ymax = (mean(nsc.adult.total.mass.hard$total.nsc) + sd(nsc.adult.total.mass.hard$total.nsc)), ymin = (mean(nsc.adult.total.mass.hard$total.nsc) - sd(nsc.adult.total.mass.hard$total.nsc))) + theme(axis.text.x = element_text(angle=90,hjust=1,size=16)) +
+  theme(axis.text.y = element_text(size=16)) +
+  theme(axis.title.x = element_text(size=20)) +
+  theme(axis.title.y = element_text(size=20)) +
+  theme(legend.text = element_text(size=16)) +
+  #stat_summary(mapping = aes(x = Spp, y=total.nsc, colour = PFT), fun.y = mean, geom = "point") + #can't get mean to plot!
+  #stat_summary(fun.data = "mean_cl_boot", colour = "red", size = 2)
+  #stat_summary(fun.data = mean_se, mult = 2, geom = "errorbar", aes(x = Spp, y=total.nsc, colour = PFT)) + #uncomment to get mean + 2SE
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 160)) + 
+  #geom_hline(aes(yintercept=med.total),linetype="longdash") +
+  ylab(expression(paste("Total NSC mg g"^"-1"," Sapwood"))) + xlab("Species") + ggtitle("Alive") +
+  geom_segment(aes(x=0,y=med.early.hard.alive,xend=13.5,
+                   yend=med.early.hard.alive),linetype="longdash",color="indianred4") +
+  geom_segment(aes(x=13.5,y=med.mid.hard.alive,xend=35.5,
+                   yend=med.mid.hard.alive),linetype="longdash",color="dodgerblue4") +
+  geom_segment(aes(x=35.5,y=med.late.hard.alive,xend=40.5,
+                   yend=med.late.hard.alive),linetype="longdash",color="darkgreen") +
+  scale_fill_manual(values=cbPalette)
+  
+#species anova within alive hardwoods
+spp.hard.alive.lm <- lm(total.nsc ~ Spp, data = nsc.adult.total.mass.hard.alive)
+anova(spp.hard.alive.lm)
+summary(spp.hard.alive.lm)
+
+#pft anova within alive hardwoods
+pft.hard.alive.lm <- lm(total.nsc ~ PFT, data = nsc.adult.total.mass.hard.alive)
+anova(pft.hard.alive.lm)
+summary(pft.hard.alive.lm)
+
+##species boxplot for STRESSED individuals only
+nsc.adult.total.mass.stress <- which(nsc.adult.total.mass$Mortality14 == "IBS")
+hard.stress <- which(nsc.adult.total.mass.hard$Mortality14 == "IBS")
+nsc.adult.total.mass.hard.stress <- nsc.adult.total.mass.hard[hard.stress,]
+
+early.h.stress <- which(nsc.adult.total.mass.hard.stress$PFT == "Early.Hardwood")
+mid.h.stress <- which(nsc.adult.total.mass.hard.stress$PFT == "Mid.Hardwood")
+late.h.stress <- which(nsc.adult.total.mass.hard.stress$PFT == "Late.Hardwood")
+
+med.early.hard.stress <- median(nsc.adult.total.mass.hard.stress$total.nsc[early.h.stress])
+med.mid.hard.stress <- median(nsc.adult.total.mass.hard.stress$total.nsc[mid.h.stress])
+med.late.hard.stress <- median(nsc.adult.total.mass.hard.stress$total.nsc[late.h.stress])
+med.total.stress <- median(nsc.adult.total.mass.hard$total.nsc[hard.stress])
+
+#Plot
+ggplot(nsc.adult.total.mass.hard.stress, aes(x = Spp, y=total.nsc, fill=PFT)) + 
+  geom_boxplot() + 
+  theme(axis.text.x = element_text(angle=90,hjust=1,size=16)) + 
+  #geom_point(aes(x = Spp, y=total.nsc, colour = PFT)) + #works to color points, uncomment for mean + 2SE
+  #geom_point(stat = mean, mapping = aes(x = Spp, y=total.nsc, colour = PFT), na.rm = TRUE) +
+  #geom_errorbar(ymax = (mean(nsc.adult.total.mass.hard$total.nsc) + sd(nsc.adult.total.mass.hard$total.nsc)), ymin = (mean(nsc.adult.total.mass.hard$total.nsc) - sd(nsc.adult.total.mass.hard$total.nsc))) + theme(axis.text.x = element_text(angle=90,hjust=1,size=16)) +
+  theme(axis.text.y = element_text(size=16)) +
+  theme(axis.title.x = element_text(size=20)) +
+  theme(axis.title.y = element_text(size=20)) +
+  theme(legend.text = element_text(size=16)) +
+  #stat_summary(mapping = aes(x = Spp, y=total.nsc, colour = PFT), fun.y = mean, geom = "point") + #can't get mean to plot!
+  #stat_summary(fun.data = "mean_cl_boot", colour = "red", size = 2)
+  #stat_summary(fun.data = mean_se, mult = 2, geom = "errorbar", aes(x = Spp, y=total.nsc, colour = PFT)) + #uncomment to get mean + 2SE
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 160)) + 
+  #geom_hline(aes(yintercept=med.total),linetype="longdash") +
+  ylab(expression(paste("Total NSC mg g"^"-1"," Sapwood"))) + xlab("Species") + ggtitle("Stressed") +
+  geom_segment(aes(x=0,y=med.early.hard.stress,xend=9.5,
+                   yend=med.early.hard.stress),linetype="longdash",color="indianred4") +
+  geom_segment(aes(x=9.5,y=med.mid.hard.stress,xend=21.5,
+                   yend=med.mid.hard.stress),linetype="longdash",color="dodgerblue4") +
+  geom_segment(aes(x=21.5,y=med.late.hard.stress,xend=24.5,
+                   yend=med.late.hard.stress),linetype="longdash",color="darkgreen") +
+  scale_fill_manual(values=cbPalette)
+
+#species anova within stressed hardwoods
+spp.hard.stress.lm <- lm(total.nsc ~ Spp, data = nsc.adult.total.mass.hard.stress)
+anova(spp.hard.stress.lm)
+summary(spp.hard.stress.lm)
+
+#pft anova within stressed hardwoods
+pft.hard.stress.lm <- lm(total.nsc ~ PFT, data = nsc.adult.total.mass.hard.stress)
+anova(pft.hard.stress.lm)
+summary(pft.hard.stress.lm)
+
+##species boxplot for DEAD individuals only
+nsc.adult.total.mass.dead <- which(nsc.adult.total.mass$Mortality14 == "D")
+hard.dead <- which(nsc.adult.total.mass.hard$Mortality14 == "D")
+nsc.adult.total.mass.hard.dead <- nsc.adult.total.mass.hard[hard.dead,]
+
+early.h.dead <- which(nsc.adult.total.mass.hard.dead$PFT == "Early.Hardwood")
+mid.h.dead <- which(nsc.adult.total.mass.hard.dead$PFT == "Mid.Hardwood")
+late.h.dead <- which(nsc.adult.total.mass.hard.dead$PFT == "Late.Hardwood")
+
+med.early.hard.dead <- median(nsc.adult.total.mass.hard.dead$total.nsc[early.h.dead])
+med.mid.hard.dead <- median(nsc.adult.total.mass.hard.dead$total.nsc[mid.h.dead])
+med.late.hard.dead <- median(nsc.adult.total.mass.hard.dead$total.nsc[late.h.dead])
+med.total.dead <- median(nsc.adult.total.mass.hard$total.nsc[hard.dead])
+
+#Plot
+ggplot(nsc.adult.total.mass.hard.dead, aes(x = Spp, y=total.nsc, fill=PFT)) + 
+  geom_boxplot() + 
+  theme(axis.text.x = element_text(angle=90,hjust=1,size=16)) + 
+  #geom_point(aes(x = Spp, y=total.nsc, colour = PFT)) + #works to color points, uncomment for mean + 2SE
+  #geom_point(stat = mean, mapping = aes(x = Spp, y=total.nsc, colour = PFT), na.rm = TRUE) +
+  #geom_errorbar(ymax = (mean(nsc.adult.total.mass.hard$total.nsc) + sd(nsc.adult.total.mass.hard$total.nsc)), ymin = (mean(nsc.adult.total.mass.hard$total.nsc) - sd(nsc.adult.total.mass.hard$total.nsc))) + theme(axis.text.x = element_text(angle=90,hjust=1,size=16)) +
+  theme(axis.text.y = element_text(size=16)) +
+  theme(axis.title.x = element_text(size=20)) +
+  theme(axis.title.y = element_text(size=20)) +
+  theme(legend.text = element_text(size=16)) +
+  #stat_summary(mapping = aes(x = Spp, y=total.nsc, colour = PFT), fun.y = mean, geom = "point") + #can't get mean to plot!
+  #stat_summary(fun.data = "mean_cl_boot", colour = "red", size = 2)
+  #stat_summary(fun.data = mean_se, mult = 2, geom = "errorbar", aes(x = Spp, y=total.nsc, colour = PFT)) + #uncomment to get mean + 2SE
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 70)) + 
+  #geom_hline(aes(yintercept=med.total),linetype="longdash") +
+  ylab(expression(paste("Total NSC mg g"^"-1"," Sapwood"))) + xlab("Species") + ggtitle("Dead") +
+  geom_segment(aes(x=0,y=med.early.hard.dead,xend=7.5,
+                   yend=med.early.hard.dead),linetype="longdash",color="indianred4") +
+  geom_segment(aes(x=7.5,y=med.mid.hard.dead,xend=17.5,
+                   yend=med.mid.hard.dead),linetype="longdash",color="dodgerblue4") +
+  geom_segment(aes(x=17.5,y=med.late.hard.dead,xend=20,
+                   yend=med.late.hard.dead),linetype="longdash",color="darkgreen") +
+  scale_fill_manual(values=cbPalette)
+
+#species anova within hardwoods
+spp.hard.dead.lm <- lm(total.nsc ~ Spp, data = nsc.adult.total.mass.hard.dead)
+anova(spp.hard.dead.lm)
+summary(spp.hard.dead.lm)
+
+#pft anova within hardwoods
+pft.hard.dead.lm <- lm(total.nsc ~ PFT, data = nsc.adult.total.mass.hard.dead)
+anova(pft.hard.dead.lm)
+summary(pft.hard.dead.lm)
 
 library(pwr)
 #power analysis for hardwoods
@@ -781,7 +943,9 @@ Mid.Hardwood <- c(
   which(nsc.adult.starch.mass$Spp == "ULAM")
 )
 
-Late.Hardwood <- c(which(nsc.adult.starch.mass$Spp == "ACSA3"),
+Late.Hardwood <- c(which(nsc.adult.starch.mass$Spp == "ACFL"),
+                   which(nsc.adult.starch.mass$Spp == "ACSA3"),
+                   which(nsc.adult.starch.mass$Spp == "AEGL"),
                    which(nsc.adult.starch.mass$Spp == "FAGR"),
                    which(nsc.adult.starch.mass$Spp == "NYSY"),
                    which(nsc.adult.starch.mass$Spp == "OXAR"),
