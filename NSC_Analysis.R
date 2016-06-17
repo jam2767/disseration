@@ -386,7 +386,7 @@ nsc.adult.total.mass.conif$Spp <- factor(nsc.adult.total.mass.conif$Spp,
                                          "PIRI","LALA","PIGL","PIMA","PIRU",
                                          "THOC2","TSCA"), ordered = TRUE)
 #########################
-#Conifer ggplot boxplot
+# ALL Conifer ggplot boxplot
 med.early.conif <- median(nsc.adult.total.mass$total.nsc[early.c])
 med.late.conif <- median(nsc.adult.total.mass$total.nsc[late.c])
 #med.total <- median(nsc.adult.total.mass.hard$total.nsc)
@@ -399,12 +399,124 @@ ggplot(nsc.adult.total.mass.conif, aes(x = Spp, y=total.nsc, fill=PFT)) +
   theme(legend.text = element_text(size=16)) +
   stat_summary(fun.data = give.n, geom= "text", aes(y= 65)) + 
   #geom_hline(aes(yintercept=med.total),linetype="longdash") +
-  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Species") +
-  geom_segment(aes(x=0,y=med.early.conif,xend=6.5,
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Species") + ggtitle("All") +
+  geom_segment(aes(x=0,y=med.early.conif,xend=7.5,
                    yend=med.early.conif),linetype="longdash",color="indianred4") +
-  geom_segment(aes(x=6.5,y=med.late.conif,xend=9.5,
+  geom_segment(aes(x=7.5,y=med.late.conif,xend=12,
                    yend=med.late.conif),linetype="longdash",color="darkgreen") +
   scale_fill_manual(values=rev(cbPalette))
+
+
+#ALIVE Conifer ggplot boxplot
+nsc.adult.total.mass.alive <- which(nsc.adult.total.mass$Mortality14 == "A")
+conif.alive <- which(nsc.adult.total.mass.conif$Mortality14 == "A")
+nsc.adult.total.mass.conif.alive <- nsc.adult.total.mass.conif[conif.alive,]
+
+early.c.alive <- which(nsc.adult.total.mass.conif.alive$PFT == "Early.Conifer")
+late.c.alive <- which(nsc.adult.total.mass.conif.alive$PFT == "Late.Conifer")
+
+med.early.conif.alive <- median(nsc.adult.total.mass.conif.alive$total.nsc[early.c.alive])
+med.late.conif.alive <- median(nsc.adult.total.mass.conif.alive$total.nsc[late.c.alive])
+
+#Plot
+ggplot(nsc.adult.total.mass.conif.alive, aes(x = Spp, y=total.nsc, fill=PFT)) + 
+  geom_boxplot() + theme(axis.text.x = element_text(angle=90,hjust=1,size=16)) +
+  theme(axis.text.y = element_text(size=16)) +
+  theme(axis.title.x = element_text(size=20)) +
+  theme(axis.title.y = element_text(size=20)) +
+  theme(legend.text = element_text(size=16)) +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 85)) + 
+  #geom_hline(aes(yintercept=med.total),linetype="longdash") +
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Species") + ggtitle("Alive") +
+  geom_segment(aes(x=0.5,y=med.early.conif.alive,xend=7.5,
+                   yend=med.early.conif.alive),linetype="longdash",color="indianred4") +
+  geom_segment(aes(x=7.5,y=med.late.conif.alive,xend=10.5,
+                   yend=med.late.conif.alive),linetype="longdash",color="darkgreen") +
+  scale_fill_manual(values=rev(cbPalette))
+
+#species anova within alive conifers
+spp.conif.alive.lm <- lm(total.nsc ~ Spp, data = nsc.adult.total.mass.conif.alive)
+anova(spp.conif.alive.lm)
+summary(spp.conif.alive.lm)
+
+#pft anova within alive hardwoods
+pft.conif.alive.lm <- lm(total.nsc ~ PFT, data = nsc.adult.total.mass.conif.alive)
+anova(pft.conif.alive.lm)
+summary(pft.conif.alive.lm)
+
+
+#STRESSED Conifer ggplot boxplot
+conif.stress <- which(nsc.adult.total.mass.conif$Mortality14 == "IBS")
+nsc.adult.total.mass.conif.stress <- nsc.adult.total.mass.conif[conif.stress,]
+
+early.c.stress <- which(nsc.adult.total.mass.conif.stress$PFT == "Early.Conifer")
+late.c.stress <- which(nsc.adult.total.mass.conif.stress$PFT == "Late.Conifer")
+
+med.early.conif.stress <- median(nsc.adult.total.mass.conif.stress$total.nsc[early.c.stress])
+med.late.conif.stress <- median(nsc.adult.total.mass.conif.stress$total.nsc[late.c.stress])
+
+#Plot
+ggplot(nsc.adult.total.mass.conif.stress, aes(x = Spp, y=total.nsc, fill=PFT)) + 
+  geom_boxplot() + theme(axis.text.x = element_text(angle=90,hjust=1,size=16)) +
+  theme(axis.text.y = element_text(size=16)) +
+  theme(axis.title.x = element_text(size=20)) +
+  theme(axis.title.y = element_text(size=20)) +
+  theme(legend.text = element_text(size=16)) +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 42.5)) + 
+  #geom_hline(aes(yintercept=med.total),linetype="longdash") +
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Species") + ggtitle("Stressed") +
+  geom_segment(aes(x=0.5,y=med.early.conif.stress,xend=3.5,
+                   yend=med.early.conif.stress),linetype="longdash",color="indianred4") +
+  geom_segment(aes(x=3.5,y=med.late.conif.stress,xend=5.5,
+                   yend=med.late.conif.stress),linetype="longdash",color="darkgreen") +
+  scale_fill_manual(values=rev(cbPalette))
+
+#species anova within stressed conifers
+spp.conif.stess.lm <- lm(total.nsc ~ Spp, data = nsc.adult.total.mass.conif.stress)
+anova(spp.stress.stress.lm)
+summary(spp.conif.stress.lm)
+
+#pft anova within stressed conifers
+pft.conif.stress.lm <- lm(total.nsc ~ PFT, data = nsc.adult.total.mass.conif.stress)
+anova(pft.conif.stress.lm)
+summary(pft.conif.stress.lm)
+
+
+#DEAD Conifer ggplot boxplot
+conif.dead <- which(nsc.adult.total.mass.conif$Mortality14 == "D")
+nsc.adult.total.mass.conif.dead <- nsc.adult.total.mass.conif[conif.dead,]
+
+early.c.dead <- which(nsc.adult.total.mass.conif.dead$PFT == "Early.Conifer")
+late.c.dead <- which(nsc.adult.total.mass.conif.dead$PFT == "Late.Conifer")
+
+med.early.conif.dead <- median(nsc.adult.total.mass.conif.dead$total.nsc[early.c.dead])
+med.late.conif.dead <- median(nsc.adult.total.mass.conif.dead$total.nsc[late.c.dead])
+
+#Plot
+ggplot(nsc.adult.total.mass.conif.dead, aes(x = Spp, y=total.nsc, fill=PFT)) + 
+  geom_boxplot() + theme(axis.text.x = element_text(angle=90,hjust=1,size=16)) +
+  theme(axis.text.y = element_text(size=16)) +
+  theme(axis.title.x = element_text(size=20)) +
+  theme(axis.title.y = element_text(size=20)) +
+  theme(legend.text = element_text(size=16)) +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 42.5)) + 
+  #geom_hline(aes(yintercept=med.total),linetype="longdash") +
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Species") + ggtitle("Dead") +
+  geom_segment(aes(x=0.5,y=med.early.conif.dead,xend=3.5,
+                   yend=med.early.conif.dead),linetype="longdash",color="indianred4") +
+  geom_segment(aes(x=3.5,y=med.late.conif.dead,xend=6.75,
+                   yend=med.late.conif.dead),linetype="longdash",color="darkgreen") +
+  scale_fill_manual(values=rev(cbPalette))
+
+#species anova within dead conifers
+spp.conif.dead.lm <- lm(total.nsc ~ Spp, data = nsc.adult.total.mass.conif.dead)
+anova(spp.conif.dead.lm)
+summary(spp.conif.dead.lm)
+
+#pft anova within dead hardwoods
+pft.conif.dead.lm <- lm(total.nsc ~ PFT, data = nsc.adult.total.mass.conif.dead)
+anova(pft.conif.dead.lm)
+summary(pft.conif.dead.lm)
 
 
 #########################
@@ -528,9 +640,9 @@ ggplot(nsc.adult.total.mass.hard.alive, aes(x = Spp, y=total.nsc, fill=PFT)) +
   ylab(expression(paste("Total NSC mg g"^"-1"," Sapwood"))) + xlab("Species") + ggtitle("Alive") +
   geom_segment(aes(x=0,y=med.early.hard.alive,xend=13.5,
                    yend=med.early.hard.alive),linetype="longdash",color="indianred4") +
-  geom_segment(aes(x=13.5,y=med.mid.hard.alive,xend=35.5,
+  geom_segment(aes(x=13.5,y=med.mid.hard.alive,xend=34.5,
                    yend=med.mid.hard.alive),linetype="longdash",color="dodgerblue4") +
-  geom_segment(aes(x=35.5,y=med.late.hard.alive,xend=40.5,
+  geom_segment(aes(x=34.5,y=med.late.hard.alive,xend=40.5,
                    yend=med.late.hard.alive),linetype="longdash",color="darkgreen") +
   scale_fill_manual(values=cbPalette)
   
