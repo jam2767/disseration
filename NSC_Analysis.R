@@ -482,7 +482,10 @@ anova(pft.conif.stress.lm)
 summary(pft.conif.stress.lm)
 
 
-#DEAD Conifer ggplot boxplot
+##DEAD Conifer ggplot boxplot
+##5/16 dead conifers A, M, NA in 2013
+##11/16 dead conifers Dead in 2013
+#16/16 dead conifers still dead in 2015
 conif.dead <- which(nsc.adult.total.mass.conif$Mortality14 == "D")
 nsc.adult.total.mass.conif.dead <- nsc.adult.total.mass.conif[conif.dead,]
 
@@ -706,6 +709,9 @@ anova(pft.hard.stress.lm)
 summary(pft.hard.stress.lm)
 
 ##species boxplot for DEAD individuals only
+##17/39 dead hardwoods were also dead in 2013
+##22/39 dead hardwoods were alive or NA in 2013
+##1/39 dead hardwoods was IBS in 2015 - zombie tree!!!
 nsc.adult.total.mass.dead <- which(nsc.adult.total.mass$Mortality14 == "D")
 hard.dead <- which(nsc.adult.total.mass.hard$Mortality14 == "D")
 nsc.adult.total.mass.hard.dead <- nsc.adult.total.mass.hard[hard.dead,]
