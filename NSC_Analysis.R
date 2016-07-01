@@ -22,7 +22,7 @@ cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2",
 adult <- read.csv("/Users/Josh/Dropbox/Dietze_Lab_Undergrads/JAM - Xsite/Field Data Entry/Data Sheets/Adult_Field_Data_JAM_MCD.csv")
 
 #read NSC tracking data - contains sample mass used for assays
-mass <- read.csv("/Users/Josh/Dropbox/NSC_Runs/All/Tracking/NSC_Mass_All.csv")
+mass <- read.csv("/Users/Josh/Dropbox/NSC_Runs/All/Tracking/NSC_Mass_All_6272016.csv")
 
 #all files starch files in one directory
 data.dir.starch = "/Users/Josh/Dropbox/NSC_Runs/All/Starch"
@@ -307,12 +307,12 @@ nsc.adult.total.mass$PFT[Late.Hardwood] <- "Late.Hardwood"
 
 
 Early.Conifer <- c(
-              which(nsc.adult.total.mass$Spp == "ABBA"),
-              which(nsc.adult.total.mass$Spp == "JUVI"),
-              which(nsc.adult.total.mass$Spp == "PIPA2"),
-              which(nsc.adult.total.mass$Spp == "PIST"),
+              which(nsc.adult.total.mass$Spp == "ABBA"),#
+              which(nsc.adult.total.mass$Spp == "JUVI"),#
+              which(nsc.adult.total.mass$Spp == "PIPA2"),#
+              which(nsc.adult.total.mass$Spp == "PIST"),#
               which(nsc.adult.total.mass$Spp == "PIVI"), #should be PIVI2 for Virginia Pine
-              which(nsc.adult.total.mass$Spp == "PIRE"),
+              which(nsc.adult.total.mass$Spp == "PIRE"),#
               which(nsc.adult.total.mass$Spp == "PIRI")
               ) #6 Spp
 
@@ -472,8 +472,8 @@ ggplot(nsc.adult.total.mass.conif.stress, aes(x = Spp, y=total.nsc, fill=PFT)) +
   scale_fill_manual(values=rev(cbPalette))
 
 #species anova within stressed conifers
-spp.conif.stess.lm <- lm(total.nsc ~ Spp, data = nsc.adult.total.mass.conif.stress)
-anova(spp.stress.stress.lm)
+spp.conif.stress.lm <- lm(total.nsc ~ Spp, data = nsc.adult.total.mass.conif.stress)
+anova(spp.conif.stress.lm)
 summary(spp.conif.stress.lm)
 
 #pft anova within stressed conifers
