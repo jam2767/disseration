@@ -9,6 +9,10 @@ You can embed an R code chunk like this:
 #Example creating interaction term
 Y = seq(1,10)
 L = as.vector(x=c("A","B","C"))
+YL = expand.grid(Y,L) #creates matrix of all combinations as characters
+YL.vector = as.vector(paste0(YL$Var1,YL$Var2)) #vector of all combinations as characters
+#Can now use this to create interaction term for years x plot and years x site
+
 ```
 
 You can also embed plots, for example:
