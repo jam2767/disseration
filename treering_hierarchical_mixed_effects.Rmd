@@ -6,6 +6,28 @@ The tree ring analysis to-date has included a hierarchical structure to include 
 You can embed an R code chunk like this:
 
 ```{r}
+#Required Packages
+library(rjags)
+library(data.table)
+
+#Source required PEcAn scripts for reading and matching treerings and plot data
+source("/Users/Josh/Documents/Research/pecan/modules/data.land/R/Read_Tuscon.R")
+source("/Users/Josh/Documents/Research/pecan/modules/data.land/R/matchInventoryRings.R")
+```
+
+Using most up-to-date version of adult census data for treering matching. Includes 2015 census data, but not boolean damage column. All other columns should be the same as analysis done for AGU and EE seminar.
+
+```{r}
+#read Tucson format ringwidth files
+trees.diss <- read.csv("/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/Adult_Field_Data_JAM_MCD.csv")
+rings.diss <- Read_Tuscon("/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/Windendro_text/All_Sites")
+
+#Match Tucson ringwidth files and adult census data
+combined.diss <- matchInventoryRings(trees=trees.diss,rings.diss)
+
+```
+
+```{r}
 #Example creating interaction term
 Y = seq(1,10)
 L = as.vector(x=c("A","B","C"))
