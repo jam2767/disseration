@@ -22,18 +22,63 @@ Using most up-to-date version of adult census data for treering matching. Includ
 trees.diss <- read.csv("/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/Adult_Field_Data_JAM_MCD.csv")
 rings.diss <- Read_Tuscon("/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/Windendro_text/All_Sites")
 
-#Match Tucson ringwidth files and adult census data
+#Match Tucson ringwidth files and adult census data for 50yrs of growth
 combined.diss <- matchInventoryRings(trees=trees.diss,rings.diss)
+#TODO correct cores with known suspiciously large growth increment
+#cores ID'd in /Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/qc_removed_cores.xlsx
+```
+Reformat combined census and treering data dataframe to comply with format required for including time explicitly, which includes year by site and year by plot interaction terms.
+```{r}
+#recreate data frame to be compliant with structure needed to include time as a variable (50 years)
+ids.rep.new.diss <- data.frame(matrix(NA,nrow=1,ncol=92))                    
+colnames(ids.rep.new.diss) <- colnames(combined.diss[1:92])
+for(i in 1:nrow(combined.diss)){
+  ids.rep.diss <- combined.diss[rep(i,times=50),1:92]
+  ids.rep.new.diss <- rbind(ids.rep.new.diss,ids.rep.diss)
+}
+#remove row of NAs
+combined.ids.diss <- ids.rep.new.diss[2:nrow(ids.rep.new.diss),]
 
+#transpose and concatenate increments for all trees
+inc.new.diss <- vector("numeric",length=0)
+for(i in 1:nrow(combined.diss)){
+  inc.diss <- as.matrix(combined.diss[i,93:142])
+  inc.new.diss <- as.numeric(c(inc.new.diss,inc.diss))
+}
+
+#add ring increments
+combined.ids.incs.diss <- cbind(combined.ids.diss,inc.new.diss)
+
+#rename inc variable
+setnames(combined.ids.incs.diss,old='inc.new.diss',new='INCREMENT')
+
+YEAR <- seq(1964,2013,1)
+YEAR <- rep(YEAR,1415)
+
+#final version with 50yrs of growth
+combined.all.diss <- cbind(combined.ids.incs.diss,YEAR)
 ```
 
 ```{r}
-#Example creating interaction term
-Y = seq(1,10)
-L = as.vector(x=c("A","B","C"))
-YL = expand.grid(Y,L) #creates matrix of all combinations as characters
-YL.vector = as.vector(paste0(YL$Var1,YL$Var2)) #vector of all combinations as characters
-#Can now use this to create interaction term for years x plot and years x site
+#creating interaction terms for JAGS
+#Site by Year interaction, n = 400, 8 sites, 50 years each
+sy <- as.numeric(as.factor(paste0(as.character(combined.all.diss$SITE),
+                                  as.character(combined.all.diss$YEAR))))
+#Plot by Year interaction, n = 2600, 8 sites, 6-7 plots each
+spy <- sp <- as.numeric(as.factor(paste0(as.character(combined.all.diss$SITE),
+                                  as.character(combined.all.diss$PLOT),
+                                  as.character(combined.all.diss$YEAR))))
+
+
+
+
+# #just look at AGU code for example of how to make unique IDs
+# #Example creating interaction term
+# Y = seq(1,10)
+# L = as.vector(x=c("A","B","C"))
+# YL = expand.grid(Y,L) #creates matrix of all combinations as characters
+# YL.vector = as.vector(paste0(YL$Var1,YL$Var2)) #vector of all combinations as characters
+# #Can now use this to create interaction term for years x plot and years x site
 
 ```
 
