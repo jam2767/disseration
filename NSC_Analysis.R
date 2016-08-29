@@ -22,7 +22,7 @@ cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2",
 adult <- read.csv("/Users/Josh/Dropbox/Dietze_Lab_Undergrads/JAM - Xsite/Field Data Entry/Data Sheets/Adult_Field_Data_JAM_MCD.csv")
 
 #read NSC tracking data - contains sample mass used for assays
-mass <- read.csv("/Users/Josh/Dropbox/NSC_Runs/All/Tracking/NSC_Mass_All_6272016.csv")
+mass <- read.csv("/Users/Josh/Dropbox/NSC_Runs/All/Tracking/NSC_Mass_All_8172016.csv")
 
 #all files starch files in one directory
 data.dir.starch = "/Users/Josh/Dropbox/NSC_Runs/All/Starch"
@@ -239,6 +239,7 @@ colnames(nsc.adult.total.mass)[116] <- "starch.mg.g"
 
 #remove NAs for total.nsc
 nsc.adult.total.mass <- nsc.adult.total.mass[which(nsc.adult.total.mass$total.nsc != "NA"),]
+#write.csv(nsc.adult.total.mass, file = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Data/nsc.adult.total.mass.csv")
 #nsc.adult.total.mass$Spp <- as.factor(nsc.adult.total.mass$Spp)
 ########## Total NSC Exploratory Analysis ###########
 #####################################################
@@ -251,6 +252,7 @@ Early.Hardwood <- c(
               which(nsc.adult.total.mass$Spp == "BELE"),
               which(nsc.adult.total.mass$Spp == "BEPA"),
               which(nsc.adult.total.mass$Spp == "BETUL"),
+              which(nsc.adult.total.mass$Spp == "COFL2"),
               which(nsc.adult.total.mass$Spp == "JUCI"),
               which(nsc.adult.total.mass$Spp == "JUNI"),
               which(nsc.adult.total.mass$Spp == "LIST2"),
@@ -277,13 +279,20 @@ Mid.Hardwood <- c(
                   which(nsc.adult.total.mass$Spp == "CECA4"),
                   which(nsc.adult.total.mass$Spp == "MAAC"),
                   which(nsc.adult.total.mass$Spp == "MAFR"),
+                  which(nsc.adult.total.mass$Spp == "MAVI2"),
+                  which(nsc.adult.total.mass$Spp == "PLOC"),
                   which(nsc.adult.total.mass$Spp == "QUAL"),
                   which(nsc.adult.total.mass$Spp == "QUCO2"),
+                  which(nsc.adult.total.mass$Spp == "QUERC"),
                   which(nsc.adult.total.mass$Spp == "QUIM"),
+                  which(nsc.adult.total.mass$Spp == "QULA2"),
+                  which(nsc.adult.total.mass$Spp == "QULA3"),
                   which(nsc.adult.total.mass$Spp == "QUMO4"),
                   which(nsc.adult.total.mass$Spp == "QUMU"),
+                  which(nsc.adult.total.mass$Spp == "QUNI"),
                   which(nsc.adult.total.mass$Spp == "QUPH"),
                   which(nsc.adult.total.mass$Spp == "QURU"),
+                  which(nsc.adult.total.mass$Spp == "QUST"),
                   which(nsc.adult.total.mass$Spp == "QUVE"),
                   which(nsc.adult.total.mass$Spp == "QUVI"),
                   which(nsc.adult.total.mass$Spp == "ULAM")
@@ -292,7 +301,9 @@ Mid.Hardwood <- c(
 Late.Hardwood <- c(which(nsc.adult.total.mass$Spp == "ACFL"),
                    which(nsc.adult.total.mass$Spp == "ACSA3"),
                    which(nsc.adult.total.mass$Spp == "AEGL"),
+                   which(nsc.adult.total.mass$Spp == "DIVI5"),
                    which(nsc.adult.total.mass$Spp == "FAGR"),
+                   which(nsc.adult.total.mass$Spp == "MAGR4"),
                    which(nsc.adult.total.mass$Spp == "NYSY"),
                    which(nsc.adult.total.mass$Spp == "OXAR"),
                    which(nsc.adult.total.mass$Spp == "TIAM")
@@ -313,7 +324,8 @@ Early.Conifer <- c(
               which(nsc.adult.total.mass$Spp == "PIST"),#
               which(nsc.adult.total.mass$Spp == "PIVI"), #should be PIVI2 for Virginia Pine
               which(nsc.adult.total.mass$Spp == "PIRE"),#
-              which(nsc.adult.total.mass$Spp == "PIRI")
+              which(nsc.adult.total.mass$Spp == "PIRI"),
+              which(nsc.adult.total.mass$Spp == "PITA")
               ) #6 Spp
 
 #Mid.Conifer <- c()
@@ -383,7 +395,7 @@ nsc.adult.total.mass.conif$Spp <- as.character(nsc.adult.total.mass.conif$Spp)
 #relevel factors
 nsc.adult.total.mass.conif$Spp <- factor(nsc.adult.total.mass.conif$Spp, 
                               levels = c("ABBA","JUVI","PIPA2","PIST","PIVI","PIRE",
-                                         "PIRI","LALA","PIGL","PIMA","PIRU",
+                                         "PIRI","PITA","LALA","PIGL","PIMA","PIRU",
                                          "THOC2","TSCA"), ordered = TRUE)
 #########################
 # ALL Conifer ggplot boxplot
@@ -406,6 +418,15 @@ ggplot(nsc.adult.total.mass.conif, aes(x = Spp, y=total.nsc, fill=PFT)) +
                    yend=med.late.conif),linetype="longdash",color="darkgreen") +
   scale_fill_manual(values=rev(cbPalette))
 
+#species anova within all conifers
+spp.conif.alive.lm <- lm(total.nsc ~ Spp, data = nsc.adult.total.mass.conif.alive)
+anova(spp.conif.alive.lm)
+summary(spp.conif.alive.lm)
+
+#pft anova within all hardwoods
+pft.conif.alive.lm <- lm(total.nsc ~ PFT, data = nsc.adult.total.mass.conif.alive)
+anova(pft.conif.alive.lm)
+summary(pft.conif.alive.lm)
 
 #ALIVE Conifer ggplot boxplot
 nsc.adult.total.mass.alive <- which(nsc.adult.total.mass$Mortality14 == "A")
