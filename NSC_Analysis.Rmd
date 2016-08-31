@@ -1,0 +1,15 @@
+Eastern US NSC Analysis
+========================================================
+
+This is the analysis for chapter 2 of my dissertation and for the first paper on nonstructural carbohydrates in eastern US forests.
+
+```{r}
+summary(cars)
+```
+
+You can also embed plots, for example:
+
+```{r fig.width=7, fig.height=6}
+plot(cars)
+```
+
