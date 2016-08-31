@@ -439,7 +439,11 @@ nsc.adult.total.mass$wood[ring.porous] <- "ring.porous"
 nsc.adult.total.mass$wood[diffuse.porous] <- "diffuse.porous"
 nsc.adult.total.mass$wood[semiring.porous] <- "semiring.porous"
 
-
+#Relevel Factors
+nsc.adult.total.mass$wood <- factor(nsc.adult.total.mass$wood, 
+                                    levels = c("large.resin","small.resin","no.resin",
+                                               "ring.porous","semiring.porous",
+                                               "diffuse.porous"), ordered = TRUE)
 
 #make PFT factor
 #nsc.adult.total.mass$PFT <- as.factor(nsc.adult.total.mass$PFT)
@@ -500,12 +504,12 @@ nsc.adult.total.mass.conif$Spp <- factor(nsc.adult.total.mass.conif$Spp,
 #########################
 #Wood anatomy ggplot boxplot
 ggplot(nsc.adult.total.mass, aes(x = wood, y = total.nsc, fill = wood)) +
-  geom_boxplot() + theme(axis.text.x = element_text(angle=90,hjust=1,size=16)) +
+  geom_boxplot() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
   theme(axis.text.y = element_text(size=16)) +
   theme(axis.title.x = element_text(size=20)) +
   theme(axis.title.y = element_text(size=20)) +
   theme(legend.text = element_text(size=16)) +
-  stat_summary(fun.data = give.n, geom= "text", aes(y= 155)) + 
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 160)) + 
   ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Wood Anatomy") + ggtitle("All Wood Types") +
 #   geom_segment(aes(x=0,y=med.early.conif,xend=7.5,
 #                    yend=med.early.conif),linetype="longdash",color="indianred4") +
