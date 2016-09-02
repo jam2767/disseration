@@ -346,6 +346,274 @@ nsc.adult.total.mass <- nsc.adult.total.mass[which(nsc.adult.total.mass$total.ns
 ### END combine sugar and starch ###
 ```
 
+Adding Plant Functional Type (PFT) and Wood Anatomy as covariates for analysis. USDA PLANTS database and USFS Silvics of North America manual used for PFT determination.
+
+```{r}
+### Adding PFT and Wood Anatomy covariates ###
+
+##adding PFTs
+###Reference: http://plants.usda.gov/java/
+### Also USFS silvics manual: https://www.na.fs.fed.us/spfo/pubs/silvics_manual/table_of_contents.htm
+
+# Hardwoods
+Early.Hardwood <- c(
+                    which(nsc.adult.total.mass$Spp == "ACPE"),#
+                    which(nsc.adult.total.mass$Spp == "AIAL"),#
+                    which(nsc.adult.total.mass$Spp == "BEAL2"),#
+                    which(nsc.adult.total.mass$Spp == "BELE"),#
+                    which(nsc.adult.total.mass$Spp == "BEPA"),#
+                    which(nsc.adult.total.mass$Spp == "BETUL"),#
+                    which(nsc.adult.total.mass$Spp == "COFL2"),#
+                    which(nsc.adult.total.mass$Spp == "JUCI"),#
+                    which(nsc.adult.total.mass$Spp == "JUNI"),#
+                    which(nsc.adult.total.mass$Spp == "LIST2"),#
+                    which(nsc.adult.total.mass$Spp == "LITU"),#
+                    which(nsc.adult.total.mass$Spp == "POGR4"),#
+                    which(nsc.adult.total.mass$Spp == "POTR5"),#
+                    which(nsc.adult.total.mass$Spp == "PRSE2"),#
+                    which(nsc.adult.total.mass$Spp == "ROPS"),#
+                    which(nsc.adult.total.mass$Spp == "SAAL5")#
+                    ) #16 Spp
+
+Mid.Hardwood <- c(
+                  which(nsc.adult.total.mass$Spp == "FRAM2"),#
+                  which(nsc.adult.total.mass$Spp == "FRNI"),#
+                  which(nsc.adult.total.mass$Spp == "FRQU"),#
+                  which(nsc.adult.total.mass$Spp == "ACNE2"),#
+                  which(nsc.adult.total.mass$Spp == "ACRU"),#
+                  which(nsc.adult.total.mass$Spp == "CACA18"),#
+                  which(nsc.adult.total.mass$Spp == "CACO15"),#
+                  which(nsc.adult.total.mass$Spp == "CAGL8"),#
+                  which(nsc.adult.total.mass$Spp == "CALA21"),#
+                  which(nsc.adult.total.mass$Spp == "CAOV2"),#
+                  which(nsc.adult.total.mass$Spp == "CATO6"),#
+                  which(nsc.adult.total.mass$Spp == "CECA4"),#
+                  which(nsc.adult.total.mass$Spp == "MAAC"),#
+                  which(nsc.adult.total.mass$Spp == "MAFR"),#
+                  which(nsc.adult.total.mass$Spp == "MAVI2"),#
+                  which(nsc.adult.total.mass$Spp == "PLOC"),#
+                  which(nsc.adult.total.mass$Spp == "QUAL"),#
+                  which(nsc.adult.total.mass$Spp == "QUCO2"),#
+                  which(nsc.adult.total.mass$Spp == "QUERC"),#
+                  which(nsc.adult.total.mass$Spp == "QUIM"),#
+                  which(nsc.adult.total.mass$Spp == "QULA2"),#
+                  which(nsc.adult.total.mass$Spp == "QULA3"),#
+                  which(nsc.adult.total.mass$Spp == "QUMO4"),#
+                  which(nsc.adult.total.mass$Spp == "QUMU"),#
+                  which(nsc.adult.total.mass$Spp == "QUNI"),#
+                  which(nsc.adult.total.mass$Spp == "QUPH"),#
+                  which(nsc.adult.total.mass$Spp == "QURU"),#
+                  which(nsc.adult.total.mass$Spp == "QUST"),#
+                  which(nsc.adult.total.mass$Spp == "QUVE"),#
+                  which(nsc.adult.total.mass$Spp == "QUVI"),#
+                  which(nsc.adult.total.mass$Spp == "ULAM")#
+                  ) #31 Spp
+
+Late.Hardwood <- c(
+                  which(nsc.adult.total.mass$Spp == "ACFL"),#
+                  which(nsc.adult.total.mass$Spp == "ACSA3"),#
+                  which(nsc.adult.total.mass$Spp == "AEGL"),#
+                  which(nsc.adult.total.mass$Spp == "DIVI5"),#
+                  which(nsc.adult.total.mass$Spp == "FAGR"),#
+                  which(nsc.adult.total.mass$Spp == "MAGR4"),#
+                  which(nsc.adult.total.mass$Spp == "NYSY"),#
+                  which(nsc.adult.total.mass$Spp == "OXAR"),#
+                  which(nsc.adult.total.mass$Spp == "TIAM")#
+                  ) #9 Spp
+
+# set PFTs
+nsc.adult.total.mass$PFT <- NA
+nsc.adult.total.mass$PFT[Early.Hardwood] <- "Early.Hardwood"
+nsc.adult.total.mass$PFT[Mid.Hardwood] <- "Mid.Hardwood"
+nsc.adult.total.mass$PFT[Late.Hardwood] <- "Late.Hardwood"
+
+# Conifers
+Early.Conifer <- c(
+                  which(nsc.adult.total.mass$Spp == "ABBA"),#
+                  which(nsc.adult.total.mass$Spp == "JUVI"),#
+                  which(nsc.adult.total.mass$Spp == "PIPA2"),#
+                  which(nsc.adult.total.mass$Spp == "PIST"),#
+                  which(nsc.adult.total.mass$Spp == "PIVI"),##should be PIVI2 for Virginia Pine
+                  which(nsc.adult.total.mass$Spp == "PIRE"),#
+                  which(nsc.adult.total.mass$Spp == "PIRI"),#
+                  which(nsc.adult.total.mass$Spp == "PITA")#
+                  ) #8 Spp
+
+Late.Conifer <- c(
+                  which(nsc.adult.total.mass$Spp == "LALA"),#
+                  which(nsc.adult.total.mass$Spp == "PIGL"),#
+                  which(nsc.adult.total.mass$Spp == "PIMA"),#
+                  which(nsc.adult.total.mass$Spp == "PIRU"),#
+                  which(nsc.adult.total.mass$Spp == "THOC2"),#
+                  which(nsc.adult.total.mass$Spp == "TSCA")#
+                  ) #6 Spp
+
+nsc.adult.total.mass$PFT[Early.Conifer] <- "Early.Conifer"
+nsc.adult.total.mass$PFT[Late.Conifer] <- "Late.Conifer"
+
+# adding wood anatomy
+###Reference http://www.wood-database.com/
+###Disagree with reference for hickory classification - put all as semi-ring porous. conferred with Christy
+
+large.resin <- c(
+                which(nsc.adult.total.mass$Spp == "PIPA2"),
+                which(nsc.adult.total.mass$Spp == "PIST"),
+                which(nsc.adult.total.mass$Spp == "PIVI"), #should be PIVI2 for Virginia Pine
+                which(nsc.adult.total.mass$Spp == "PIRE"),
+                which(nsc.adult.total.mass$Spp == "PIRI"),
+                which(nsc.adult.total.mass$Spp == "PITA")
+                )
+
+small.resin <- c(
+                which(nsc.adult.total.mass$Spp == "LALA"),
+                which(nsc.adult.total.mass$Spp == "PIGL"),
+                which(nsc.adult.total.mass$Spp == "PIMA"),
+                which(nsc.adult.total.mass$Spp == "PIRU")
+                )
+
+no.resin <- c(
+              which(nsc.adult.total.mass$Spp == "ABBA"),
+              which(nsc.adult.total.mass$Spp == "JUVI"),
+              which(nsc.adult.total.mass$Spp == "THOC2"),
+              which(nsc.adult.total.mass$Spp == "TSCA")
+              )
+
+ring.porous <- c(
+                which(nsc.adult.total.mass$Spp == "AIAL"),              
+                which(nsc.adult.total.mass$Spp == "FRAM2"),
+                which(nsc.adult.total.mass$Spp == "FRNI"),
+                which(nsc.adult.total.mass$Spp == "FRQU"),
+                which(nsc.adult.total.mass$Spp == "QUAL"),
+                which(nsc.adult.total.mass$Spp == "QUCO2"),
+                which(nsc.adult.total.mass$Spp == "QUERC"),
+                which(nsc.adult.total.mass$Spp == "QUIM"),
+                which(nsc.adult.total.mass$Spp == "QULA2"),
+                which(nsc.adult.total.mass$Spp == "QULA3"),
+                which(nsc.adult.total.mass$Spp == "QUMO4"),
+                which(nsc.adult.total.mass$Spp == "QUMU"),
+                which(nsc.adult.total.mass$Spp == "QUNI"),
+                which(nsc.adult.total.mass$Spp == "QUPH"),
+                which(nsc.adult.total.mass$Spp == "QURU"),
+                which(nsc.adult.total.mass$Spp == "QUST"),
+                which(nsc.adult.total.mass$Spp == "QUVE"),
+                which(nsc.adult.total.mass$Spp == "QUVI"),
+                which(nsc.adult.total.mass$Spp == "ROPS"),
+                which(nsc.adult.total.mass$Spp == "SAAL5")
+                )
+
+diffuse.porous <- c(
+                    which(nsc.adult.total.mass$Spp == "ACNE2"),
+                    which(nsc.adult.total.mass$Spp == "ACPE"),
+                    which(nsc.adult.total.mass$Spp == "ACRU"),
+                    which(nsc.adult.total.mass$Spp == "ACSA3"),
+                    which(nsc.adult.total.mass$Spp == "AEGL"),
+                    which(nsc.adult.total.mass$Spp == "BEAL2"),
+                    which(nsc.adult.total.mass$Spp == "BELE"),
+                    which(nsc.adult.total.mass$Spp == "BEPA"),
+                    which(nsc.adult.total.mass$Spp == "BETUL"),
+                    which(nsc.adult.total.mass$Spp == "CACA18"),
+                    which(nsc.adult.total.mass$Spp == "COFL2"),
+                    which(nsc.adult.total.mass$Spp == "LIST2"),
+                    which(nsc.adult.total.mass$Spp == "LITU"),
+                    which(nsc.adult.total.mass$Spp == "MAAC"),
+                    which(nsc.adult.total.mass$Spp == "MAFR"),
+                    which(nsc.adult.total.mass$Spp == "MAVI2"),                  
+                    which(nsc.adult.total.mass$Spp == "PLOC"),
+                    which(nsc.adult.total.mass$Spp == "FAGR"),
+                    which(nsc.adult.total.mass$Spp == "MAGR4"),
+                    which(nsc.adult.total.mass$Spp == "NYSY"),
+                    which(nsc.adult.total.mass$Spp == "OXAR"),
+                    which(nsc.adult.total.mass$Spp == "TIAM"),
+                    which(nsc.adult.total.mass$Spp == "POGR4"),
+                    which(nsc.adult.total.mass$Spp == "POTR5"),
+                    which(nsc.adult.total.mass$Spp == "PRSE2")               
+                    )
+
+semiring.porous <- c(
+                    which(nsc.adult.total.mass$Spp == "CACO15"),
+                    which(nsc.adult.total.mass$Spp == "CAGL8"),
+                    which(nsc.adult.total.mass$Spp == "CALA21"),
+                    which(nsc.adult.total.mass$Spp == "CAOV2"),
+                    which(nsc.adult.total.mass$Spp == "CATO6"),
+                    which(nsc.adult.total.mass$Spp == "CECA4"),
+                    which(nsc.adult.total.mass$Spp == "DIVI5"), #bordering diffuse porous
+                    which(nsc.adult.total.mass$Spp == "JUCI"),
+                    which(nsc.adult.total.mass$Spp == "JUNI"),
+                    which(nsc.adult.total.mass$Spp == "ULAM")                                   
+                    )
+
+#set anatomy
+nsc.adult.total.mass$wood <- NA
+nsc.adult.total.mass$wood[large.resin] <- "large.resin"
+nsc.adult.total.mass$wood[small.resin] <- "small.resin"
+nsc.adult.total.mass$wood[no.resin] <- "no.resin"
+nsc.adult.total.mass$wood[ring.porous] <- "ring.porous"
+nsc.adult.total.mass$wood[diffuse.porous] <- "diffuse.porous"
+nsc.adult.total.mass$wood[semiring.porous] <- "semiring.porous"
+
+#Relevel Factors
+nsc.adult.total.mass$wood <- factor(nsc.adult.total.mass$wood, 
+                                    levels = c("large.resin","small.resin","no.resin",
+                                               "ring.porous","semiring.porous",
+                                               "diffuse.porous"), ordered = TRUE)
+
+
+#only hardwood dataframe
+early.h <- which(nsc.adult.total.mass$PFT == "Early.Hardwood")
+mid.h <- which(nsc.adult.total.mass$PFT == "Mid.Hardwood")
+late.h <- which(nsc.adult.total.mass$PFT == "Late.Hardwood")
+
+nsc.adult.total.mass.hard <- rbind(
+                             nsc.adult.total.mass[early.h,],
+                             nsc.adult.total.mass[mid.h,],
+                             nsc.adult.total.mass[late.h,]
+                             )
+#drop unused hardwood factor levels
+# nsc.adult.total.mass.hard$Spp <- droplevels(nsc.adult.total.mass.hard$Spp)
+# nsc.adult.total.mass.hard$PFT <- droplevels(nsc.adult.total.mass.hard$PFT)
+
+nsc.adult.total.mass.hard$Spp <- as.character(nsc.adult.total.mass.hard$Spp)
+
+nsc.adult.total.mass.hard$Spp <- factor(nsc.adult.total.mass.hard$Spp, 
+                  levels = c("ACPE","AIAL","BEAL2","BELE",
+                  "BEPA","BETUL","JUCI","JUNI","LIST2","LITU","POGR4","POTR5",
+                  "PRSE2","ROPS","SAAL5","FRAM2","FRNI","FRQU","ACNE2",
+                  "ACRU","CACA18","CACO15","CAGL8","CALA21","CAOV2",
+                  "CATO6","CECA4","MAAC","MAFR","QUAL","QUCO2","QUIM",
+                  "QUMO4","QUMU","QUPH","QURU","QUVE","QUVI","ULAM","ACFL",
+                  "ACSA3","AEGL","FAGR","NYSY","OXAR","TIAM"), ordered = TRUE)
+
+#levels(nsc.adult.total.mass.hard$Spp)
+#levels(nsc.adult.total.mass.hard$PFT) <- c("Early.Hardwood","Mid.Hardwood","Late.Hardwood")
+#levels(nsc.adult.total.mass.hard$PFT)
+
+#nsc.adult.total.mass.hard <- nsc.adult.total.mass.hard[order(nsc.adult.total.mass.hard$Spp),]
+#nsc.adult.total.mass.hard <- nsc.adult.total.mass.hard[order(nsc.adult.total.mass.hard$PFT),]
+
+#only conifer dataframe
+early.c <- which(nsc.adult.total.mass$PFT == "Early.Conifer")
+late.c <- which(nsc.adult.total.mass$PFT == "Late.Conifer")
+
+nsc.adult.total.mass.conif <- rbind(
+  nsc.adult.total.mass[early.c,],
+  nsc.adult.total.mass[late.c,]
+)
+
+#drop unused conifer factors
+# nsc.adult.total.mass.conif$Spp <- droplevels(nsc.adult.total.mass.conif$Spp)
+# nsc.adult.total.mass.conif$PFT <- droplevels(nsc.adult.total.mass.conif$PFT)
+
+nsc.adult.total.mass.conif$Spp <- as.character(nsc.adult.total.mass.conif$Spp)
+
+#relevel factors
+nsc.adult.total.mass.conif$Spp <- factor(nsc.adult.total.mass.conif$Spp, 
+                              levels = c("ABBA","JUVI","PIPA2","PIST","PIVI","PIRE",
+                                         "PIRI","PITA","LALA","PIGL","PIMA","PIRU",
+                                         "THOC2","TSCA"), ordered = TRUE)
+
+
+```
+
 You can also embed plots, for example:
 
 ```{r fig.width=7, fig.height=6}
