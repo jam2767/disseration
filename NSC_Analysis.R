@@ -24,7 +24,7 @@ adult <- read.csv("/Users/Josh/Dropbox/Dietze_Lab_Undergrads/JAM - Xsite/Field D
 #read NSC tracking data - contains sample mass used for assays
 mass <- read.csv("/Users/Josh/Dropbox/NSC_Runs/All/Tracking/NSC_Mass_All_8172016.csv")
 
-#all files starch files in one directory
+#all sugar and starch files in one directory each
 data.dir.starch = "/Users/Josh/Dropbox/NSC_Runs/All/Starch"
 data.dir.sugar = "/Users/Josh/Dropbox/NSC_Runs/All/Sugar"
 
