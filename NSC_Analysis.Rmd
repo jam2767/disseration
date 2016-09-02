@@ -38,7 +38,8 @@ data.dir.sugar = "/Users/Josh/Dropbox/NSC_Runs/All/Sugar"
 ```
 
 ```{r}
-#Process STARCH data files
+### Process STARCH data files ###
+
 #starch files
 files.starch <- dir(data.dir.starch,"Xsite")
 baseline.files.starch <- files.starch[grep(pattern = "Baseline",files.starch)]
@@ -65,20 +66,20 @@ HK.starch.id <- unique(HK.starch$Sample)
 
 # Check that samples finished converting all Starch. If not, flag for reanalysis
 dif.HK.starch <- tapply(X = as.numeric(HK.starch$Meas.), INDEX = HK.starch$Sample, FUN = diff)
-IDs <- as.vector(attr(dif.HK.starch,"dimnames"))
-IDs <- unlist(IDs)
+IDs.starch <- as.vector(attr(dif.HK.starch,"dimnames"))
+IDs.starch <- unlist(IDs)
 
-HK.nofinish <- list()
+starch.nofinish <- list()
 for(i in 1:length(dif.HK.starch)){
 if ('0' %in% dif.HK.starch[[i]]) { #simplest check: time when absorbance not increasing?
   print("Sample Finished")
   } else {
-  HK.nofinish[[i]] <- IDs[[i]] #ID of sample that didn't finish
+  starch.nofinish[[i]] <- IDs.starch[[i]] #ID of sample that didn't finish
   }
 }
 
-HK.nofinish.ids <- unlist(HK.nofinish) #remove null values
-write.csv(HK.nofinish.ids, file = "unfinished_starch.csv") #save file to identify repeats
+starch.nofinish.ids <- unlist(starch.nofinish) #remove null values
+write.csv(starch.nofinish.ids, file = "unfinished_starch.csv") #save file to identify repeats
 
 #### right now still using values for samples that didn't finish
 
@@ -129,8 +130,197 @@ nsc.adult.starch.mass <- data.frame(nsc.adult.dat.starch,mass[matches.mass.starc
 #mass column is Mass_mg
 #calculate concentrations based on mass of sample used
 nsc.adult.starch.mass$ug.sample <- nsc.adult.starch.mass$sample.conc.starch / 40 * 840 #micrograms/sample 40 ul drawn from 840 ul total volume of Starch Extraction
+
+##TODO subsample for files that contain samples with different volume than 840 ul because they needed their ph fixed##
 nsc.adult.starch.mass$Starch.mg.g <- nsc.adult.starch.mass$ug.sample / nsc.adult.starch.mass$Mass_mg #mg/gram of sample
+
+### END Process STARCH data files ###
 ```
+
+```{r}
+### Process SUGAR data files ###
+
+#Sugar Files
+files.sugar <- dir(data.dir.sugar,"Xsite")
+baseline.files.sugar <- files.sugar[grep(pattern = "Baseline", files.sugar)]
+glucose.files.sugar <- files.sugar[grep(pattern = "Glucose", files.sugar)]
+fructose.files.sugar <- files.sugar[grep(pattern = "Fructose", files.sugar)]
+sucrose.files.sugar <- files.sugar[grep(pattern = "Sucrose", files.sugar)]
+
+baseline.sugar = NULL
+for(i in seq_along(baseline.files.sugar)){
+  tmp <- read.csv(file.path(data.dir.sugar,baseline.files.sugar[i]),sep="",colClasses="character")
+  baseline.sugar = rbind(baseline.sugar,tmp)
+}
+# mean.baseline.sugar <- tapply(X = as.numeric(baseline.sugar$Meas.), INDEX = baseline.sugar$Sample, FUN = mean) #using mean of baseline - used for analysis through 9/1/2016, switching to last for future analysis. Last represents most accurate starting point for subtracting from sample after HK added.
+last.baseline.sugar <- tapply(X = as.numeric(baseline.sugar$Meas.), INDEX = baseline.sugar$Sample, FUN = last)
+baseline.sugar.id <- unique(baseline.sugar$Sample)
+
+#these files contain a run after Hexokinase is added
+#measures sugar content via breakdown of glucose & production of NADPH
+glucose.sugar = NULL
+for(i in seq_along(glucose.files.sugar)){
+  tmp.glucose <- read.csv(file.path(data.dir.sugar,glucose.files.sugar[i]),sep="",colClasses="character")
+  glucose.sugar = rbind(glucose.sugar,tmp.glucose)
+}
+max.glucose.sugar <- tapply(X = as.numeric(glucose.sugar$Meas.), INDEX = glucose.sugar$Sample, FUN = max)
+glucose.sugar.id <- unique(glucose.sugar$Sample)
+
+# Check that samples finished converting all glucose. If not, flag for reanalysis
+dif.HK.sugar <- tapply(X = as.numeric(glucose.sugar$Meas.), INDEX = glucose.sugar$Sample, FUN = diff)
+IDs.gluc <- as.vector(attr(dif.HK.sugar,"dimnames"))
+IDs.gluc <- unlist(IDs.gluc)
+
+gluc.nofinish <- list()
+for(i in 1:length(dif.HK.sugar)){
+if ('0' %in% dif.HK.sugar[[i]]) { #simplest check: time when absorbance not increasing?
+  print("Sample Finished")
+  } else {
+  gluc.nofinish[[i]] <- IDs.gluc[[i]] #ID of sample that didn't finish
+  }
+}
+
+gluc.nofinish.ids <- unlist(gluc.nofinish) #remove null values
+write.csv(gluc.nofinish.ids, file = "unfinished_glucose.csv") #save file to identify repeats
+
+
+#difference between baseline and HK (glucose content)
+total.glucose <- max.glucose.sugar-last.baseline.sugar #old method used mean.baseline.sugar
+
+#these files contain  a run after hexokinase and PGI have been added
+#measures sugar content via breakdown of fructose & production of NADPH
+fructose.sugar = NULL
+for(i in seq_along(fructose.files.sugar)){
+  tmp.fructose <- read.csv(file.path(data.dir.sugar,fructose.files.sugar[i]),sep="",colClasses="character")
+  fructose.sugar = rbind(fructose.sugar,tmp.fructose)
+}
+max.fructose.sugar <- tapply(X = as.numeric(fructose.sugar$Meas.), INDEX = fructose.sugar$Sample, FUN = max)
+fructose.sugar.id <- unique(fructose.sugar$Sample)
+
+#difference between HK and PGI (Fructose content)
+last.glucose.sugar <- tapply(X = as.numeric(glucose.sugar$Meas.), INDEX = glucose.sugar$Sample, FUN = last)
+
+# Check that samples finished converting all fructose. If not, flag for reanalysis
+dif.PGI.sugar <- tapply(X = as.numeric(fructose.sugar$Meas.), INDEX = fructose.sugar$Sample, FUN = diff)
+IDs.fruc <- as.vector(attr(dif.PGI.sugar,"dimnames"))
+IDs.fruc <- unlist(IDs.fruc)
+
+fruc.nofinish <- list()
+for(i in 1:length(dif.PGI.sugar)){
+if ('0' %in% dif.PGI.sugar[[i]]) { #simplest check: time when absorbance not increasing?
+  print("Sample Finished")
+  } else {
+  fruc.nofinish[[i]] <- IDs.fruc[[i]] #ID of sample that didn't finish
+  }
+}
+
+fruc.nofinish.ids <- unlist(fruc.nofinish) #remove null values
+write.csv(fruc.nofinish.ids, file = "unfinished_fructose.csv") #save file to identify repeats
+
+
+total.fructose <- max.fructose.sugar-last.glucose.sugar
+
+#these files contain  a run after hexokinase, PGI and Invertase have been added
+#measures sugar content via breakdown of sucrose & production of NADPH
+sucrose.sugar = NULL
+for(i in seq_along(sucrose.files.sugar)){
+  tmp.sucrose <- read.csv(file.path(data.dir.sugar,sucrose.files.sugar[i]),sep="",colClasses="character")
+  sucrose.sugar = rbind(sucrose.sugar,tmp.sucrose)
+}
+max.sucrose.sugar <- tapply(X = as.numeric(sucrose.sugar$Meas.), INDEX = sucrose.sugar$Sample, FUN = max)
+sucrose.sugar.id <- unique(sucrose.sugar$Sample)
+
+# Check that samples finished converting all sucrose. If not, flag for reanalysis
+dif.INV.sugar <- tapply(X = as.numeric(sucrose.sugar$Meas.), INDEX = sucrose.sugar$Sample, FUN = diff)
+IDs.sucr <- as.vector(attr(dif.INV.sugar,"dimnames"))
+IDs.sucr <- unlist(IDs.sucr)
+
+sucr.nofinish <- list()
+for(i in 1:length(dif.INV.sugar)){
+if ('0' %in% dif.INV.sugar[[i]]) { #simplest check: time when absorbance not increasing?
+  print("Sample Finished")
+  } else {
+  sucr.nofinish[[i]] <- IDs.sucr[[i]] #ID of sample that didn't finish
+  }
+}
+
+sucr.nofinish.ids <- unlist(sucr.nofinish) #remove null values
+write.csv(sucr.nofinish.ids, file = "unfinished_sucrose.csv") #save file to identify repeats
+
+
+#difference between HK and PGI (Fructose content)
+last.fructose.sugar <- tapply(X = as.numeric(fructose.sugar$Meas.), INDEX = fructose.sugar$Sample, FUN = last)
+total.sucrose <- max.sucrose.sugar-last.fructose.sugar
+
+##TODO use each standard curve for each individual plate
+##currenlty only using one standard curve
+#create standard curve equation
+
+standard.abs.sugar <- c(mean(total.glucose[3:4]),mean(total.glucose[1:2]),
+                         mean(total.glucose[5:6]),mean(total.glucose[7:8]))
+#standard.conc.starch <- c(0,0.5,1.0,1.5) #standard glucose concentrations in mmol for plate 2
+standard.conc.sugar <- c(0,20,40,60) #standard concentrations * 40 uL
+standard.lm.sugar <- lm(standard.abs.sugar ~ standard.conc.sugar)
+summary(standard.lm.sugar) #slope, intercept, R^2
+
+#visualize standard curve
+plot(standard.conc.sugar,standard.abs.sugar)
+abline(standard.lm.sugar)
+
+#standard curve equation - calculate mmol glucose equivalents of samples
+sample.conc.glucose <- ((total.glucose) - standard.lm.sugar$coefficients[1])/standard.lm.sugar$coefficients[2] #only 20ul of sample was used, compared to 40ul of standard
+sample.conc.glucose <- as.matrix(sample.conc.glucose)
+sample.ids.glucose <- strsplit(row.names(sample.conc.glucose),"_")
+
+sample.conc.fructose <- ((total.fructose) - standard.lm.sugar$coefficients[1])/standard.lm.sugar$coefficients[2] #only 20ul of sample was used, compared to 40ul of standard
+sample.conc.fructose <- as.matrix(sample.conc.fructose)
+sample.ids.fructose <- strsplit(row.names(sample.conc.fructose),"_")
+
+sample.conc.sucrose <- ((total.sucrose) - standard.lm.sugar$coefficients[1])/standard.lm.sugar$coefficients[2] #only 20ul of sample was used, compared to 40ul of standard
+sample.conc.sucrose <- as.matrix(sample.conc.sucrose)
+sample.ids.sucrose <- strsplit(row.names(sample.conc.sucrose),"_")
+
+###create ID to match Core_ID in adult census data
+core.id.sugar <- array()
+for(i in 1:length(sample.conc.glucose)){
+  core.id.sugar[i] <- paste0(sample.ids.glucose[[i]][1],
+                              sample.ids.glucose[[i]][2],
+                              sample.ids.glucose[[i]][3])
+}
+
+##bind core.id to sample matrix
+sample.sugar <- data.frame(core.id.sugar,sample.conc.glucose,sample.conc.fructose,sample.conc.sucrose)
+sample.agg.glucose <- aggregate(sample.conc.glucose ~ core.id.sugar, sample.sugar, mean)
+sample.agg.fructose <- aggregate(sample.conc.fructose ~ core.id.sugar, sample.sugar, mean)
+sample.agg.sucrose <- aggregate(sample.conc.sucrose ~ core.id.sugar, sample.sugar, mean)
+sample.agg.sugar <- data.frame(sample.agg.glucose$core.id.sugar, sample.agg.glucose$sample.conc.glucose,
+                               sample.agg.fructose$sample.conc.fructose, sample.agg.sucrose$sample.conc.sucrose)
+
+matches.sugar <- match(as.character(sample.agg.sugar$sample.agg.glucose.core.id),as.character(adult$Core_ID14))
+row.names(sample.agg.sugar) <- NULL
+nsc.adult.dat.sugar <- data.frame(sample.agg.sugar,adult[matches.sugar,])
+
+#match sample masses to absorbance
+matches.mass.sugar <- match(as.character(nsc.adult.dat.sugar$Core_ID14),as.character(mass$Core_ID))
+nsc.adult.sugar.mass <- data.frame(nsc.adult.dat.sugar,mass[matches.mass.sugar,])
+
+#mass column is Mass_mg
+#calculate concentrations of glucose based on mass of sample used
+nsc.adult.sugar.mass$ug.glucose <- nsc.adult.sugar.mass$sample.agg.glucose.sample.conc.glucose / 20 * 845 #micrograms/sample 20 ul drawn from 845 ul total volume of Sugar Extraction
+nsc.adult.sugar.mass$glucose.mg.g <- nsc.adult.sugar.mass$ug.glucose / nsc.adult.sugar.mass$Mass_mg #mg/gram of sample
+
+#calculate concentrations of fructose based on mass of sample used
+nsc.adult.sugar.mass$ug.fructose <- nsc.adult.sugar.mass$sample.agg.fructose.sample.conc.fructose / 20 * 845 #micrograms/sample 20 ul drawn from 845 ul total volume of Sugar Extraction
+nsc.adult.sugar.mass$fructose.mg.g <- nsc.adult.sugar.mass$ug.fructose / nsc.adult.sugar.mass$Mass_mg #mg/gram of sample
+
+#calculate concentrations of fructose based on mass of sample used
+nsc.adult.sugar.mass$ug.sucrose <- nsc.adult.sugar.mass$sample.agg.sucrose.sample.conc.sucrose / 20 * 845 #micrograms/sample 20 ul drawn from 845 ul total volume of Sugar Extraction
+nsc.adult.sugar.mass$sucrose.mg.g <- nsc.adult.sugar.mass$ug.sucrose / nsc.adult.sugar.mass$Mass_mg #mg/gram of sample
+
+### END process SUGAR files ###
+```
+
+
 You can also embed plots, for example:
 
 ```{r fig.width=7, fig.height=6}
