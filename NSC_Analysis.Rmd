@@ -320,6 +320,31 @@ nsc.adult.sugar.mass$sucrose.mg.g <- nsc.adult.sugar.mass$ug.sucrose / nsc.adult
 ### END process SUGAR files ###
 ```
 
+Combining data from sugar and starch runs into one dataframe
+
+```{r}
+### Combine Sugar and Starch for total NSC ###
+starch.only <- data.frame(nsc.adult.starch.mass$core.id.starch,nsc.adult.starch.mass$Starch.mg.g)
+matches.sugar.starch <- match(as.character(nsc.adult.sugar.mass$sample.agg.glucose.core.id.sugar),as.character(starch.only$nsc.adult.starch.mass.core.id.starch))
+row.names(nsc.adult.sugar.mass) <- NULL
+row.names(starch.only) <- NULL
+nsc.adult.total.mass <- data.frame(nsc.adult.sugar.mass,starch.only[matches.sugar.starch,])
+nsc.adult.total.mass$total.nsc <- mapply(nsc.adult.total.mass$nsc.adult.starch.mass.Starch.mg.g,
+                                      nsc.adult.total.mass$glucose.mg.g,
+                                      nsc.adult.total.mass$fructose.mg.g,
+                                      nsc.adult.total.mass$sucrose.mg.g, FUN=sum, na.rm=FALSE)                                      
+#rename starch column
+colnames(nsc.adult.total.mass)[115] <- "core.id.starch"
+colnames(nsc.adult.total.mass)[116] <- "starch.mg.g"
+
+#csv to identify missing starch or sugar samples
+write.csv(nsc.adult.total.mass, file = "nsc.adult.total.mass.missingincluded.csv")
+
+#remove NAs for total.nsc
+nsc.adult.total.mass <- nsc.adult.total.mass[which(nsc.adult.total.mass$total.nsc != "NA"),]
+
+### END combine sugar and starch ###
+```
 
 You can also embed plots, for example:
 
