@@ -23,11 +23,19 @@ trees.diss <- read.csv("/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/Adul
 rings.diss <- Read_Tuscon("/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/Windendro_text/All_Sites")
 
 #Match Tucson ringwidth files and adult census data for 50yrs of growth
-combined.diss <- matchInventoryRings(trees=trees.diss,rings.diss))
+combined.diss <- matchInventoryRings(trees=trees.diss,rings.diss)
 combined.diss <- data.frame(combined.diss)
 # write.csv(combined.diss, file="/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/combined.diss.csv")
 #TODO correct cores with known suspiciously large growth increment
 #cores ID'd in /Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/qc_removed_cores.xlsx
+
+#write file to check which cores still need to be analyzed
+analyzed.trees.growth <- merge(combined.diss, trees.diss, by = "sampleID", all.x = TRUE, all.y = TRUE)
+check.growth.analyzed <- cbind(analyzed.trees.growth[,1:9],analyzed.trees.growth[,131:139],analyzed.trees.growth[,144:151],analyzed.trees.growth[,208],analyzed.trees.growth[,223])
+names(check.growth.analyzed)[27] <- "DBH14"
+names(check.growth.analyzed)[28] <- "DBH15"
+write.csv(check.growth.analyzed, file = "alltrees_growth_analyzed_tracking.csv")
+
 ```
 Reformat combined census and treering data dataframe to comply with format required for including time explicitly, which includes year by site and year by plot interaction terms.
 ```{r}
