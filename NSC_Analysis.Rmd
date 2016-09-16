@@ -611,7 +611,49 @@ nsc.adult.total.mass.conif$Spp <- factor(nsc.adult.total.mass.conif$Spp,
                                          "PIRI","PITA","LALA","PIGL","PIMA","PIRU",
                                          "THOC2","TSCA"), ordered = TRUE)
 
+# adding genus and family
+###Reference: http://plants.usda.gov/java/
 
+# Hardwoods
+
+
+# Conifers
+      Pinus <- c(
+                which(nsc.adult.total.mass$Genus == "PIPA2"),
+                which(nsc.adult.total.mass$Genus == "PIST"),
+                which(nsc.adult.total.mass$Genus == "PIVI2"),
+                which(nsc.adult.total.mass$Genus == "PIRE"),
+                which(nsc.adult.total.mass$Genus == "PIRI"),
+                which(nsc.adult.total.mass$Genus == "PITA")
+                )
+      
+      Larix <- c(
+                which(nsc.adult.total.mass$Spp == "LALA")
+                )
+      
+      Picea <- c(
+                which(nsc.adult.total.mass$Spp == "PIGL"),
+                which(nsc.adult.total.mass$Spp == "PIMA"),
+                which(nsc.adult.total.mass$Spp == "PIRU")
+                )
+
+      Abies <- c(
+              which(nsc.adult.total.mass$Spp == "ABBA")
+              )
+      
+Juniperus <- c(
+              which(nsc.adult.total.mass$Spp == "JUVI")
+              )
+
+    Thuja <- c(
+              which(nsc.adult.total.mass$Spp == "THOC2")
+              )
+    
+    Tsuga <- c(
+              which(nsc.adult.total.mass$Spp == "TSCA")
+              )
+    
+    ### Set total, hardwood and conifer dataframes for Genus
 ```
 
 You can also embed plots, for example:
