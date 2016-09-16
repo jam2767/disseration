@@ -433,7 +433,7 @@ Early.Conifer <- c(
                   which(nsc.adult.total.mass$Spp == "JUVI"),#
                   which(nsc.adult.total.mass$Spp == "PIPA2"),#
                   which(nsc.adult.total.mass$Spp == "PIST"),#
-                  which(nsc.adult.total.mass$Spp == "PIVI"),##should be PIVI2 for Virginia Pine
+                  which(nsc.adult.total.mass$Spp == "PIVI2"),#
                   which(nsc.adult.total.mass$Spp == "PIRE"),#
                   which(nsc.adult.total.mass$Spp == "PIRI"),#
                   which(nsc.adult.total.mass$Spp == "PITA")#
@@ -458,7 +458,7 @@ nsc.adult.total.mass$PFT[Late.Conifer] <- "Late.Conifer"
 large.resin <- c(
                 which(nsc.adult.total.mass$Spp == "PIPA2"),
                 which(nsc.adult.total.mass$Spp == "PIST"),
-                which(nsc.adult.total.mass$Spp == "PIVI"), #should be PIVI2 for Virginia Pine
+                which(nsc.adult.total.mass$Spp == "PIVI2"),
                 which(nsc.adult.total.mass$Spp == "PIRE"),
                 which(nsc.adult.total.mass$Spp == "PIRI"),
                 which(nsc.adult.total.mass$Spp == "PITA")
@@ -607,7 +607,7 @@ nsc.adult.total.mass.conif$Spp <- as.character(nsc.adult.total.mass.conif$Spp)
 
 #relevel factors
 nsc.adult.total.mass.conif$Spp <- factor(nsc.adult.total.mass.conif$Spp, 
-                              levels = c("ABBA","JUVI","PIPA2","PIST","PIVI","PIRE",
+                              levels = c("ABBA","JUVI","PIPA2","PIST","PIVI2","PIRE",
                                          "PIRI","PITA","LALA","PIGL","PIMA","PIRU",
                                          "THOC2","TSCA"), ordered = TRUE)
 
