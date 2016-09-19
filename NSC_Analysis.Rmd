@@ -616,6 +616,95 @@ nsc.adult.total.mass.conif$Spp <- factor(nsc.adult.total.mass.conif$Spp,
 
 # Hardwoods
 
+    Quercus <- c(                
+                which(nsc.adult.total.mass$Spp == "QUAL"),
+                which(nsc.adult.total.mass$Spp == "QUCO2"),
+                which(nsc.adult.total.mass$Spp == "QUERC"),
+                which(nsc.adult.total.mass$Spp == "QUIM"),
+                which(nsc.adult.total.mass$Spp == "QULA2"),
+                which(nsc.adult.total.mass$Spp == "QULA3"),
+                which(nsc.adult.total.mass$Spp == "QUMO4"),
+                which(nsc.adult.total.mass$Spp == "QUMU"),
+                which(nsc.adult.total.mass$Spp == "QUNI"),
+                which(nsc.adult.total.mass$Spp == "QUPH"),
+                which(nsc.adult.total.mass$Spp == "QURU"),
+                which(nsc.adult.total.mass$Spp == "QUST"),
+                which(nsc.adult.total.mass$Spp == "QUVE"),
+                which(nsc.adult.total.mass$Spp == "QUVI")
+                )
+    
+   Fraxinus <- c(
+                which(nsc.adult.total.mass$Spp == "FRAM2"),
+                which(nsc.adult.total.mass$Spp == "FRNI"),
+                which(nsc.adult.total.mass$Spp == "FRQU")
+                )
+   
+  Ailanthus <- c(
+                which(nsc.adult.total.mass$Spp == "AIAL")
+                )
+   
+    Robinia <- c(
+                which(nsc.adult.total.mass$Spp == "ROPS")
+                )
+    
+  Sassafras <- c(
+                which(nsc.adult.total.mass$Spp == "SAAL5")
+                )
+  
+      Acer <- c(
+                which(nsc.adult.total.mass$Spp == "ACNE2"),
+                which(nsc.adult.total.mass$Spp == "ACPE"),
+                which(nsc.adult.total.mass$Spp == "ACRU"),
+                which(nsc.adult.total.mass$Spp == "ACSA3")
+                )
+      
+  Aesculus <- c(
+                which(nsc.adult.total.mass$Spp == "AEGL")
+                )
+  
+    Betula <- c(
+                which(nsc.adult.total.mass$Spp == "BEAL2"),
+                which(nsc.adult.total.mass$Spp == "BELE"),
+                which(nsc.adult.total.mass$Spp == "BEPA"),
+                which(nsc.adult.total.mass$Spp == "BETUL")
+                )
+    
+        
+  diffuse.porous <- c(
+                    ,
+                    ,
+                    ,
+                    which(nsc.adult.total.mass$Spp == "CACA18"),
+                    which(nsc.adult.total.mass$Spp == "COFL2"),
+                    which(nsc.adult.total.mass$Spp == "LIST2"),
+                    which(nsc.adult.total.mass$Spp == "LITU"),
+                    which(nsc.adult.total.mass$Spp == "MAAC"),
+                    which(nsc.adult.total.mass$Spp == "MAFR"),
+                    which(nsc.adult.total.mass$Spp == "MAVI2"),                  
+                    which(nsc.adult.total.mass$Spp == "PLOC"),
+                    which(nsc.adult.total.mass$Spp == "FAGR"),
+                    which(nsc.adult.total.mass$Spp == "MAGR4"),
+                    which(nsc.adult.total.mass$Spp == "NYSY"),
+                    which(nsc.adult.total.mass$Spp == "OXAR"),
+                    which(nsc.adult.total.mass$Spp == "TIAM"),
+                    which(nsc.adult.total.mass$Spp == "POGR4"),
+                    which(nsc.adult.total.mass$Spp == "POTR5"),
+                    which(nsc.adult.total.mass$Spp == "PRSE2")               
+                    )
+
+semiring.porous <- c(
+                    which(nsc.adult.total.mass$Spp == "CACO15"),
+                    which(nsc.adult.total.mass$Spp == "CAGL8"),
+                    which(nsc.adult.total.mass$Spp == "CALA21"),
+                    which(nsc.adult.total.mass$Spp == "CAOV2"),
+                    which(nsc.adult.total.mass$Spp == "CATO6"),
+                    which(nsc.adult.total.mass$Spp == "CECA4"),
+                    which(nsc.adult.total.mass$Spp == "DIVI5"), #bordering diffuse porous
+                    which(nsc.adult.total.mass$Spp == "JUCI"),
+                    which(nsc.adult.total.mass$Spp == "JUNI"),
+                    which(nsc.adult.total.mass$Spp == "ULAM")
+                    )
+
 
 # Conifers
       Pinus <- c(
