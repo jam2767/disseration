@@ -558,63 +558,10 @@ nsc.adult.total.mass$wood <- factor(nsc.adult.total.mass$wood,
                                                "diffuse.porous"), ordered = TRUE)
 
 
-#only hardwood dataframe
-early.h <- which(nsc.adult.total.mass$PFT == "Early.Hardwood")
-mid.h <- which(nsc.adult.total.mass$PFT == "Mid.Hardwood")
-late.h <- which(nsc.adult.total.mass$PFT == "Late.Hardwood")
-
-nsc.adult.total.mass.hard <- rbind(
-                             nsc.adult.total.mass[early.h,],
-                             nsc.adult.total.mass[mid.h,],
-                             nsc.adult.total.mass[late.h,]
-                             )
-#drop unused hardwood factor levels
-# nsc.adult.total.mass.hard$Spp <- droplevels(nsc.adult.total.mass.hard$Spp)
-# nsc.adult.total.mass.hard$PFT <- droplevels(nsc.adult.total.mass.hard$PFT)
-
-nsc.adult.total.mass.hard$Spp <- as.character(nsc.adult.total.mass.hard$Spp)
-
-nsc.adult.total.mass.hard$Spp <- factor(nsc.adult.total.mass.hard$Spp, 
-                  levels = c("ACPE","AIAL","BEAL2","BELE",
-                  "BEPA","BETUL","JUCI","JUNI","LIST2","LITU","POGR4","POTR5",
-                  "PRSE2","ROPS","SAAL5","FRAM2","FRNI","FRQU","ACNE2",
-                  "ACRU","CACA18","CACO15","CAGL8","CALA21","CAOV2",
-                  "CATO6","CECA4","MAAC","MAFR","QUAL","QUCO2","QUIM",
-                  "QUMO4","QUMU","QUPH","QURU","QUVE","QUVI","ULAM","ACFL",
-                  "ACSA3","AEGL","FAGR","NYSY","OXAR","TIAM"), ordered = TRUE)
-
-#levels(nsc.adult.total.mass.hard$Spp)
-#levels(nsc.adult.total.mass.hard$PFT) <- c("Early.Hardwood","Mid.Hardwood","Late.Hardwood")
-#levels(nsc.adult.total.mass.hard$PFT)
-
-#nsc.adult.total.mass.hard <- nsc.adult.total.mass.hard[order(nsc.adult.total.mass.hard$Spp),]
-#nsc.adult.total.mass.hard <- nsc.adult.total.mass.hard[order(nsc.adult.total.mass.hard$PFT),]
-
-#only conifer dataframe
-early.c <- which(nsc.adult.total.mass$PFT == "Early.Conifer")
-late.c <- which(nsc.adult.total.mass$PFT == "Late.Conifer")
-
-nsc.adult.total.mass.conif <- rbind(
-  nsc.adult.total.mass[early.c,],
-  nsc.adult.total.mass[late.c,]
-)
-
-#drop unused conifer factors
-# nsc.adult.total.mass.conif$Spp <- droplevels(nsc.adult.total.mass.conif$Spp)
-# nsc.adult.total.mass.conif$PFT <- droplevels(nsc.adult.total.mass.conif$PFT)
-
-nsc.adult.total.mass.conif$Spp <- as.character(nsc.adult.total.mass.conif$Spp)
-
-#relevel factors
-nsc.adult.total.mass.conif$Spp <- factor(nsc.adult.total.mass.conif$Spp, 
-                              levels = c("ABBA","JUVI","PIPA2","PIST","PIVI2","PIRE",
-                                         "PIRI","PITA","LALA","PIGL","PIMA","PIRU",
-                                         "THOC2","TSCA"), ordered = TRUE)
-
 # adding genus and family
 ###Reference: http://plants.usda.gov/java/
 
-# Hardwoods
+  ### Hardwoods
 
     Quercus <- c(                
                 which(nsc.adult.total.mass$Spp == "QUAL"),
@@ -669,44 +616,84 @@ nsc.adult.total.mass.conif$Spp <- factor(nsc.adult.total.mass.conif$Spp,
                 which(nsc.adult.total.mass$Spp == "BETUL")
                 )
     
-        
-  diffuse.porous <- c(
-                    ,
-                    ,
-                    ,
-                    which(nsc.adult.total.mass$Spp == "CACA18"),
-                    which(nsc.adult.total.mass$Spp == "COFL2"),
-                    which(nsc.adult.total.mass$Spp == "LIST2"),
-                    which(nsc.adult.total.mass$Spp == "LITU"),
-                    which(nsc.adult.total.mass$Spp == "MAAC"),
-                    which(nsc.adult.total.mass$Spp == "MAFR"),
-                    which(nsc.adult.total.mass$Spp == "MAVI2"),                  
-                    which(nsc.adult.total.mass$Spp == "PLOC"),
-                    which(nsc.adult.total.mass$Spp == "FAGR"),
-                    which(nsc.adult.total.mass$Spp == "MAGR4"),
-                    which(nsc.adult.total.mass$Spp == "NYSY"),
-                    which(nsc.adult.total.mass$Spp == "OXAR"),
-                    which(nsc.adult.total.mass$Spp == "TIAM"),
-                    which(nsc.adult.total.mass$Spp == "POGR4"),
-                    which(nsc.adult.total.mass$Spp == "POTR5"),
-                    which(nsc.adult.total.mass$Spp == "PRSE2")               
-                    )
+  Carpinus <- c(
+                which(nsc.adult.total.mass$Spp == "CACA18")
+                )
+    
+    Cornus <- c(
+                which(nsc.adult.total.mass$Spp == "COFL2")
+                )
+    
+Liquidambar <- c(
+                which(nsc.adult.total.mass$Spp == "LIST2")
+                )
 
-semiring.porous <- c(
-                    which(nsc.adult.total.mass$Spp == "CACO15"),
-                    which(nsc.adult.total.mass$Spp == "CAGL8"),
-                    which(nsc.adult.total.mass$Spp == "CALA21"),
-                    which(nsc.adult.total.mass$Spp == "CAOV2"),
-                    which(nsc.adult.total.mass$Spp == "CATO6"),
-                    which(nsc.adult.total.mass$Spp == "CECA4"),
-                    which(nsc.adult.total.mass$Spp == "DIVI5"), #bordering diffuse porous
-                    which(nsc.adult.total.mass$Spp == "JUCI"),
-                    which(nsc.adult.total.mass$Spp == "JUNI"),
-                    which(nsc.adult.total.mass$Spp == "ULAM")
-                    )
+Liriodendron <- c(
+                which(nsc.adult.total.mass$Spp == "LITU")
+                )
 
+    Magnolia <- c(
+                which(nsc.adult.total.mass$Spp == "MAAC"),
+                which(nsc.adult.total.mass$Spp == "MAFR"),
+                which(nsc.adult.total.mass$Spp == "MAVI2"),
+                which(nsc.adult.total.mass$Spp == "MAGR4")
+                )
+    
+    Platanus <- c(
+                which(nsc.adult.total.mass$Spp == "PLOC")
+                )
+    
+       Fagus <- c(
+                which(nsc.adult.total.mass$Spp == "FAGR")
+                )
+       
+       Nyssa <- c(
+                which(nsc.adult.total.mass$Spp == "NYSY")
+                )
+       
+       Oxydendrum <- c(
+                which(nsc.adult.total.mass$Spp == "OXAR")
+                )
+       
+       Tilia <- c(
+                which(nsc.adult.total.mass$Spp == "TIAM")
+                )
+    
+     Populus <- c(
+                which(nsc.adult.total.mass$Spp == "POGR4"),
+                which(nsc.adult.total.mass$Spp == "POTR5")
+                )
+       
+     Prunus <- c(
+                which(nsc.adult.total.mass$Spp == "PRSE2")
+                )
 
-# Conifers
+       Carya <- c(
+                which(nsc.adult.total.mass$Spp == "CACO15"),
+                which(nsc.adult.total.mass$Spp == "CAGL8"),
+                which(nsc.adult.total.mass$Spp == "CALA21"),
+                which(nsc.adult.total.mass$Spp == "CAOV2"),
+                which(nsc.adult.total.mass$Spp == "CATO6")
+                )
+       
+     Cercis <- c(
+                which(nsc.adult.total.mass$Spp == "CECA4")
+                )
+     
+  Diospyros <- c(
+                which(nsc.adult.total.mass$Spp == "DIVI5")
+                )
+  
+    Juglans <- c(
+                which(nsc.adult.total.mass$Spp == "JUCI"),
+                which(nsc.adult.total.mass$Spp == "JUNI")
+                )
+    
+      Ulmus <- c(
+                which(nsc.adult.total.mass$Spp == "ULAM")
+                )
+
+  ### Conifers
       Pinus <- c(
                 which(nsc.adult.total.mass$Genus == "PIPA2"),
                 which(nsc.adult.total.mass$Genus == "PIST"),
@@ -742,7 +729,205 @@ Juniperus <- c(
               which(nsc.adult.total.mass$Spp == "TSCA")
               )
     
-    ### Set total, hardwood and conifer dataframes for Genus
+    
+    
+    ### Set total dataframe for Genus
+    
+    nsc.adult.total.mass$genus <- NA
+    nsc.adult.total.mass$genus[Pinus] <- "Pinus"
+    nsc.adult.total.mass$genus[Larix] <- "Larix"
+    nsc.adult.total.mass$genus[Picea] <- "Picea"
+    nsc.adult.total.mass$genus[Abies] <- "Abies"
+    nsc.adult.total.mass$genus[Thuja] <- "Thuja"
+    nsc.adult.total.mass$genus[Tsuga] <- "Tsuga"
+    nsc.adult.total.mass$genus[Juniperus] <- "Juniperus"
+    nsc.adult.total.mass$genus[Quercus] <- "Quercus"
+    nsc.adult.total.mass$genus[Fraxinus] <- "Fraxinus"
+    nsc.adult.total.mass$genus[Ailanthus] <- "Ailanthus"
+    nsc.adult.total.mass$genus[Robinia] <- "Robinia"
+    nsc.adult.total.mass$genus[Acer] <- "Acer"
+    nsc.adult.total.mass$genus[Aesculus] <- "Aesculus"
+    nsc.adult.total.mass$genus[Betula] <- "Betula"
+    nsc.adult.total.mass$genus[Carpinus] <- "Carpinus"
+    nsc.adult.total.mass$genus[Cornus] <- "Cornus"
+    nsc.adult.total.mass$genus[Liquidambar] <- "Liquidambar"
+    nsc.adult.total.mass$genus[Liriodendron] <- "Liriodendron"
+    nsc.adult.total.mass$genus[Magnolia] <- "Magnolia"
+    nsc.adult.total.mass$genus[Platanus] <- "Platanus"
+    nsc.adult.total.mass$genus[Fagus] <- "Fagus"
+    nsc.adult.total.mass$genus[Nyssa] <- "Nyssa"
+    nsc.adult.total.mass$genus[Oxydendrum] <- "Oxydendrum"
+    nsc.adult.total.mass$genus[Tilia] <- "Tilia"
+    nsc.adult.total.mass$genus[Populus] <- "Populus"
+    nsc.adult.total.mass$genus[Prunus] <- "Prunus"
+    nsc.adult.total.mass$genus[Carya] <- "Carya"
+    nsc.adult.total.mass$genus[Cercis] <- "Cercis"
+    nsc.adult.total.mass$genus[Diospyros] <- "Diospyros"
+    nsc.adult.total.mass$genus[Juglans] <- "Juglans"
+    nsc.adult.total.mass$genus[Ulmus] <- "Ulmus"
+    
+  ###Add Family
+  Aceraceae <- c(
+              which(nsc.adult.total.mass$genus == "Acer")
+              )
+  
+  Betulaceae <- c(
+                which(nsc.adult.total.mass$genus == "Betula"),
+                which(nsc.adult.total.mass$genus == "Carpinus")
+                )
+  
+  Cornaceae <- c(which(nsc.adult.total.mass$genus == "Cornus"),
+                 which(nsc.adult.total.mass$genus == "Nyssa"))
+  
+  Cupressaceae <- c(which(nsc.adult.total.mass$genus == "Thuja"),
+                    which(nsc.adult.total.mass$genus == "Juniperus"))
+  
+  Ebenaceae <- c(which(nsc.adult.total.mass$genus == "Diospyros"))
+  
+  Ericaceae <- c(which(nsc.adult.total.mass$genus == "Oxydendrum"))
+  
+  Fabaceae <- c(which(nsc.adult.total.mass$genus == "Robinia"),
+                    which(nsc.adult.total.mass$genus == "Cercis"))
+  
+  Fagaceae <- c(which(nsc.adult.total.mass$genus == "Quercus"),
+                which(nsc.adult.total.mass$genus == "Fagus"))
+  
+  Hamamelidaceae <- c(which(nsc.adult.total.mass$genus == "Liquidambar"))
+  
+  Hippocastanaceae <- c(which(nsc.adult.total.mass$genus == "Aesculus"))
+  
+  Juglandaceae <- c(which(nsc.adult.total.mass$genus == "Carya"),
+                    which(nsc.adult.total.mass$genus == "Juglans"))
+  
+  Magnoliaceae <- c(which(nsc.adult.total.mass$genus == "Liriodendron"),
+                    which(nsc.adult.total.mass$genus == "Magnolia"))
+  
+  Oleaceae <- c(which(nsc.adult.total.mass$genus == "Fraxinus"))
+  
+  Pinaceae <- c(which(nsc.adult.total.mass$genus == "Pinus"),
+                which(nsc.adult.total.mass$genus == "Larix"),
+                which(nsc.adult.total.mass$genus == "Picea"),
+                which(nsc.adult.total.mass$genus == "Abies"),
+                which(nsc.adult.total.mass$genus == "Tsuga")
+                )
+  
+  Platanaceae <- c(which(nsc.adult.total.mass$genus == "Platanus"))
+  
+  Rosaceae <- c(which(nsc.adult.total.mass$genus == "Prunus"))
+  
+  Salicaceae <- c(which(nsc.adult.total.mass$genus == "Populus"))
+  
+  Simaroubaceae <- c(which(nsc.adult.total.mass$genus == "Ailanthus"))
+  
+  Tiliaceae <- c(which(nsc.adult.total.mass$genus == "Tilia"))
+  
+  Ulmaceae <- c(which(nsc.adult.total.mass$genus == "Ulmus"))
+  
+  #Set total dataframe for Family
+  nsc.adult.total.mass$family <- NA
+    nsc.adult.total.mass$family[Aceraceae] <- "Aceraceae"
+    nsc.adult.total.mass$family[Betulaceae] <- "Betulaceae"       
+    nsc.adult.total.mass$family[Cornaceae] <- "Cornaceae"
+    nsc.adult.total.mass$family[Cupressaceae] <- "Cupressaceae"
+    nsc.adult.total.mass$family[Ebenaceae] <- "Ebenaceae"
+    nsc.adult.total.mass$family[Ericaceae] <- "Ericaceae"
+    nsc.adult.total.mass$family[Fabaceae] <- "Fabaceae"
+    nsc.adult.total.mass$family[Fagaceae] <- "Fagaceae"
+    nsc.adult.total.mass$family[Hamamelidaceae] <- "Hamamelidaceae"
+    nsc.adult.total.mass$family[Hippocastanaceae] <- "Hippocastanaceae"
+    nsc.adult.total.mass$family[Juglandaceae] <- "Juglandaceae"
+    nsc.adult.total.mass$family[Magnoliaceae] <- "Magnoliaceae"
+    nsc.adult.total.mass$family[Oleaceae] <- "Oleaceae"   
+    nsc.adult.total.mass$family[Pinaceae] <- "Pinaceae"
+    nsc.adult.total.mass$family[Platanaceae] <- "Platanaceae"
+    nsc.adult.total.mass$family[Rosaceae] <- "Rosaceae"
+    nsc.adult.total.mass$family[Salicaceae] <- "Salicaceae"
+    nsc.adult.total.mass$family[Simaroubaceae] <- "Simaroubaceae"
+    nsc.adult.total.mass$family[Tiliaceae] <- "Tiliaceae"
+    nsc.adult.total.mass$family[Ulmaceae] <- "Ulmaceae"
+
+
+#only hardwood dataframe
+early.h <- which(nsc.adult.total.mass$PFT == "Early.Hardwood")
+mid.h <- which(nsc.adult.total.mass$PFT == "Mid.Hardwood")
+late.h <- which(nsc.adult.total.mass$PFT == "Late.Hardwood")
+
+nsc.adult.total.mass.hard <- rbind(
+                             nsc.adult.total.mass[early.h,],
+                             nsc.adult.total.mass[mid.h,],
+                             nsc.adult.total.mass[late.h,]
+                             )
+#drop unused hardwood factor levels
+# nsc.adult.total.mass.hard$Spp <- droplevels(nsc.adult.total.mass.hard$Spp)
+# nsc.adult.total.mass.hard$PFT <- droplevels(nsc.adult.total.mass.hard$PFT)
+
+nsc.adult.total.mass.hard$Spp <- as.character(nsc.adult.total.mass.hard$Spp)
+
+nsc.adult.total.mass.hard$Spp <- factor(nsc.adult.total.mass.hard$Spp, 
+                  levels = c("ACPE","AIAL","BEAL2","BELE",
+                  "BEPA","BETUL","JUCI","JUNI","LIST2","LITU","POGR4","POTR5",
+                  "PRSE2","ROPS","SAAL5","FRAM2","FRNI","FRQU","ACNE2",
+                  "ACRU","CACA18","CACO15","CAGL8","CALA21","CAOV2",
+                  "CATO6","CECA4","MAAC","MAFR","QUAL","QUCO2","QUIM",
+                  "QUMO4","QUMU","QUPH","QURU","QUVE","QUVI","ULAM","ACFL",
+                  "ACSA3","AEGL","FAGR","NYSY","OXAR","TIAM"), ordered = TRUE)
+
+#levels(nsc.adult.total.mass.hard$Spp)
+#levels(nsc.adult.total.mass.hard$PFT) <- c("Early.Hardwood","Mid.Hardwood","Late.Hardwood")
+#levels(nsc.adult.total.mass.hard$PFT)
+
+#nsc.adult.total.mass.hard <- nsc.adult.total.mass.hard[order(nsc.adult.total.mass.hard$Spp),]
+#nsc.adult.total.mass.hard <- nsc.adult.total.mass.hard[order(nsc.adult.total.mass.hard$PFT),]
+
+#only conifer dataframe
+early.c <- which(nsc.adult.total.mass$PFT == "Early.Conifer")
+late.c <- which(nsc.adult.total.mass$PFT == "Late.Conifer")
+
+nsc.adult.total.mass.conif <- rbind(
+  nsc.adult.total.mass[early.c,],
+  nsc.adult.total.mass[late.c,]
+)
+
+#drop unused conifer factors
+# nsc.adult.total.mass.conif$Spp <- droplevels(nsc.adult.total.mass.conif$Spp)
+# nsc.adult.total.mass.conif$PFT <- droplevels(nsc.adult.total.mass.conif$PFT)
+
+nsc.adult.total.mass.conif$Spp <- as.character(nsc.adult.total.mass.conif$Spp)
+
+#relevel factors
+nsc.adult.total.mass.conif$Spp <- factor(nsc.adult.total.mass.conif$Spp, 
+                              levels = c("ABBA","JUVI","PIPA2","PIST","PIVI2","PIRE",
+                                         "PIRI","PITA","LALA","PIGL","PIMA","PIRU",
+                                         "THOC2","TSCA"), ordered = TRUE)
+```
+
+Phylogenetics Exploratory Analyses - ANOVA based
+
+```{r}
+#Species Anova
+lm.species.total <- lm(total.nsc ~ Spp, data = nsc.adult.total.mass)
+anova(lm.species.total)
+summary(lm.species.total) #R^2 = .5322
+
+#Genus anova
+lm.genus.total <- lm(total.nsc ~ genus, data = nsc.adult.total.mass)
+anova(lm.genus.total)
+summary(lm.genus.total) #R^2 = .4867
+
+#Family anova
+lm.family.total <- lm(total.nsc ~ family, data = nsc.adult.total.mass)
+anova(lm.family.total)
+summary(lm.family.total) #R^2 = .4685
+
+#PFT anova
+lm.pft.total <- lm(total.nsc ~ PFT, data = nsc.adult.total.mass)
+anova(lm.pft.total)
+summary(lm.pft.total) #R^2 = .3336
+
+#wood anatomy anova
+lm.wood.total <- lm(total.nsc ~ wood, data = nsc.adult.total.mass)
+anova(lm.wood.total)
+summary(lm.wood.total) #R^2 = .3789
 ```
 
 You can also embed plots, for example:
