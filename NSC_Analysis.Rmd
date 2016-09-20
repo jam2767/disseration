@@ -924,10 +924,40 @@ lm.pft.total <- lm(total.nsc ~ PFT, data = nsc.adult.total.mass)
 anova(lm.pft.total)
 summary(lm.pft.total) #R^2 = .3336
 
+#PFT ggplot boxplot
+ggplot(nsc.adult.total.mass, aes(x = PFT, y = total.nsc, fill = PFT)) +
+  geom_boxplot() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
+  theme(axis.text.y = element_text(size=16)) +
+  theme(axis.title.x = element_text(size=20)) +
+  theme(axis.title.y = element_text(size=20)) +
+  theme(legend.text = element_text(size=16)) +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 160)) + 
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Plant Functional Type") + ggtitle("All PFTs") +
+#   geom_segment(aes(x=0,y=med.early.conif,xend=7.5,
+#                    yend=med.early.conif),linetype="longdash",color="indianred4") +
+#   geom_segment(aes(x=7.5,y=med.late.conif,xend=12,
+#                    yend=med.late.conif),linetype="longdash",color="darkgreen") +
+  scale_fill_manual(values=rev(cbPalette))
+
 #wood anatomy anova
 lm.wood.total <- lm(total.nsc ~ wood, data = nsc.adult.total.mass)
 anova(lm.wood.total)
 summary(lm.wood.total) #R^2 = .3789
+
+#Wood anatomy ggplot boxplot
+ggplot(nsc.adult.total.mass, aes(x = wood, y = total.nsc, fill = wood)) +
+  geom_boxplot() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
+  theme(axis.text.y = element_text(size=16)) +
+  theme(axis.title.x = element_text(size=20)) +
+  theme(axis.title.y = element_text(size=20)) +
+  theme(legend.text = element_text(size=16)) +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 160)) + 
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Wood Anatomy") + ggtitle("All Wood Types") +
+#   geom_segment(aes(x=0,y=med.early.conif,xend=7.5,
+#                    yend=med.early.conif),linetype="longdash",color="indianred4") +
+#   geom_segment(aes(x=7.5,y=med.late.conif,xend=12,
+#                    yend=med.late.conif),linetype="longdash",color="darkgreen") +
+  scale_fill_manual(values=rev(cbPalette))
 ```
 
 You can also embed plots, for example:
