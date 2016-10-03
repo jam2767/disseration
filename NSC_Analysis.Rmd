@@ -909,15 +909,61 @@ lm.species.total <- lm(total.nsc ~ Spp, data = nsc.adult.total.mass)
 anova(lm.species.total)
 summary(lm.species.total) #R^2 = .5322
 
+ggplot(nsc.adult.total.mass, aes(x = Spp, y = total.nsc, fill = wood)) + #not enough colors for spp fill
+  geom_boxplot() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
+  theme(axis.text.y = element_text(size=16)) +
+  theme(axis.title.x = element_text(size=20)) +
+  theme(axis.title.y = element_text(size=20)) +
+  theme(legend.text = element_text(size=16)) +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 160)) + 
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Species") + ggtitle("All Species") +
+#   geom_segment(aes(x=0,y=med.early.conif,xend=7.5,
+#                    yend=med.early.conif),linetype="longdash",color="indianred4") +
+#   geom_segment(aes(x=7.5,y=med.late.conif,xend=12,
+#                    yend=med.late.conif),linetype="longdash",color="darkgreen") +
+  scale_fill_manual(values=rev(cbPalette))
+
 #Genus anova
 lm.genus.total <- lm(total.nsc ~ genus, data = nsc.adult.total.mass)
 anova(lm.genus.total)
 summary(lm.genus.total) #R^2 = .4867
 
+#Genus ggplot boxplot
+ggplot(nsc.adult.total.mass, aes(x = genus, y = total.nsc, fill = "red")) + #not enough colors for genus fill
+  geom_boxplot() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
+  theme(axis.text.y = element_text(size=16)) +
+  theme(axis.title.x = element_text(size=20)) +
+  theme(axis.title.y = element_text(size=20)) +
+  theme(legend.text = element_text(size=16)) +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 160)) + 
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Genus") + ggtitle("All Genera") +
+#   geom_segment(aes(x=0,y=med.early.conif,xend=7.5,
+#                    yend=med.early.conif),linetype="longdash",color="indianred4") +
+#   geom_segment(aes(x=7.5,y=med.late.conif,xend=12,
+#                    yend=med.late.conif),linetype="longdash",color="darkgreen") +
+  scale_fill_manual(values=rev(cbPalette))
+
 #Family anova
 lm.family.total <- lm(total.nsc ~ family, data = nsc.adult.total.mass)
 anova(lm.family.total)
 summary(lm.family.total) #R^2 = .4685
+
+#Family ggplot boxplot
+ggplot(nsc.adult.total.mass, aes(x = family, y = total.nsc, fill = "red")) + #need more colors for fill based on family
+  geom_boxplot() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
+  theme(axis.text.y = element_text(size=16)) +
+  theme(axis.title.x = element_text(size=20)) +
+  theme(axis.title.y = element_text(size=20)) +
+  theme(legend.text = element_text(size=16)) +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 160)) + 
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Family") + ggtitle("All Families") +
+#   geom_segment(aes(x=0,y=med.early.conif,xend=7.5,
+#                    yend=med.early.conif),linetype="longdash",color="indianred4") +
+#   geom_segment(aes(x=7.5,y=med.late.conif,xend=12,
+#                    yend=med.late.conif),linetype="longdash",color="darkgreen") +
+  scale_fill_manual(values=rev(cbPalette))
+
+boxplot(total.nsc ~ family, data = nsc.adult.total.mass)
 
 #PFT anova
 lm.pft.total <- lm(total.nsc ~ PFT, data = nsc.adult.total.mass)
@@ -958,6 +1004,61 @@ ggplot(nsc.adult.total.mass, aes(x = wood, y = total.nsc, fill = wood)) +
 #   geom_segment(aes(x=7.5,y=med.late.conif,xend=12,
 #                    yend=med.late.conif),linetype="longdash",color="darkgreen") +
   scale_fill_manual(values=rev(cbPalette))
+```
+
+Canopy Status and Mortality
+
+```{r}
+#Canopy Status
+nsc.adult.total.mass$Canopy15 <- as.factor(nsc.adult.total.mass$Canopy15)
+lm.canopy.total <- lm(total.nsc ~ Canopy15, data = nsc.adult.total.mass)
+anova(lm.canopy.total)
+summary(lm.canopy.total)
+
+ggplot(nsc.adult.total.mass, aes(x = Canopy15, y = total.nsc, fill = Canopy15)) +
+  geom_boxplot() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
+  theme(axis.text.y = element_text(size=16)) +
+  theme(axis.title.x = element_text(size=20)) +
+  theme(axis.title.y = element_text(size=20)) +
+  theme(legend.text = element_text(size=16)) +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 160)) + 
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Canopy Status") + ggtitle("All Canopy Statuses") +
+#   geom_segment(aes(x=0,y=med.early.conif,xend=7.5,
+#                    yend=med.early.conif),linetype="longdash",color="indianred4") +
+#   geom_segment(aes(x=7.5,y=med.late.conif,xend=12,
+#                    yend=med.late.conif),linetype="longdash",color="darkgreen") +
+  scale_fill_manual(values=rev(cbPalette))
+
+#Mortality
+
+```
+
+Region, Landscape, Microsite ANOVA exploratory analysis
+
+```{r}
+#Site ANOVA
+lm.site.total <- lm(total.nsc ~ Site, data = nsc.adult.total.mass)
+anova(lm.site.total)
+summary(lm.site.total) #R^2 = 0.1756
+
+ggplot(nsc.adult.total.mass, aes(x = Site, y = total.nsc, fill = "red")) +
+  geom_boxplot() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
+  theme(axis.text.y = element_text(size=16)) +
+  theme(axis.title.x = element_text(size=20)) +
+  theme(axis.title.y = element_text(size=20)) +
+  theme(legend.text = element_text(size=16)) +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 160)) + 
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Site") + ggtitle("All Sites") +
+#   geom_segment(aes(x=0,y=med.early.conif,xend=7.5,
+#                    yend=med.early.conif),linetype="longdash",color="indianred4") +
+#   geom_segment(aes(x=7.5,y=med.late.conif,xend=12,
+#                    yend=med.late.conif),linetype="longdash",color="darkgreen") +
+  scale_fill_manual(values=rev(cbPalette))
+
+#Site x Plot ANOVA
+lm.site.plot.total <- lm(total.nsc ~ Site/Plot, data = nsc.adult.total.mass)
+anova(lm.site.plot.total)
+summary(lm.site.plot.total) #very few site * plot effects
 ```
 
 You can also embed plots, for example:
