@@ -27,7 +27,9 @@ cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2",
 #Directories for census and NSC data
 #read data
 #read Adult Census Data
-adult <- read.csv("/Users/Josh/Dropbox/Dietze_Lab_Undergrads/JAM - Xsite/Field Data Entry/Data Sheets/Adult_Field_Data_JAM_MCD.csv")
+#adult <- read.csv("/Users/Josh/Dropbox/Dietze_Lab_Undergrads/JAM - Xsite/Field Data Entry/Data Sheets/Adult_Field_Data_JAM_MCD.csv")
+
+adult <- read.csv("/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/Adult_Field_Data_JAM_MCD.csv")
 
 #read NSC tracking data - contains sample mass used for assays
 mass <- read.csv("/Users/Josh/Dropbox/NSC_Runs/All/Tracking/NSC_Mass_All_8172016.csv")
@@ -79,7 +81,7 @@ if ('0' %in% dif.HK.starch[[i]]) { #simplest check: time when absorbance not inc
 }
 
 starch.nofinish.ids <- unlist(starch.nofinish) #remove null values
-write.csv(starch.nofinish.ids, file = "unfinished_starch.csv") #save file to identify repeats
+#write.csv(starch.nofinish.ids, file = "unfinished_starch.csv") #save file to identify repeats
 
 #### right now still using values for samples that didn't finish
 
@@ -181,7 +183,7 @@ if ('0' %in% dif.HK.sugar[[i]]) { #simplest check: time when absorbance not incr
 }
 
 gluc.nofinish.ids <- unlist(gluc.nofinish) #remove null values
-write.csv(gluc.nofinish.ids, file = "unfinished_glucose.csv") #save file to identify repeats
+#write.csv(gluc.nofinish.ids, file = "unfinished_glucose.csv") #save file to identify repeats
 
 
 #difference between baseline and HK (glucose content)
@@ -215,7 +217,7 @@ if ('0' %in% dif.PGI.sugar[[i]]) { #simplest check: time when absorbance not inc
 }
 
 fruc.nofinish.ids <- unlist(fruc.nofinish) #remove null values
-write.csv(fruc.nofinish.ids, file = "unfinished_fructose.csv") #save file to identify repeats
+#write.csv(fruc.nofinish.ids, file = "unfinished_fructose.csv") #save file to identify repeats
 
 
 total.fructose <- max.fructose.sugar-last.glucose.sugar
@@ -245,7 +247,7 @@ if ('0' %in% dif.INV.sugar[[i]]) { #simplest check: time when absorbance not inc
 }
 
 sucr.nofinish.ids <- unlist(sucr.nofinish) #remove null values
-write.csv(sucr.nofinish.ids, file = "unfinished_sucrose.csv") #save file to identify repeats
+#write.csv(sucr.nofinish.ids, file = "unfinished_sucrose.csv") #save file to identify repeats
 
 
 #difference between HK and PGI (Fructose content)
@@ -338,7 +340,7 @@ colnames(nsc.adult.total.mass)[115] <- "core.id.starch"
 colnames(nsc.adult.total.mass)[116] <- "starch.mg.g"
 
 #csv to identify missing starch or sugar samples
-write.csv(nsc.adult.total.mass, file = "nsc.adult.total.mass.missingincluded.csv")
+#write.csv(nsc.adult.total.mass, file = "nsc.adult.total.mass.missingincluded.csv")
 
 #remove NAs for total.nsc
 nsc.adult.total.mass <- nsc.adult.total.mass[which(nsc.adult.total.mass$total.nsc != "NA"),]
@@ -846,7 +848,84 @@ Juniperus <- c(
     nsc.adult.total.mass$family[Tiliaceae] <- "Tiliaceae"
     nsc.adult.total.mass$family[Ulmaceae] <- "Ulmaceae"
 
+    #Order
+    Sapindales <- c(which(nsc.adult.total.mass$family == "Aceraceae"),
+                    which(nsc.adult.total.mass$family == "Hippocastanaceae"),
+                    which(nsc.adult.total.mass$family == "Simaroubaceae"))
+    
+    Fagales <- c(which(nsc.adult.total.mass$family == "Betulaceae"),
+                 which(nsc.adult.total.mass$family == "Fagaceae"))
+    
+    Cornales <- c(which(nsc.adult.total.mass$family == "Cornaceae"))
+    
+    Pinales <- c(which(nsc.adult.total.mass$family == "Cupressaceae"),
+                 which(nsc.adult.total.mass$family == "Pinaceae"))
+    
+    Ebenales <- c(which(nsc.adult.total.mass$family == "Ebenaceae"))
+    Ericales <- c(which(nsc.adult.total.mass$family == "Ericaceae"))
+    Fabales <- c(which(nsc.adult.total.mass$family == "Fabaceae"))
+    
+    Hamamelidales <- c(which(nsc.adult.total.mass$family == "Hamamelidaceae"),
+                       which(nsc.adult.total.mass$family == "Platanaceae"))
+    
+    Juglandales <- c(which(nsc.adult.total.mass$family == "Juglandaceae"))
+    Magnoliales <- c(which(nsc.adult.total.mass$family == "Magnoliaceae"))
+    Scrophulariales <- c(which(nsc.adult.total.mass$family == "Oleaceae"))
+    Rosales <- c(which(nsc.adult.total.mass$family == "Rosaceae"))
+    Salicales <- c(which(nsc.adult.total.mass$family == "Salicaceae"))
+    Malvales <- c(which(nsc.adult.total.mass$family == "Tiliaceae"))
+    Urticales <- c(which(nsc.adult.total.mass$family == "Ulmaceae"))
+    
+    #Set total dataframe for order
+    nsc.adult.total.mass$order <- NA
+    nsc.adult.total.mass$order[Sapindales] <- "Sapindales"
+    nsc.adult.total.mass$order[Fagales] <- "Fagales"       
+    nsc.adult.total.mass$order[Cornales] <- "Cornales"
+    nsc.adult.total.mass$order[Pinales] <- "Pinales"
+    nsc.adult.total.mass$order[Ebenales] <- "Ebenales"
+    nsc.adult.total.mass$order[Ericales] <- "Ericales"
+    nsc.adult.total.mass$order[Fabales] <- "Fabales"
+    nsc.adult.total.mass$order[Hamamelidales] <- "Hamamelidales"
+    nsc.adult.total.mass$order[Juglandales] <- "Juglandales"
+    nsc.adult.total.mass$order[Magnoliales] <- "Magnoliales"
+    nsc.adult.total.mass$order[Scrophulariales] <- "Scrophulariales"
+    nsc.adult.total.mass$order[Rosales] <- "Rosales"
+    nsc.adult.total.mass$order[Salicales] <- "Salicales"   
+    nsc.adult.total.mass$order[Malvales] <- "Malvales"
+    nsc.adult.total.mass$order[Urticales] <- "Urticales"
 
+    #Subclass
+    Rosidae <- c(which(nsc.adult.total.mass$order == "Sapindales"),
+                 which(nsc.adult.total.mass$order == "Cornales"),
+                 which(nsc.adult.total.mass$order == "Fabales"),
+                 which(nsc.adult.total.mass$order == "Rosales"))
+    
+    Hamamelididae <- c(which(nsc.adult.total.mass$order == "Fagales"),
+                       which(nsc.adult.total.mass$order == "Hamamelidales"),
+                       which(nsc.adult.total.mass$order == "Juglandales"),
+                       which(nsc.adult.total.mass$order == "Urticales"))
+    
+    Pinopsida <- c(which(nsc.adult.total.mass$order == "Pinales"))
+    
+    Dilleniidae <- c(which(nsc.adult.total.mass$order == "Ebenales"),
+                     which(nsc.adult.total.mass$order == "Ericales"),
+                     which(nsc.adult.total.mass$order == "Salicales"),
+                     which(nsc.adult.total.mass$order == "Malvales"))
+    
+    Magnoliidae <- c(which(nsc.adult.total.mass$order == "Magnoliales"))
+    
+    Asteridae <- c(which(nsc.adult.total.mass$order == "Scrophulariales"))
+    
+        #Set total dataframe for Subclass
+    nsc.adult.total.mass$subclass <- NA
+    nsc.adult.total.mass$subclass[Rosidae] <- "Rosidae"
+    nsc.adult.total.mass$subclass[Hamamelididae] <- "Hamamelididae"       
+    nsc.adult.total.mass$subclass[Pinopsida] <- "Pinopsida"
+    nsc.adult.total.mass$subclass[Dilleniidae] <- "Dilleniidae"
+    nsc.adult.total.mass$subclass[Magnoliidae] <- "Magnoliidae"
+    nsc.adult.total.mass$subclass[Asteridae] <- "Asteridae"
+
+    
 #only hardwood dataframe
 early.h <- which(nsc.adult.total.mass$PFT == "Early.Hardwood")
 mid.h <- which(nsc.adult.total.mass$PFT == "Mid.Hardwood")
@@ -901,6 +980,7 @@ nsc.adult.total.mass.conif$Spp <- factor(nsc.adult.total.mass.conif$Spp,
                                          "THOC2","TSCA"), ordered = TRUE)
 ```
 
+Everything before this is preprocessing of data.
 Phylogenetics Exploratory Analyses - ANOVA based
 
 ```{r}
@@ -910,7 +990,7 @@ anova(lm.species.total)
 summary(lm.species.total) #R^2 = .5322
 
 ggplot(nsc.adult.total.mass, aes(x = Spp, y = total.nsc, fill = wood)) + #not enough colors for spp fill
-  geom_boxplot() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
+  geom_boxplot() + theme(axis.text.x = element_text(angle=45,hjust=1,size=12)) +
   theme(axis.text.y = element_text(size=16)) +
   theme(axis.title.x = element_text(size=20)) +
   theme(axis.title.y = element_text(size=20)) +
@@ -930,7 +1010,7 @@ summary(lm.genus.total) #R^2 = .4867
 
 #Genus ggplot boxplot
 ggplot(nsc.adult.total.mass, aes(x = genus, y = total.nsc, fill = "red")) + #not enough colors for genus fill
-  geom_boxplot() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
+  geom_boxplot() + theme(axis.text.x = element_text(angle=45,hjust=1,size=12)) +
   theme(axis.text.y = element_text(size=16)) +
   theme(axis.title.x = element_text(size=20)) +
   theme(axis.title.y = element_text(size=20)) +
@@ -950,7 +1030,7 @@ summary(lm.family.total) #R^2 = .4685
 
 #Family ggplot boxplot
 ggplot(nsc.adult.total.mass, aes(x = family, y = total.nsc, fill = "red")) + #need more colors for fill based on family
-  geom_boxplot() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
+  geom_boxplot() + theme(axis.text.x = element_text(angle=45,hjust=1,size=12)) +
   theme(axis.text.y = element_text(size=16)) +
   theme(axis.title.x = element_text(size=20)) +
   theme(axis.title.y = element_text(size=20)) +
@@ -963,7 +1043,46 @@ ggplot(nsc.adult.total.mass, aes(x = family, y = total.nsc, fill = "red")) + #ne
 #                    yend=med.late.conif),linetype="longdash",color="darkgreen") +
   scale_fill_manual(values=rev(cbPalette))
 
-boxplot(total.nsc ~ family, data = nsc.adult.total.mass)
+#Order ANOVA
+lm.order.total <- lm(total.nsc ~ order, data = nsc.adult.total.mass)
+anova(lm.order.total)
+summary(lm.order.total) #R^2 = .3566
+
+#Order ggplot, can also make violin plot
+ggplot(nsc.adult.total.mass, aes(x = order, y = total.nsc, fill = "red")) + #need more colors for fill based on order
+  geom_boxplot() + theme(axis.text.x = element_text(angle=45,hjust=1,size=12)) +
+  theme(axis.text.y = element_text(size=16)) +
+  theme(axis.title.x = element_text(size=20)) +
+  theme(axis.title.y = element_text(size=20)) +
+  theme(legend.text = element_text(size=16)) +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 160)) + 
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Order") + ggtitle("All Orders") +
+#   geom_segment(aes(x=0,y=med.early.conif,xend=7.5,
+#                    yend=med.early.conif),linetype="longdash",color="indianred4") +
+#   geom_segment(aes(x=7.5,y=med.late.conif,xend=12,
+#                    yend=med.late.conif),linetype="longdash",color="darkgreen") +
+  scale_fill_manual(values=rev(cbPalette))
+
+#Subclass ANOVA
+lm.subclass.total <- lm(total.nsc ~ subclass, data = nsc.adult.total.mass)
+anova(lm.subclass.total)
+summary(lm.subclass.total) #R^2 = .3192
+
+#Subclass ggplot, can also make violin plot
+ggplot(nsc.adult.total.mass, aes(x = subclass, y = total.nsc, fill = "red")) + #need more colors for fill based on order
+  geom_boxplot() + theme(axis.text.x = element_text(angle=45,hjust=1,size=12)) +
+  theme(axis.text.y = element_text(size=16)) +
+  theme(axis.title.x = element_text(size=20)) +
+  theme(axis.title.y = element_text(size=20)) +
+  theme(legend.text = element_text(size=16)) +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 160)) + 
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Subclass") + ggtitle("All Subclasses") +
+#   geom_segment(aes(x=0,y=med.early.conif,xend=7.5,
+#                    yend=med.early.conif),linetype="longdash",color="indianred4") +
+#   geom_segment(aes(x=7.5,y=med.late.conif,xend=12,
+#                    yend=med.late.conif),linetype="longdash",color="darkgreen") +
+  scale_fill_manual(values=rev(cbPalette))
+
 
 #PFT anova
 lm.pft.total <- lm(total.nsc ~ PFT, data = nsc.adult.total.mass)
@@ -997,7 +1116,7 @@ ggplot(nsc.adult.total.mass, aes(x = wood, y = total.nsc, fill = wood)) +
   theme(axis.title.x = element_text(size=20)) +
   theme(axis.title.y = element_text(size=20)) +
   theme(legend.text = element_text(size=16)) +
-  stat_summary(fun.data = give.n, geom= "text", aes(y= 160)) + 
+  stat_summary(fun.data = give.n, geom= "text", size = 4, aes(y= 160)) + 
   ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Wood Anatomy") + ggtitle("All Wood Types") +
 #   geom_segment(aes(x=0,y=med.early.conif,xend=7.5,
 #                    yend=med.early.conif),linetype="longdash",color="indianred4") +
@@ -1030,6 +1149,24 @@ ggplot(nsc.adult.total.mass, aes(x = Canopy15, y = total.nsc, fill = Canopy15)) 
   scale_fill_manual(values=rev(cbPalette))
 
 #Mortality
+### some "A " and "A" rows - need to fix
+lm.mortality <- lm(total.nsc ~ Mortality15, data = nsc.adult.total.mass)
+anova(lm.mortality)
+summary(lm.mortality)
+
+ggplot(nsc.adult.total.mass, aes(x = Mortality15, y = total.nsc, fill = Mortality15)) +
+  geom_boxplot() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
+  theme(axis.text.y = element_text(size=16)) +
+  theme(axis.title.x = element_text(size=20)) +
+  theme(axis.title.y = element_text(size=20)) +
+  theme(legend.text = element_text(size=16)) +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 160)) + 
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Mortality Status") + ggtitle("All Mortality Statuses") +
+#   geom_segment(aes(x=0,y=med.early.conif,xend=7.5,
+#                    yend=med.early.conif),linetype="longdash",color="indianred4") +
+#   geom_segment(aes(x=7.5,y=med.late.conif,xend=12,
+#                    yend=med.late.conif),linetype="longdash",color="darkgreen") +
+  scale_fill_manual(values=rev(cbPalette))
 
 ```
 
@@ -1061,6 +1198,44 @@ anova(lm.site.plot.total)
 summary(lm.site.plot.total) #very few site * plot effects
 ```
 
+Relationships between total, starch and sugars
+```{r}
+#starch v. total NSC
+lm.starch2total <- lm(total.nsc ~ starch.mg.g, data = nsc.adult.total.mass)
+anova(lm.starch2total)
+summary(lm.starch2total)
+#strong correlation between starch and total nsc
+#plot
+plot(nsc.adult.total.mass$starch.mg.g, nsc.adult.total.mass$total.nsc)
+abline(lm.starch2total)
+
+#glucose v total NSC
+lm.glucose2total <- lm(total.nsc ~ glucose.mg.g, data = nsc.adult.total.mass)
+anova(lm.glucose2total)
+summary(lm.glucose2total)
+#Very weak relationship between glucose and total
+#Plot
+plot(nsc.adult.total.mass$glucose.mg.g, nsc.adult.total.mass$total.nsc)
+abline(lm.glucose2total)
+
+#fructose v total NSC
+lm.fructose2total <- lm(total.nsc ~ fructose.mg.g, data = nsc.adult.total.mass)
+anova(lm.fructose2total)
+summary(lm.fructose2total)
+#weak relationship between fructose and total
+#Plot
+plot(nsc.adult.total.mass$fructose.mg.g, nsc.adult.total.mass$total.nsc)
+abline(lm.fructose2total)
+
+#sucrose v total NSC
+lm.sucrose2total <- lm(total.nsc ~ sucrose.mg.g, data = nsc.adult.total.mass)
+anova(lm.sucrose2total)
+summary(lm.sucrose2total)
+#Very weak relationship between glucose and total
+#Plot
+plot(nsc.adult.total.mass$sucrose.mg.g, nsc.adult.total.mass$total.nsc)
+abline(lm.sucrose2total)
+```
 You can also embed plots, for example:
 
 ```{r fig.width=7, fig.height=6}
