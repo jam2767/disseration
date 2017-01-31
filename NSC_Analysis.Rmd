@@ -978,6 +978,116 @@ nsc.adult.total.mass.conif$Spp <- factor(nsc.adult.total.mass.conif$Spp,
                               levels = c("ABBA","JUVI","PIPA2","PIST","PIVI2","PIRE",
                                          "PIRI","PITA","LALA","PIGL","PIMA","PIRU",
                                          "THOC2","TSCA"), ordered = TRUE)
+
+#Include only alive and IBS individuals, no dead trees
+alive.total <- which(nsc.adult.total.mass$Mortality14 == "A")
+stress.total <- which(nsc.adult.total.mass$Mortality14 == "IBS")
+
+nsc.adult.total.mass.alive <- rbind(
+                             nsc.adult.total.mass[alive.total,],
+                             nsc.adult.total.mass[stress.total,]
+                             )
+
+count(nsc.adult.total.mass.alive$Spp)
+#remove spp with very low sample size, setting cutoff below 5 because
+#of an arbitrary reason, need to do an actual power analysis
+
+abba <- which(nsc.adult.total.mass.alive$Spp == "ABBA")
+acne2 <- which(nsc.adult.total.mass.alive$Spp == "ACNE2")
+acru <- which(nsc.adult.total.mass.alive$Spp == "ACRU")
+acsa3 <- which(nsc.adult.total.mass.alive$Spp == "ACSA3")
+beal2 <- which(nsc.adult.total.mass.alive$Spp == "BEAL2")
+bele <- which(nsc.adult.total.mass.alive$Spp == "BELE")
+bepa <- which(nsc.adult.total.mass.alive$Spp == "BEPA")
+caco15 <- which(nsc.adult.total.mass.alive$Spp == "CACO15")
+cagl8 <- which(nsc.adult.total.mass.alive$Spp == "CAGL8")
+caov2 <- which(nsc.adult.total.mass.alive$Spp == "CAOV2")
+cato6 <- which(nsc.adult.total.mass.alive$Spp == "CATO6")
+fagr <- which(nsc.adult.total.mass.alive$Spp == "FAGR")
+fram2 <- which(nsc.adult.total.mass.alive$Spp == "FRAM2")
+frni <- which(nsc.adult.total.mass.alive$Spp == "FRNI")
+juni <- which(nsc.adult.total.mass.alive$Spp == "JUNI")
+juvi <- which(nsc.adult.total.mass.alive$Spp == "JUVI")
+list2 <- which(nsc.adult.total.mass.alive$Spp == "LIST2")
+litu <- which(nsc.adult.total.mass.alive$Spp == "LITU")
+mavi2 <- which(nsc.adult.total.mass.alive$Spp == "MAVI2")
+nysy <- which(nsc.adult.total.mass.alive$Spp == "NYSY")
+oxar <- which(nsc.adult.total.mass.alive$Spp == "OXAR")
+pima <- which(nsc.adult.total.mass.alive$Spp == "PIMA")
+pipa2 <- which(nsc.adult.total.mass.alive$Spp == "PIPA2")
+piri <- which(nsc.adult.total.mass.alive$Spp == "PIRI")
+piru <- which(nsc.adult.total.mass.alive$Spp == "PIRU")
+pist <- which(nsc.adult.total.mass.alive$Spp == "PIST")
+pita <- which(nsc.adult.total.mass.alive$Spp == "PITA")
+pogr4 <- which(nsc.adult.total.mass.alive$Spp == "POGR4")
+potr5 <- which(nsc.adult.total.mass.alive$Spp == "POTR5")
+prse2 <- which(nsc.adult.total.mass.alive$Spp == "PRSE2")
+qual <- which(nsc.adult.total.mass.alive$Spp == "QUAL")
+qula2 <- which(nsc.adult.total.mass.alive$Spp == "QULA2")
+qula3 <- which(nsc.adult.total.mass.alive$Spp == "QULA3")
+qumo4 <- which(nsc.adult.total.mass.alive$Spp == "QUMO4")
+qumu <- which(nsc.adult.total.mass.alive$Spp == "QUMU")
+quni <- which(nsc.adult.total.mass.alive$Spp == "QUNI")
+quph <- which(nsc.adult.total.mass.alive$Spp == "QUPH")
+quru <- which(nsc.adult.total.mass.alive$Spp == "QURU")
+quve <- which(nsc.adult.total.mass.alive$Spp == "QUVE")
+quvi <- which(nsc.adult.total.mass.alive$Spp == "QUVI")
+saal5 <- which(nsc.adult.total.mass.alive$Spp == "SAAL5")
+thoc2 <- which(nsc.adult.total.mass.alive$Spp == "THOC2")
+tiam <- which(nsc.adult.total.mass.alive$Spp == "TIAM")
+tsca <- which(nsc.adult.total.mass.alive$Spp == "TSCA")
+ulam <- which(nsc.adult.total.mass.alive$Spp == "ULAM")
+
+nsc.adult.total.mass.alive.common <- rbind(
+                             nsc.adult.total.mass.alive[abba,],
+                             nsc.adult.total.mass.alive[acne2,],
+                             nsc.adult.total.mass.alive[acru,],
+                             nsc.adult.total.mass.alive[acsa3,],
+                             nsc.adult.total.mass.alive[beal2,],
+                             nsc.adult.total.mass.alive[bele,],
+                             nsc.adult.total.mass.alive[bepa,],
+                             nsc.adult.total.mass.alive[caco15,],
+                             nsc.adult.total.mass.alive[cagl8,],
+                             nsc.adult.total.mass.alive[caov2,],
+                             nsc.adult.total.mass.alive[cato6,],
+                             nsc.adult.total.mass.alive[fagr,],
+                             nsc.adult.total.mass.alive[fram2,],
+                             nsc.adult.total.mass.alive[frni,],
+                             nsc.adult.total.mass.alive[juni,],
+                             nsc.adult.total.mass.alive[juvi,],
+                             nsc.adult.total.mass.alive[list2,],
+                             nsc.adult.total.mass.alive[litu,],
+                             nsc.adult.total.mass.alive[mavi2,],
+                             nsc.adult.total.mass.alive[nysy,],
+                             nsc.adult.total.mass.alive[oxar,],
+                             nsc.adult.total.mass.alive[pima,],
+                             nsc.adult.total.mass.alive[pipa2,],
+                             nsc.adult.total.mass.alive[piri,],
+                             nsc.adult.total.mass.alive[piru,],
+                             nsc.adult.total.mass.alive[pist,],
+                             nsc.adult.total.mass.alive[pita,],
+                             nsc.adult.total.mass.alive[pogr4,],
+                             nsc.adult.total.mass.alive[potr5,],
+                             nsc.adult.total.mass.alive[prse2,],
+                             nsc.adult.total.mass.alive[qual,],
+                             nsc.adult.total.mass.alive[qula2,],
+                             nsc.adult.total.mass.alive[qula3,],
+                             nsc.adult.total.mass.alive[qumo4,],
+                             nsc.adult.total.mass.alive[qumu,],
+                             nsc.adult.total.mass.alive[quni,],
+                             nsc.adult.total.mass.alive[quph,],
+                             nsc.adult.total.mass.alive[quru,],
+                             nsc.adult.total.mass.alive[quve,],
+                             nsc.adult.total.mass.alive[quvi,],
+                             nsc.adult.total.mass.alive[saal5,],
+                             nsc.adult.total.mass.alive[thoc2,],
+                             nsc.adult.total.mass.alive[tiam,],
+                             nsc.adult.total.mass.alive[tsca,],
+                             nsc.adult.total.mass.alive[ulam,])
+
+
+
+
 ```
 
 Everything before this is preprocessing of data.
@@ -985,11 +1095,11 @@ Phylogenetics Exploratory Analyses - ANOVA based
 
 ```{r}
 #Species Anova
-lm.species.total <- lm(total.nsc ~ Spp, data = nsc.adult.total.mass)
+lm.species.total <- lm(total.nsc ~ Spp, data = nsc.adult.total.mass.alive.common)
 anova(lm.species.total)
-summary(lm.species.total) #R^2 = .5322
+summary(lm.species.total) #R^2 = .5877
 
-ggplot(nsc.adult.total.mass, aes(x = Spp, y = total.nsc, fill = wood)) + #not enough colors for spp fill
+ggplot(nsc.adult.total.mass.alive.common, aes(x = Spp, y = total.nsc, fill = wood)) + #not enough colors for spp fill
   geom_boxplot() + theme(axis.text.x = element_text(angle=45,hjust=1,size=12)) +
   theme(axis.text.y = element_text(size=16)) +
   theme(axis.title.x = element_text(size=20)) +
@@ -1004,12 +1114,12 @@ ggplot(nsc.adult.total.mass, aes(x = Spp, y = total.nsc, fill = wood)) + #not en
   scale_fill_manual(values=rev(cbPalette))
 
 #Genus anova
-lm.genus.total <- lm(total.nsc ~ genus, data = nsc.adult.total.mass)
+lm.genus.total <- lm(total.nsc ~ genus, data = nsc.adult.total.mass.alive.common)
 anova(lm.genus.total)
-summary(lm.genus.total) #R^2 = .4867
+summary(lm.genus.total) #R^2 = .5464
 
 #Genus ggplot boxplot
-ggplot(nsc.adult.total.mass, aes(x = genus, y = total.nsc, fill = "red")) + #not enough colors for genus fill
+ggplot(nsc.adult.total.mass.alive.common, aes(x = genus, y = total.nsc, fill = "red")) + #not enough colors for genus fill
   geom_boxplot() + theme(axis.text.x = element_text(angle=45,hjust=1,size=12)) +
   theme(axis.text.y = element_text(size=16)) +
   theme(axis.title.x = element_text(size=20)) +
@@ -1024,12 +1134,12 @@ ggplot(nsc.adult.total.mass, aes(x = genus, y = total.nsc, fill = "red")) + #not
   scale_fill_manual(values=rev(cbPalette))
 
 #Family anova
-lm.family.total <- lm(total.nsc ~ family, data = nsc.adult.total.mass)
+lm.family.total <- lm(total.nsc ~ family, data = nsc.adult.total.mass.alive.common)
 anova(lm.family.total)
-summary(lm.family.total) #R^2 = .4685
+summary(lm.family.total) #R^2 = .523
 
 #Family ggplot boxplot
-ggplot(nsc.adult.total.mass, aes(x = family, y = total.nsc, fill = "red")) + #need more colors for fill based on family
+ggplot(nsc.adult.total.mass.alive.common, aes(x = family, y = total.nsc, fill = "red")) + #need more colors for fill based on family
   geom_boxplot() + theme(axis.text.x = element_text(angle=45,hjust=1,size=12)) +
   theme(axis.text.y = element_text(size=16)) +
   theme(axis.title.x = element_text(size=20)) +
@@ -1044,12 +1154,12 @@ ggplot(nsc.adult.total.mass, aes(x = family, y = total.nsc, fill = "red")) + #ne
   scale_fill_manual(values=rev(cbPalette))
 
 #Order ANOVA
-lm.order.total <- lm(total.nsc ~ order, data = nsc.adult.total.mass)
+lm.order.total <- lm(total.nsc ~ order, data = nsc.adult.total.mass.alive.common)
 anova(lm.order.total)
-summary(lm.order.total) #R^2 = .3566
+summary(lm.order.total) #R^2 = .411
 
 #Order ggplot, can also make violin plot
-ggplot(nsc.adult.total.mass, aes(x = order, y = total.nsc, fill = "red")) + #need more colors for fill based on order
+ggplot(nsc.adult.total.mass.alive.common, aes(x = order, y = total.nsc, fill = "red")) + #need more colors for fill based on order
   geom_boxplot() + theme(axis.text.x = element_text(angle=45,hjust=1,size=12)) +
   theme(axis.text.y = element_text(size=16)) +
   theme(axis.title.x = element_text(size=20)) +
@@ -1064,13 +1174,13 @@ ggplot(nsc.adult.total.mass, aes(x = order, y = total.nsc, fill = "red")) + #nee
   scale_fill_manual(values=rev(cbPalette))
 
 #Subclass ANOVA
-lm.subclass.total <- lm(total.nsc ~ subclass, data = nsc.adult.total.mass)
+lm.subclass.total <- lm(total.nsc ~ subclass, data = nsc.adult.total.mass.alive.common)
 anova(lm.subclass.total)
-summary(lm.subclass.total) #R^2 = .3192
+summary(lm.subclass.total) #R^2 = .3771
 
 #Subclass ggplot, can also make violin plot
-ggplot(nsc.adult.total.mass, aes(x = subclass, y = total.nsc, fill = "red")) + #need more colors for fill based on order
-  geom_boxplot() + theme(axis.text.x = element_text(angle=45,hjust=1,size=12)) +
+ggplot(nsc.adult.total.mass.alive.common, aes(x = subclass, y = total.nsc, fill = "red")) + #need more colors for fill based on order
+  geom_violin() + theme(axis.text.x = element_text(angle=45,hjust=1,size=12)) +
   theme(axis.text.y = element_text(size=16)) +
   theme(axis.title.x = element_text(size=20)) +
   theme(axis.title.y = element_text(size=20)) +
@@ -1085,13 +1195,13 @@ ggplot(nsc.adult.total.mass, aes(x = subclass, y = total.nsc, fill = "red")) + #
 
 
 #PFT anova
-lm.pft.total <- lm(total.nsc ~ PFT, data = nsc.adult.total.mass)
+lm.pft.total <- lm(total.nsc ~ PFT, data = nsc.adult.total.mass.alive.common)
 anova(lm.pft.total)
-summary(lm.pft.total) #R^2 = .3336
+summary(lm.pft.total) #R^2 = .363
 
 #PFT ggplot boxplot
-ggplot(nsc.adult.total.mass, aes(x = PFT, y = total.nsc, fill = PFT)) +
-  geom_boxplot() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
+ggplot(nsc.adult.total.mass.alive.common, aes(x = PFT, y = total.nsc, fill = PFT)) +
+  geom_violin() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
   theme(axis.text.y = element_text(size=16)) +
   theme(axis.title.x = element_text(size=20)) +
   theme(axis.title.y = element_text(size=20)) +
@@ -1105,12 +1215,12 @@ ggplot(nsc.adult.total.mass, aes(x = PFT, y = total.nsc, fill = PFT)) +
   scale_fill_manual(values=rev(cbPalette))
 
 #wood anatomy anova
-lm.wood.total <- lm(total.nsc ~ wood, data = nsc.adult.total.mass)
+lm.wood.total <- lm(total.nsc ~ wood, data = nsc.adult.total.mass.alive.common)
 anova(lm.wood.total)
-summary(lm.wood.total) #R^2 = .3789
+summary(lm.wood.total) #R^2 = .4266
 
 #Wood anatomy ggplot boxplot
-ggplot(nsc.adult.total.mass, aes(x = wood, y = total.nsc, fill = wood)) +
+ggplot(nsc.adult.total.mass.alive.common, aes(x = wood, y = total.nsc, fill = wood)) +
   geom_boxplot() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
   theme(axis.text.y = element_text(size=16)) +
   theme(axis.title.x = element_text(size=20)) +
@@ -1129,12 +1239,12 @@ Canopy Status and Mortality
 
 ```{r}
 #Canopy Status
-nsc.adult.total.mass$Canopy15 <- as.factor(nsc.adult.total.mass$Canopy15)
-lm.canopy.total <- lm(total.nsc ~ Canopy15, data = nsc.adult.total.mass)
+#nsc.adult.total.mass$Canopy15 <- as.factor(nsc.adult.total.mass$Canopy15)
+lm.canopy.total <- lm(total.nsc ~ Canopy15, data = nsc.adult.total.mass.alive.common)
 anova(lm.canopy.total)
 summary(lm.canopy.total)
 
-ggplot(nsc.adult.total.mass, aes(x = Canopy15, y = total.nsc, fill = Canopy15)) +
+ggplot(nsc.adult.total.mass.alive.common, aes(x = Canopy15, y = total.nsc, fill = Canopy15)) +
   geom_boxplot() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
   theme(axis.text.y = element_text(size=16)) +
   theme(axis.title.x = element_text(size=20)) +
@@ -1174,11 +1284,11 @@ Region, Landscape, Microsite ANOVA exploratory analysis
 
 ```{r}
 #Site ANOVA
-lm.site.total <- lm(total.nsc ~ Site, data = nsc.adult.total.mass)
+lm.site.total <- lm(total.nsc ~ Site, data = nsc.adult.total.mass.alive.common)
 anova(lm.site.total)
-summary(lm.site.total) #R^2 = 0.1756
+summary(lm.site.total) #R^2 = 0.1997
 
-ggplot(nsc.adult.total.mass, aes(x = Site, y = total.nsc, fill = "red")) +
+ggplot(nsc.adult.total.mass.alive.common, aes(x = Site, y = total.nsc, fill = "red")) +
   geom_boxplot() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
   theme(axis.text.y = element_text(size=16)) +
   theme(axis.title.x = element_text(size=20)) +
@@ -1193,7 +1303,7 @@ ggplot(nsc.adult.total.mass, aes(x = Site, y = total.nsc, fill = "red")) +
   scale_fill_manual(values=rev(cbPalette))
 
 #Site x Plot ANOVA
-lm.site.plot.total <- lm(total.nsc ~ Site/Plot, data = nsc.adult.total.mass)
+lm.site.plot.total <- lm(total.nsc ~ Site/Plot, data = nsc.adult.total.mass.alive.common)
 anova(lm.site.plot.total)
 summary(lm.site.plot.total) #very few site * plot effects
 ```
