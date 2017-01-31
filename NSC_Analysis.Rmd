@@ -9,6 +9,7 @@ This is the analysis for chapter 2 of my dissertation and for the first paper on
 #load libraries
 library(lme4)
 library(ggplot2)
+library(plyr)
 
 #helper functions
 #function to find last value of vector
