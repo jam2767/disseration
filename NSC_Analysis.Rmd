@@ -1435,7 +1435,14 @@ canopy.nsc <- ggplot(nsc.adult.total.mass.alive.common[!is.na(nsc.adult.total.ma
 ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/TotalNSC.AllCommonCanopy.png", plot = canopy.nsc, dpi = 600, width = 6.5, height = 3, units = "in")
 
 #DBH
-qplot(total.nsc, DBH14, data = nsc.adult.total.mass.alive.common)
+dbh.nsc <- ggplot(nsc.adult.total.mass.alive.common, aes(x = DBH14, y = total.nsc)) +
+  geom_point(alpha = .3) +
+  geom_smooth() + # GAM model
+  xlab("DBH") + ylab(expression(paste("Total NSC (mg g"^"-1",")"))) +
+  theme(axis.text.x = element_text(size = 14))
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/TotalNSC.AllCommon.DBH.png", plot = dbh.nsc, dpi = 600, width = 5, height = 3.5, units = "in")
+
 
 #Mortality
 ### some "A " and "A" rows - need to fix
