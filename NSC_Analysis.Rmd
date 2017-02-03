@@ -10,7 +10,8 @@ This is the analysis for chapter 2 of my dissertation and for the first paper on
 library(lme4)
 library(ggplot2)
 library(plyr)
-library(ape)
+#library(ape) not compiling right now
+library(gridExtra)
 
 #helper functions
 #function to find last value of vector
@@ -1253,7 +1254,7 @@ lm.species.total <- lm(total.nsc ~ GenusSpecies, data = nsc.adult.total.mass.ali
 anova(lm.species.total)
 summary(lm.species.total) #R^2 = .5877
 
-nsc.species <- ggplot(nsc.adult.total.mass.alive.common, aes(x = GenusSpecies, y = total.nsc, fill = wood)) + #not enough colors for spp fill
+nsc.species <- ggplot(nsc.adult.total.mass.alive.common, aes(x = GenusSpecies, y = total.nsc, fill = wood)) + 
   geom_boxplot() + theme(axis.text.x = element_text(angle=90,hjust=1,vjust=.5,size=10)) +
   theme(axis.text.y = element_text(size=12)) +
   #theme(axis.title.x = element_text(size=16)) +
@@ -1264,10 +1265,6 @@ nsc.species <- ggplot(nsc.adult.total.mass.alive.common, aes(x = GenusSpecies, y
   labs(fill = "Wood\nAnatomy") +
   stat_summary(fun.data = give.n, geom= "text", size = 3, aes(y= 160)) + 
   ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("") + ggtitle("All Species") +
-#   geom_segment(aes(x=0,y=med.early.conif,xend=7.5,
-#                    yend=med.early.conif),linetype="longdash",color="indianred4") +
-#   geom_segment(aes(x=7.5,y=med.late.conif,xend=12,
-#                    yend=med.late.conif),linetype="longdash",color="darkgreen") +
   scale_fill_manual(values=rev(cbPalette), labels = c("Large Resin", "Small Resin", "No Resin", "Ring Porous", "Semi-ring\nPorous", "Diffuse Porous"))
 
 ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/TotalNSC.AllCommonSpp.png", plot = nsc.species, dpi = 600, width = 10, height = 4.75, units = "in")
@@ -1504,6 +1501,60 @@ summary(lm.sucrose2total)
 #Plot
 plot(nsc.adult.total.mass$sucrose.mg.g, nsc.adult.total.mass$total.nsc)
 abline(lm.sucrose2total)
+
+q.violin.starch <- qplot(Tag, starch.mg.g, data = nsc.adult.total.mass.alive.common, geom = "violin", xlab = "Starch", ylab = "", ylim=c(0,105))
+
+q.violin.glucose <- qplot(Tag, glucose.mg.g, data = nsc.adult.total.mass.alive.common, geom = "violin",xlab = "Glucose", ylab = expression(paste("Concentration mg g"^"-1")), ylim=c(0,105))
+
+q.violin.fructose <- qplot(Tag, fructose.mg.g, data = nsc.adult.total.mass.alive.common, geom = "violin", xlab= "Fructose", ylab = "", ylim=c(0,105))
+
+q.violin.sucrose <- qplot(Tag, sucrose.mg.g, data = nsc.adult.total.mass.alive.common, geom = "violin", xlab ="Sucrose", ylab = "", ylim=c(0,105))
+
+violin.glucose <- ggplot(nsc.adult.total.mass.alive.common, aes(x = Tag, y = glucose.mg.g)) +
+  geom_violin() +
+  theme(axis.text.x = element_blank()) +
+  theme(axis.ticks.x = element_blank()) +
+  labs(x = "Glucose", y = expression(paste("Concentration (mg g"^"-1",")"))) +
+  ylim(0,105) +
+  theme(plot.margin = unit(c(5.5,0,5.5,5.5), "pt"))
+
+violin.fructose <- ggplot(nsc.adult.total.mass.alive.common, aes(x = Tag, y = fructose.mg.g)) +
+  geom_violin() +
+  theme(axis.text.x = element_blank()) +
+  theme(axis.ticks.x = element_blank()) +
+  theme(axis.ticks.y = element_blank()) +
+  theme(axis.text.y = element_blank()) +
+  labs(x = "Fructose", y = "") +
+  ylim(0,105) +
+  theme(plot.margin = unit(c(5.5,0,5.5,-5), "pt"))
+
+violin.sucrose <- ggplot(nsc.adult.total.mass.alive.common, aes(x = Tag, y = sucrose.mg.g)) +
+  geom_violin() +
+  theme(axis.text.x = element_blank()) +
+  theme(axis.ticks.x = element_blank()) +
+  theme(axis.ticks.y = element_blank()) +
+  theme(axis.text.y = element_blank()) +
+  labs(x = "Sucrose", y = "") +
+  ylim(0,105) +
+  theme(plot.margin = unit(c(5.5,0,5.5,-5), "pt"))
+
+violin.starch <- ggplot(nsc.adult.total.mass.alive.common, aes(x = Tag, y = starch.mg.g)) +
+  geom_violin() +
+  theme(axis.text.x = element_blank()) +
+  theme(axis.ticks.x = element_blank()) +
+  theme(axis.ticks.y = element_blank()) +
+  theme(axis.text.y = element_blank()) +
+  labs(x = "Starch", y = "") +
+  ylim(0,105) +
+  theme(plot.margin = unit(c(5.5,5.5,5.5,-5), "pt"))
+
+#combine component concentration plots
+nsc.components <- grid.arrange(violin.glucose, violin.fructose, violin.sucrose, violin.starch, ncol = 4)
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/nsc.components.png", plot = nsc.components, dpi = 600, width = 8, height = 3.5, units = "in")
+
+
+
 ```
 You can also embed plots, for example:
 
