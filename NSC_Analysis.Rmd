@@ -1400,9 +1400,27 @@ nsc.kitchen.lm <- lmer(total.nsc ~ DBH14 + Canopy15 + (1|Site) + (1|Site:GenusSp
 summary(nsc.kitchen.lm)
 plot((nsc.kitchen.lm))
 
-nsc.phylo.lm <- lmer(total.nsc ~ DBH14 + (1|Site) + (1|subclass/order/family/genus/GenusSpecies), nsc.adult.total.mass.alive.common)
+#phylo emphasis
+nsc.phylo.lm <- lmer(total.nsc ~ DBH14 + Canopy15 + (1|Site) + (1|subclass/order/family/genus/GenusSpecies) + (1|PFT) + (1|wood), nsc.adult.total.mass.alive.common)
 summary(nsc.phylo.lm)
+#str(nsc.phylo.lm)
 plot((nsc.phylo.lm))
+
+total.var <- sum(52.68, 93.72, 207.88, 67.34, 36.01, 282.80)
+phylo.vars <- sum(52.68, 93.72, 207.88,36.01)
+phylo <- phylo.vars/total.var
+
+# total.var <- sum(57.37, 3.002, 167.924, 169.875, 70.315, 10.25, 282.812)
+# phylo.var <- sum(57.37, 3.002, 167.924, 169.875, 10.25)
+# phylo.tot <- phylo.var/total.var
+ 
+ # (Intercept)  57.370   7.574  
+ # (Intercept)   3.002   1.733  
+ # (Intercept) 167.924  12.959  
+ # (Intercept) 169.875  13.034  
+ # (Intercept)  70.315   8.385  
+ # (Intercept)  10.250   3.201  
+ #             282.812  16.817  
 
 nsc.trait.lm <- lmer(total.nsc ~ DBH14 + Canopy15 + (1|Site) + (1|PFT) + (1|wood), nsc.adult.total.mass.alive.common)
 summary(nsc.trait.lm)
