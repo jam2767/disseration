@@ -10,6 +10,7 @@ This is the analysis for chapter 2 of my dissertation and for the first paper on
 library(lme4)
 library(ggplot2)
 library(plyr)
+library(ape)
 
 #helper functions
 #function to find last value of vector
@@ -561,9 +562,142 @@ nsc.adult.total.mass$wood <- factor(nsc.adult.total.mass$wood,
                                                "diffuse.porous"), ordered = TRUE)
 
 
-# adding genus and family
-###Reference: http://plants.usda.gov/java/
 
+###Reference: http://plants.usda.gov/java/
+# adding species string
+    alba <- which(nsc.adult.total.mass$Spp == "QUAL")
+    coccinea <- which(nsc.adult.total.mass$Spp == "QUCO2")
+    none <- c(which(nsc.adult.total.mass$Spp == "QUERC"),
+              which(nsc.adult.total.mass$Spp == "BETUL"))
+    imbricaria <- which(nsc.adult.total.mass$Spp == "QUIM")
+    laevis <- which(nsc.adult.total.mass$Spp == "QULA2")
+    laurifolia <- which(nsc.adult.total.mass$Spp == "QULA3")
+    montana <- which(nsc.adult.total.mass$Spp == "QUMO4")
+    muehlenbergii <- which(nsc.adult.total.mass$Spp == "QUMU")
+    nigra <- c(which(nsc.adult.total.mass$Spp == "QUNI"),
+               which(nsc.adult.total.mass$Spp == "FRNI"),
+               which(nsc.adult.total.mass$Spp == "JUNI"))
+    phellos <- which(nsc.adult.total.mass$Spp == "QUPH")
+    rubra <- which(nsc.adult.total.mass$Spp == "QURU")
+    stellata <- which(nsc.adult.total.mass$Spp == "QUST")
+    velutina <- which(nsc.adult.total.mass$Spp == "QUVE")
+    virginiana <- c(which(nsc.adult.total.mass$Spp == "QUVI"),
+                  which(nsc.adult.total.mass$Spp == "MAVI2"),
+                  which(nsc.adult.total.mass$Spp == "DIVI5"),
+                  which(nsc.adult.total.mass$Spp == "PIVI2"),
+                  which(nsc.adult.total.mass$Spp == "JUVI"))
+    americana <- c(which(nsc.adult.total.mass$Spp == "FRAM2"),
+                   which(nsc.adult.total.mass$Spp == "TIAM"),
+                   which(nsc.adult.total.mass$Spp == "ULAM"))
+    quadrangulata <- which(nsc.adult.total.mass$Spp == "FRQU")
+    altissima <- which(nsc.adult.total.mass$Spp == "AIAL")
+    pseudoacacia <- which(nsc.adult.total.mass$Spp == "ROPS")
+    albidum <- which(nsc.adult.total.mass$Spp == "SAAL5")
+    negundo <- which(nsc.adult.total.mass$Spp == "ACNE2")
+    pensylvanicum <- which(nsc.adult.total.mass$Spp == "ACPE")
+    rubrum <- which(nsc.adult.total.mass$Spp == "ACRU")
+    saccharum <- which(nsc.adult.total.mass$Spp == "ACSA3")
+    glabra <- c(which(nsc.adult.total.mass$Spp == "AEGL"),
+                which(nsc.adult.total.mass$Spp == "CAGL8"))
+    alleghaniensis <- which(nsc.adult.total.mass$Spp == "BEAL2")
+    lenta <- which(nsc.adult.total.mass$Spp == "BELE")
+    papyrifera <- which(nsc.adult.total.mass$Spp == "BEPA")
+    caroliniana <- which(nsc.adult.total.mass$Spp == "CACA18")
+    florida <- which(nsc.adult.total.mass$Spp == "COFL2")
+    styraciflua <- which(nsc.adult.total.mass$Spp == "LIST2")
+    tulipifera <- which(nsc.adult.total.mass$Spp == "LITU")
+    acuminata <- which(nsc.adult.total.mass$Spp == "MAAC")
+    fraseri <- which(nsc.adult.total.mass$Spp == "MAFR")
+    grandiflora <- which(nsc.adult.total.mass$Spp == "MAGR4")
+    occidentalis <- which(nsc.adult.total.mass$Spp == "PLOC")
+    grandifolia <- which(nsc.adult.total.mass$Spp == "FAGR")
+    sylvatica <- which(nsc.adult.total.mass$Spp == "NYSY")
+    arboreum <- which(nsc.adult.total.mass$Spp == "OXAR")
+    grandidentata <- which(nsc.adult.total.mass$Spp == "POGR4")
+    tremuloides <- which(nsc.adult.total.mass$Spp == "POTR5")
+    serotina <- which(nsc.adult.total.mass$Spp == "PRSE2")
+    cordiformis <- which(nsc.adult.total.mass$Spp == "CACO15")
+    laciniosa <- which(nsc.adult.total.mass$Spp == "CALA21")
+    ovata <- which(nsc.adult.total.mass$Spp == "CAOV2")
+    tomentosa <- which(nsc.adult.total.mass$Spp == "CATO6")
+    canadensis <- c(which(nsc.adult.total.mass$Spp == "CECA4"),
+                    which(nsc.adult.total.mass$Spp == "TSCA"))
+    cinerea <- which(nsc.adult.total.mass$Spp == "JUCI")
+    palustris <- which(nsc.adult.total.mass$Spp == "PIPA2")
+    strobus <- which(nsc.adult.total.mass$Spp == "PIST")
+    resinosa <- which(nsc.adult.total.mass$Spp == "PIRE")
+    rigida <- which(nsc.adult.total.mass$Spp == "PIRI")
+    taeda <- which(nsc.adult.total.mass$Spp == "PITA")
+    laricina <- which(nsc.adult.total.mass$Spp == "LALA")
+    glauca <- which(nsc.adult.total.mass$Spp == "PIGL")
+    mariana <- which(nsc.adult.total.mass$Spp == "PIMA")
+    rubens <- which(nsc.adult.total.mass$Spp == "PIRU")
+    balsamea <- which(nsc.adult.total.mass$Spp == "ABBA")
+    occidentalis <- which(nsc.adult.total.mass$Spp == "THOC2")
+    
+    ### Set total dataframe for species
+    
+    nsc.adult.total.mass$species <- NA
+    nsc.adult.total.mass$species[alba] <- "alba"
+    nsc.adult.total.mass$species[coccinea] <- "coccinea"
+    nsc.adult.total.mass$species[none] <- "none"
+    nsc.adult.total.mass$species[imbricaria] <- "imbricaria"
+    nsc.adult.total.mass$species[laevis] <- "laevis"
+    nsc.adult.total.mass$species[laurifolia] <- "laurifolia"
+    nsc.adult.total.mass$species[montana] <- "montana"
+    nsc.adult.total.mass$species[muehlenbergii] <- "muehlenbergii"
+    nsc.adult.total.mass$species[nigra] <- "nigra"
+    nsc.adult.total.mass$species[phellos] <- "phellos"
+    nsc.adult.total.mass$species[rubra] <- "rubra"
+    nsc.adult.total.mass$species[stellata] <- "stellata"
+    nsc.adult.total.mass$species[velutina] <- "velutina"
+    nsc.adult.total.mass$species[virginiana] <- "virginiana"
+    nsc.adult.total.mass$species[americana] <- "americana"
+    nsc.adult.total.mass$species[quadrangulata] <- "quadrangulata"
+    nsc.adult.total.mass$species[altissima] <- "altissima"
+    nsc.adult.total.mass$species[pseudoacacia] <- "pseudoacacia"
+    nsc.adult.total.mass$species[albidum] <- "albidum"
+    nsc.adult.total.mass$species[negundo] <- "negundo"
+    nsc.adult.total.mass$species[pensylvanicum] <- "pensylvanicum"
+    nsc.adult.total.mass$species[rubrum] <- "rubrum"
+    nsc.adult.total.mass$species[saccharum] <- "saccharum"
+    nsc.adult.total.mass$species[glabra] <- "glabra"
+    nsc.adult.total.mass$species[alleghaniensis] <- "alleghaniensis"
+    nsc.adult.total.mass$species[lenta] <- "lenta"
+    nsc.adult.total.mass$species[papyrifera] <- "papyrifera"
+    nsc.adult.total.mass$species[caroliniana] <- "caroliniana"
+    nsc.adult.total.mass$species[florida] <- "florida"
+    nsc.adult.total.mass$species[styraciflua] <- "styraciflua"
+    nsc.adult.total.mass$species[tulipifera] <- "tulipifera"
+    nsc.adult.total.mass$species[acuminata] <- "acuminata"
+    nsc.adult.total.mass$species[fraseri] <- "fraseri"
+    nsc.adult.total.mass$species[grandiflora] <- "grandiflora"
+    nsc.adult.total.mass$species[occidentalis] <- "occidentalis"
+    nsc.adult.total.mass$species[grandifolia] <- "grandifolia"
+    nsc.adult.total.mass$species[sylvatica] <- "sylvatica"
+    nsc.adult.total.mass$species[arboreum] <- "arboreum"
+    nsc.adult.total.mass$species[grandidentata] <- "grandidentata"
+    nsc.adult.total.mass$species[tremuloides] <- "tremuloides"
+    nsc.adult.total.mass$species[serotina] <- "serotina"
+    nsc.adult.total.mass$species[cordiformis] <- "cordiformis"
+    nsc.adult.total.mass$species[laciniosa] <- "laciniosa"
+    nsc.adult.total.mass$species[ovata] <- "ovata"
+    nsc.adult.total.mass$species[tomentosa] <- "tomentosa"
+    nsc.adult.total.mass$species[canadensis] <- "canadensis"
+    nsc.adult.total.mass$species[cinerea] <- "cinerea"
+    nsc.adult.total.mass$species[palustris] <- "palustris"
+    nsc.adult.total.mass$species[strobus] <- "strobus"
+    nsc.adult.total.mass$species[resinosa] <- "resinosa"
+    nsc.adult.total.mass$species[rigida] <- "rigida"
+    nsc.adult.total.mass$species[taeda] <- "taeda"
+    nsc.adult.total.mass$species[laricina] <- "laricina"
+    nsc.adult.total.mass$species[glauca] <- "glauca"
+    nsc.adult.total.mass$species[mariana] <- "mariana"
+    nsc.adult.total.mass$species[rubens] <- "rubens"
+    nsc.adult.total.mass$species[balsamea] <- "balsamea"
+    nsc.adult.total.mass$species[occidentalis] <- "occidentalis"
+
+# adding genus and family
   ### Hardwoods
 
     Quercus <- c(                
@@ -698,12 +832,12 @@ Liriodendron <- c(
 
   ### Conifers
       Pinus <- c(
-                which(nsc.adult.total.mass$Genus == "PIPA2"),
-                which(nsc.adult.total.mass$Genus == "PIST"),
-                which(nsc.adult.total.mass$Genus == "PIVI2"),
-                which(nsc.adult.total.mass$Genus == "PIRE"),
-                which(nsc.adult.total.mass$Genus == "PIRI"),
-                which(nsc.adult.total.mass$Genus == "PITA")
+                which(nsc.adult.total.mass$Spp == "PIPA2"),
+                which(nsc.adult.total.mass$Spp == "PIST"),
+                which(nsc.adult.total.mass$Spp == "PIVI2"),
+                which(nsc.adult.total.mass$Spp == "PIRE"),
+                which(nsc.adult.total.mass$Spp == "PIRI"),
+                which(nsc.adult.total.mass$Spp == "PITA")
                 )
       
       Larix <- c(
@@ -748,6 +882,7 @@ Juniperus <- c(
     nsc.adult.total.mass$genus[Fraxinus] <- "Fraxinus"
     nsc.adult.total.mass$genus[Ailanthus] <- "Ailanthus"
     nsc.adult.total.mass$genus[Robinia] <- "Robinia"
+    nsc.adult.total.mass$genus[Sassafras] <- "Sassafras"
     nsc.adult.total.mass$genus[Acer] <- "Acer"
     nsc.adult.total.mass$genus[Aesculus] <- "Aesculus"
     nsc.adult.total.mass$genus[Betula] <- "Betula"
@@ -802,6 +937,8 @@ Juniperus <- c(
   Juglandaceae <- c(which(nsc.adult.total.mass$genus == "Carya"),
                     which(nsc.adult.total.mass$genus == "Juglans"))
   
+  Lauraceae <- c(which(nsc.adult.total.mass$genus == "Sassafras"))
+  
   Magnoliaceae <- c(which(nsc.adult.total.mass$genus == "Liriodendron"),
                     which(nsc.adult.total.mass$genus == "Magnolia"))
   
@@ -826,6 +963,10 @@ Juniperus <- c(
   
   Ulmaceae <- c(which(nsc.adult.total.mass$genus == "Ulmus"))
   
+  #Make single genus-species column
+    nsc.adult.total.mass$GenusSpecies <- NA
+    nsc.adult.total.mass$GenusSpecies <- with(nsc.adult.total.mass, paste(genus, species))
+  
   #Set total dataframe for Family
   nsc.adult.total.mass$family <- NA
     nsc.adult.total.mass$family[Aceraceae] <- "Aceraceae"
@@ -839,6 +980,7 @@ Juniperus <- c(
     nsc.adult.total.mass$family[Hamamelidaceae] <- "Hamamelidaceae"
     nsc.adult.total.mass$family[Hippocastanaceae] <- "Hippocastanaceae"
     nsc.adult.total.mass$family[Juglandaceae] <- "Juglandaceae"
+    nsc.adult.total.mass$family[Sassafras] <- "Lauraceae"
     nsc.adult.total.mass$family[Magnoliaceae] <- "Magnoliaceae"
     nsc.adult.total.mass$family[Oleaceae] <- "Oleaceae"   
     nsc.adult.total.mass$family[Pinaceae] <- "Pinaceae"
@@ -870,6 +1012,7 @@ Juniperus <- c(
                        which(nsc.adult.total.mass$family == "Platanaceae"))
     
     Juglandales <- c(which(nsc.adult.total.mass$family == "Juglandaceae"))
+    Laurales <- c(which(nsc.adult.total.mass$family == "Lauraceae"))
     Magnoliales <- c(which(nsc.adult.total.mass$family == "Magnoliaceae"))
     Scrophulariales <- c(which(nsc.adult.total.mass$family == "Oleaceae"))
     Rosales <- c(which(nsc.adult.total.mass$family == "Rosaceae"))
@@ -888,6 +1031,7 @@ Juniperus <- c(
     nsc.adult.total.mass$order[Fabales] <- "Fabales"
     nsc.adult.total.mass$order[Hamamelidales] <- "Hamamelidales"
     nsc.adult.total.mass$order[Juglandales] <- "Juglandales"
+    nsc.adult.total.mass$order[Laurales] <- "Laurales"
     nsc.adult.total.mass$order[Magnoliales] <- "Magnoliales"
     nsc.adult.total.mass$order[Scrophulariales] <- "Scrophulariales"
     nsc.adult.total.mass$order[Rosales] <- "Rosales"
@@ -913,7 +1057,8 @@ Juniperus <- c(
                      which(nsc.adult.total.mass$order == "Salicales"),
                      which(nsc.adult.total.mass$order == "Malvales"))
     
-    Magnoliidae <- c(which(nsc.adult.total.mass$order == "Magnoliales"))
+    Magnoliidae <- c(which(nsc.adult.total.mass$order == "Magnoliales"),
+                     which(nsc.adult.total.mass$order == "Laurales"))
     
     Asteridae <- c(which(nsc.adult.total.mass$order == "Scrophulariales"))
     
@@ -1086,8 +1231,16 @@ nsc.adult.total.mass.alive.common <- rbind(
                              nsc.adult.total.mass.alive[tsca,],
                              nsc.adult.total.mass.alive[ulam,])
 
+write.csv(x = nsc.adult.total.mass.alive.common, file = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Data/nsc.adult.total.mass.alive.common.csv")
 
+nsc.adult.total.mass.alive.common$GenusSpecies <- factor(nsc.adult.total.mass.alive.common$GenusSpecies, 
+                  levels = c("Juniperus virginiana","Thuja occidentalis","Abies balsamea","Tsuga canadensis","Picea mariana", "Picea rubens","Pinus strobus","Pinus palustris","Pinus taeda","Pinus rigida","Sassafras albidum","Magnolia virginiana","Liriodendron tulipifera","Liquidambar styraciflua","Oxydendrum arboreum","Nyssa sylvatica","Fraxinus americana","Fraxinus nigra","Tilia americana","Acer rubrum","Acer saccharum","Acer negundo","Populus grandidentata","Populus tremuloides","Prunus serotina","Ulmus americana","Betula lenta","Betula papyrifera","Betula alleghaniensis","Juglans nigra","Carya glabra","Carya cordiformis","Carya ovata","Carya tomentosa","Fagus grandifolia","Quercus laurifolia","Quercus alba","Quercus velutina","Quercus nigra","Quercus laevis","Quercus montana","Quercus rubra","Quercus virginiana","Quercus muehlenbergii","Quercus phellos"), ordered = TRUE)
 
+# read.nexus(file = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Data/NSCnexus.txt")
+# read.newick(file = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Data/NSCnewick.txt")
+# read.tree(text = phylotree)
+# collapse.singles(phylotree)
+# read.tree(file = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Data/kpFZcV9XjpZp8D4oS-HXxQ_newick.txt")
 
 ```
 
@@ -1096,23 +1249,28 @@ Phylogenetics Exploratory Analyses - ANOVA based
 
 ```{r}
 #Species Anova
-lm.species.total <- lm(total.nsc ~ Spp, data = nsc.adult.total.mass.alive.common)
+lm.species.total <- lm(total.nsc ~ GenusSpecies, data = nsc.adult.total.mass.alive.common)
 anova(lm.species.total)
 summary(lm.species.total) #R^2 = .5877
 
-ggplot(nsc.adult.total.mass.alive.common, aes(x = Spp, y = total.nsc, fill = wood)) + #not enough colors for spp fill
-  geom_boxplot() + theme(axis.text.x = element_text(angle=45,hjust=1,size=12)) +
-  theme(axis.text.y = element_text(size=16)) +
-  theme(axis.title.x = element_text(size=20)) +
-  theme(axis.title.y = element_text(size=20)) +
-  theme(legend.text = element_text(size=16)) +
-  stat_summary(fun.data = give.n, geom= "text", aes(y= 160)) + 
-  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Species") + ggtitle("All Species") +
+nsc.species <- ggplot(nsc.adult.total.mass.alive.common, aes(x = GenusSpecies, y = total.nsc, fill = wood)) + #not enough colors for spp fill
+  geom_boxplot() + theme(axis.text.x = element_text(angle=90,hjust=1,vjust=.5,size=10)) +
+  theme(axis.text.y = element_text(size=12)) +
+  #theme(axis.title.x = element_text(size=16)) +
+  theme(axis.title.y = element_text(size=14)) +
+  theme(legend.text = element_text(size=10)) + 
+  theme(legend.title = element_text(size = 14)) +
+  theme(legend.key.size = unit(.4, "cm")) +
+  labs(fill = "Wood\nAnatomy") +
+  stat_summary(fun.data = give.n, geom= "text", size = 3, aes(y= 160)) + 
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("") + ggtitle("All Species") +
 #   geom_segment(aes(x=0,y=med.early.conif,xend=7.5,
 #                    yend=med.early.conif),linetype="longdash",color="indianred4") +
 #   geom_segment(aes(x=7.5,y=med.late.conif,xend=12,
 #                    yend=med.late.conif),linetype="longdash",color="darkgreen") +
-  scale_fill_manual(values=rev(cbPalette))
+  scale_fill_manual(values=rev(cbPalette), labels = c("Large Resin", "Small Resin", "No Resin", "Ring Porous", "Semi-ring\nPorous", "Diffuse Porous"))
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/TotalNSC.AllCommonSpp.png", plot = nsc.species, dpi = 600, width = 10, height = 4.75, units = "in")
 
 #Genus anova
 lm.genus.total <- lm(total.nsc ~ genus, data = nsc.adult.total.mass.alive.common)
@@ -1120,8 +1278,8 @@ anova(lm.genus.total)
 summary(lm.genus.total) #R^2 = .5464
 
 #Genus ggplot boxplot
-ggplot(nsc.adult.total.mass.alive.common, aes(x = genus, y = total.nsc, fill = "red")) + #not enough colors for genus fill
-  geom_boxplot() + theme(axis.text.x = element_text(angle=45,hjust=1,size=12)) +
+ggplot(nsc.adult.total.mass.alive.common, aes(x = genus, y = total.nsc, fill = wood)) + #not enough colors for genus fill
+  geom_boxplot() + theme(axis.text.x = element_text(angle=90,hjust=1,size=12)) +
   theme(axis.text.y = element_text(size=16)) +
   theme(axis.title.x = element_text(size=20)) +
   theme(axis.title.y = element_text(size=20)) +
@@ -1312,7 +1470,7 @@ summary(lm.site.plot.total) #very few site * plot effects
 Relationships between total, starch and sugars
 ```{r}
 #starch v. total NSC
-lm.starch2total <- lm(total.nsc ~ starch.mg.g, data = nsc.adult.total.mass)
+lm.starch2total <- lm(total.nsc ~ starch.mg.g, data = nsc.adult.total.mass.alive.common)
 anova(lm.starch2total)
 summary(lm.starch2total)
 #strong correlation between starch and total nsc
@@ -1321,7 +1479,7 @@ plot(nsc.adult.total.mass$starch.mg.g, nsc.adult.total.mass$total.nsc)
 abline(lm.starch2total)
 
 #glucose v total NSC
-lm.glucose2total <- lm(total.nsc ~ glucose.mg.g, data = nsc.adult.total.mass)
+lm.glucose2total <- lm(total.nsc ~ glucose.mg.g, data = nsc.adult.total.mass.alive.common)
 anova(lm.glucose2total)
 summary(lm.glucose2total)
 #Very weak relationship between glucose and total
@@ -1330,7 +1488,7 @@ plot(nsc.adult.total.mass$glucose.mg.g, nsc.adult.total.mass$total.nsc)
 abline(lm.glucose2total)
 
 #fructose v total NSC
-lm.fructose2total <- lm(total.nsc ~ fructose.mg.g, data = nsc.adult.total.mass)
+lm.fructose2total <- lm(total.nsc ~ fructose.mg.g, data = nsc.adult.total.mass.alive.common)
 anova(lm.fructose2total)
 summary(lm.fructose2total)
 #weak relationship between fructose and total
@@ -1339,7 +1497,7 @@ plot(nsc.adult.total.mass$fructose.mg.g, nsc.adult.total.mass$total.nsc)
 abline(lm.fructose2total)
 
 #sucrose v total NSC
-lm.sucrose2total <- lm(total.nsc ~ sucrose.mg.g, data = nsc.adult.total.mass)
+lm.sucrose2total <- lm(total.nsc ~ sucrose.mg.g, data = nsc.adult.total.mass.alive.common)
 anova(lm.sucrose2total)
 summary(lm.sucrose2total)
 #Very weak relationship between glucose and total
