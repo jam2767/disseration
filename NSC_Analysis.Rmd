@@ -1237,6 +1237,10 @@ write.csv(x = nsc.adult.total.mass.alive.common, file = "/Users/josh/Dropbox/Dis
 nsc.adult.total.mass.alive.common$GenusSpecies <- factor(nsc.adult.total.mass.alive.common$GenusSpecies, 
                   levels = c("Juniperus virginiana","Thuja occidentalis","Abies balsamea","Tsuga canadensis","Picea mariana", "Picea rubens","Pinus strobus","Pinus palustris","Pinus taeda","Pinus rigida","Sassafras albidum","Magnolia virginiana","Liriodendron tulipifera","Liquidambar styraciflua","Oxydendrum arboreum","Nyssa sylvatica","Fraxinus americana","Fraxinus nigra","Tilia americana","Acer rubrum","Acer saccharum","Acer negundo","Populus grandidentata","Populus tremuloides","Prunus serotina","Ulmus americana","Betula lenta","Betula papyrifera","Betula alleghaniensis","Juglans nigra","Carya glabra","Carya cordiformis","Carya ovata","Carya tomentosa","Fagus grandifolia","Quercus laurifolia","Quercus alba","Quercus velutina","Quercus nigra","Quercus laevis","Quercus montana","Quercus rubra","Quercus virginiana","Quercus muehlenbergii","Quercus phellos"), ordered = TRUE)
 
+nsc.adult.total.mass.alive.common$wood <- factor(nsc.adult.total.mass.alive.common$wood, levels = c("large.resin","small.resin", "no.resin","ring.porous","semiring.porous","diffuse.porous"), ordered = TRUE)
+
+nsc.adult.total.mass.alive.common$PFT <- factor(nsc.adult.total.mass.alive.common$PFT, levels = c("Early.Conifer","Late.Conifer","Early.Hardwood","Mid.Hardwood","Late.Hardwood"), ordered = TRUE)
+
 # read.nexus(file = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Data/NSCnexus.txt")
 # read.newick(file = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Data/NSCnewick.txt")
 # read.tree(text = phylotree)
@@ -1355,20 +1359,19 @@ lm.pft.total <- lm(total.nsc ~ PFT, data = nsc.adult.total.mass.alive.common)
 anova(lm.pft.total)
 summary(lm.pft.total) #R^2 = .363
 
-#PFT ggplot boxplot
-ggplot(nsc.adult.total.mass.alive.common, aes(x = PFT, y = total.nsc, fill = PFT)) +
+#PFT ggplot 
+pft.violin <- ggplot(nsc.adult.total.mass.alive.common, aes(x = PFT, y = total.nsc)) + #, fill = PFT
   geom_violin() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
-  theme(axis.text.y = element_text(size=16)) +
-  theme(axis.title.x = element_text(size=20)) +
-  theme(axis.title.y = element_text(size=20)) +
-  theme(legend.text = element_text(size=16)) +
-  stat_summary(fun.data = give.n, geom= "text", aes(y= 160)) + 
-  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Plant Functional Type") + ggtitle("All PFTs") +
-#   geom_segment(aes(x=0,y=med.early.conif,xend=7.5,
-#                    yend=med.early.conif),linetype="longdash",color="indianred4") +
-#   geom_segment(aes(x=7.5,y=med.late.conif,xend=12,
-#                    yend=med.late.conif),linetype="longdash",color="darkgreen") +
-  scale_fill_manual(values=rev(cbPalette))
+  theme(axis.text.y = element_text(size=12)) +
+  theme(axis.title.x = element_text(size=14)) +
+  theme(axis.title.y = element_text(size=14)) +
+  theme(axis.text.x = element_text(size=12)) +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 180)) + 
+  stat_summary(fun.y="median", geom="point") +
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Plant Functional Type") #+ ggtitle("All PFTs")
+  #scale_fill_manual(values=rev(cbPalette))
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/TotalNSC.AllCommonPFT.png", plot = pft.violin, dpi = 600, width = 7.5, height = 3.5, units = "in")
 
 #wood anatomy anova
 lm.wood.total <- lm(total.nsc ~ wood, data = nsc.adult.total.mass.alive.common)
@@ -1376,43 +1379,63 @@ anova(lm.wood.total)
 summary(lm.wood.total) #R^2 = .4266
 
 #Wood anatomy ggplot boxplot
-ggplot(nsc.adult.total.mass.alive.common, aes(x = wood, y = total.nsc, fill = wood)) +
-  geom_boxplot() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
-  theme(axis.text.y = element_text(size=16)) +
-  theme(axis.title.x = element_text(size=20)) +
-  theme(axis.title.y = element_text(size=20)) +
-  theme(legend.text = element_text(size=16)) +
-  stat_summary(fun.data = give.n, geom= "text", size = 4, aes(y= 160)) + 
-  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Wood Anatomy") + ggtitle("All Wood Types") +
-#   geom_segment(aes(x=0,y=med.early.conif,xend=7.5,
-#                    yend=med.early.conif),linetype="longdash",color="indianred4") +
-#   geom_segment(aes(x=7.5,y=med.late.conif,xend=12,
-#                    yend=med.late.conif),linetype="longdash",color="darkgreen") +
+wood.anatomy.nsc <- ggplot(nsc.adult.total.mass.alive.common, aes(x = wood, y = total.nsc, fill = wood)) +
+  geom_violin() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
+  theme(axis.text.y = element_text(size=12)) +
+  theme(axis.title.x = element_text(size=14)) +
+  theme(axis.title.y = element_text(size=14)) +
+  theme(axis.text.x = element_text(size = 12)) +
+  theme(legend.text = element_blank()) +
+  theme(legend.position = "none") +
+  stat_summary(fun.data = give.n, geom= "text", size = 4, aes(y= 180)) + 
+  stat_summary(fun.y="median", geom="point") +
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Wood Anatomy") + #ggtitle("All Wood Types") +
+  scale_x_discrete(labels = c("Large Resin", "Small Resin", "No Resin", "Ring Porous", "Semi-ring Porous", "Diffuse Porous")) +
   scale_fill_manual(values=rev(cbPalette))
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/TotalNSC.AllCommonWoodAnat.png", plot = wood.anatomy.nsc, dpi = 600, width = 7.5, height = 3.5, units = "in")
+
+#Kitchen sink: phylogenetics fit independently
+nsc.kitchen.lm <- lmer(total.nsc ~ DBH14 + Canopy15 + (1|Site) + (1|Site:GenusSpecies) + (1|GenusSpecies) + (1|genus) + (1|family) + (1|order) + (1|subclass) + (1|PFT) + (1|wood), nsc.adult.total.mass.alive.common)
+summary(nsc.kitchen.lm)
+plot((nsc.kitchen.lm))
+
+nsc.phylo.lm <- lmer(total.nsc ~ DBH14 + (1|Site) + (1|subclass/order/family/genus/GenusSpecies), nsc.adult.total.mass.alive.common)
+summary(nsc.phylo.lm)
+plot((nsc.phylo.lm))
+
+nsc.trait.lm <- lmer(total.nsc ~ DBH14 + Canopy15 + (1|Site) + (1|PFT) + (1|wood), nsc.adult.total.mass.alive.common)
+summary(nsc.trait.lm)
+plot((nsc.trait.lm))
+
+
 ```
 
 Canopy Status and Mortality
 
 ```{r}
 #Canopy Status
-#nsc.adult.total.mass$Canopy15 <- as.factor(nsc.adult.total.mass$Canopy15)
+nsc.adult.total.mass.alive.common$Canopy15 <- as.factor(nsc.adult.total.mass.alive.common$Canopy15)
 lm.canopy.total <- lm(total.nsc ~ Canopy15, data = nsc.adult.total.mass.alive.common)
 anova(lm.canopy.total)
 summary(lm.canopy.total)
 
-ggplot(nsc.adult.total.mass.alive.common, aes(x = Canopy15, y = total.nsc, fill = Canopy15)) +
-  geom_boxplot() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
-  theme(axis.text.y = element_text(size=16)) +
-  theme(axis.title.x = element_text(size=20)) +
-  theme(axis.title.y = element_text(size=20)) +
-  theme(legend.text = element_text(size=16)) +
-  stat_summary(fun.data = give.n, geom= "text", aes(y= 160)) + 
-  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Canopy Status") + ggtitle("All Canopy Statuses") +
-#   geom_segment(aes(x=0,y=med.early.conif,xend=7.5,
-#                    yend=med.early.conif),linetype="longdash",color="indianred4") +
-#   geom_segment(aes(x=7.5,y=med.late.conif,xend=12,
-#                    yend=med.late.conif),linetype="longdash",color="darkgreen") +
-  scale_fill_manual(values=rev(cbPalette))
+canopy.nsc <- ggplot(nsc.adult.total.mass.alive.common[!is.na(nsc.adult.total.mass.alive.common$Canopy15),], aes(x = Canopy15, y = total.nsc)) +
+  geom_violin() + theme(axis.text.x = element_text(angle=0,hjust=.5,vjust = .5, size=16)) +
+  theme(axis.text.y = element_text(size=12)) +
+  theme(axis.title.x = element_text(size=14)) +
+  theme(axis.title.y = element_text(size=14)) +
+  theme(axis.text.x = element_text(size=12)) +
+  stat_summary(fun.y="median", geom="point") +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 180)) + 
+  scale_x_discrete(labels = c("Understory", "Co-dominant", "Dominant")) +
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Canopy Status") # + ggtitle("All Canopy Statuses") +
+  #scale_fill_manual(values=rev(cbPalette))
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/TotalNSC.AllCommonCanopy.png", plot = canopy.nsc, dpi = 600, width = 6.5, height = 3, units = "in")
+
+#DBH
+qplot(total.nsc, DBH14, data = nsc.adult.total.mass.alive.common)
 
 #Mortality
 ### some "A " and "A" rows - need to fix
@@ -1502,13 +1525,7 @@ summary(lm.sucrose2total)
 plot(nsc.adult.total.mass$sucrose.mg.g, nsc.adult.total.mass$total.nsc)
 abline(lm.sucrose2total)
 
-q.violin.starch <- qplot(Tag, starch.mg.g, data = nsc.adult.total.mass.alive.common, geom = "violin", xlab = "Starch", ylab = "", ylim=c(0,105))
-
-q.violin.glucose <- qplot(Tag, glucose.mg.g, data = nsc.adult.total.mass.alive.common, geom = "violin",xlab = "Glucose", ylab = expression(paste("Concentration mg g"^"-1")), ylim=c(0,105))
-
-q.violin.fructose <- qplot(Tag, fructose.mg.g, data = nsc.adult.total.mass.alive.common, geom = "violin", xlab= "Fructose", ylab = "", ylim=c(0,105))
-
-q.violin.sucrose <- qplot(Tag, sucrose.mg.g, data = nsc.adult.total.mass.alive.common, geom = "violin", xlab ="Sucrose", ylab = "", ylim=c(0,105))
+#Violin plots of componenets of NSCs
 
 violin.glucose <- ggplot(nsc.adult.total.mass.alive.common, aes(x = Tag, y = glucose.mg.g)) +
   geom_violin() +
