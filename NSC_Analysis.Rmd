@@ -1406,9 +1406,9 @@ summary(nsc.phylo.lm)
 #str(nsc.phylo.lm)
 plot((nsc.phylo.lm))
 
-total.var <- sum(52.68, 93.72, 207.88, 67.34, 36.01, 282.80)
-phylo.vars <- sum(52.68, 93.72, 207.88,36.01)
-phylo <- phylo.vars/total.var
+# total.var <- sum(52.68, 93.72, 207.88, 67.34, 36.01, 282.80)
+# phylo.vars <- sum(52.68, 93.72, 207.88,36.01)
+# phylo <- phylo.vars/total.var
 
 # total.var <- sum(57.37, 3.002, 167.924, 169.875, 70.315, 10.25, 282.812)
 # phylo.var <- sum(57.37, 3.002, 167.924, 169.875, 10.25)
@@ -1462,6 +1462,107 @@ dbh.nsc <- ggplot(nsc.adult.total.mass.alive.common, aes(x = DBH14, y = total.ns
 ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/TotalNSC.AllCommon.DBH.png", plot = dbh.nsc, dpi = 600, width = 5, height = 3.5, units = "in")
 
 
+###DBH and Canopy Analysis for most common species
+#Quercus dataframe
+quercus.sort <- which(nsc.adult.total.mass.alive.common$genus == "Quercus")
+nsc.adult.quercus <- nsc.adult.total.mass.alive.common[quercus.sort,]
+
+#DBH quercus
+dbh.nsc.quercus <- ggplot(nsc.adult.quercus, aes(x = DBH14, y = total.nsc)) +
+  geom_point(alpha = .3) +
+  geom_smooth() + # GAM model
+  xlab("DBH") + ylab(expression(paste("Total NSC (mg g"^"-1",")"))) +
+  theme(axis.text.x = element_text(size = 14))
+
+#lm for DBH:NSC
+lm.dbh.querc <- lm(total.nsc ~ DBH14, data = nsc.adult.quercus)
+anova(lm.dbh.querc)
+summary(lm.dbh.querc)
+
+#Canopy quercus
+canopy.nsc.quercus <- ggplot(nsc.adult.quercus[!is.na(nsc.adult.quercus$Canopy15),], aes(x = as.factor(Canopy15), y = total.nsc)) +
+  geom_boxplot() + theme(axis.text.x = element_text(angle=0,hjust=.5,vjust = .5, size=16)) +
+  theme(axis.text.y = element_text(size=12)) +
+  theme(axis.title.x = element_text(size=14)) +
+  theme(axis.title.y = element_text(size=14)) +
+  theme(axis.text.x = element_text(size=12)) +
+  stat_summary(fun.y="median", geom="point") +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 180)) + 
+  scale_x_discrete(labels = c("Understory", "Co-dominant", "Dominant")) +
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Canopy Status") # + ggtitle("All Canopy Statuses") +
+  #scale_fill_manual(values=rev(cbPalette))
+
+#FAGR dataframe
+fagus.sort <- which(nsc.adult.total.mass.alive.common$genus == "Fagus")
+nsc.adult.fagus <- nsc.adult.total.mass.alive.common[fagus.sort,]
+
+#DBH fagus
+dbh.nsc.fagus <- ggplot(nsc.adult.fagus, aes(x = DBH14, y = total.nsc)) +
+  geom_point(alpha = .3) +
+  geom_smooth() + # GAM model
+  xlab("DBH") + ylab(expression(paste("Total NSC (mg g"^"-1",")"))) +
+  theme(axis.text.x = element_text(size = 14))
+
+#Canopy Fagus
+canopy.nsc.fagus <- ggplot(nsc.adult.fagus[!is.na(nsc.adult.fagus$Canopy15),], aes(x = as.factor(Canopy15), y = total.nsc)) +
+  geom_boxplot() + theme(axis.text.x = element_text(angle=0,hjust=.5,vjust = .5, size=16)) +
+  theme(axis.text.y = element_text(size=12)) +
+  theme(axis.title.x = element_text(size=14)) +
+  theme(axis.title.y = element_text(size=14)) +
+  theme(axis.text.x = element_text(size=12)) +
+  stat_summary(fun.y="median", geom="point") +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 180)) + 
+  scale_x_discrete(labels = c("Understory", "Co-dominant", "Dominant")) +
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Canopy Status") # + ggtitle("All Canopy Statuses") +
+  #scale_fill_manual(values=rev(cbPalette))
+
+#TSCA dataframe
+tsuga.sort <- which(nsc.adult.total.mass.alive.common$genus == "Tsuga")
+nsc.adult.tsuga <- nsc.adult.total.mass.alive.common[tsuga.sort,]
+
+dbh.nsc.tsuga <- ggplot(nsc.adult.tsuga, aes(x = DBH14, y = total.nsc)) +
+  geom_point(alpha = .3) +
+  geom_smooth() + # GAM model
+  xlab("DBH") + ylab(expression(paste("Total NSC (mg g"^"-1",")"))) +
+  theme(axis.text.x = element_text(size = 14))
+
+#Canopy Tsuga
+canopy.nsc.tsuga <- ggplot(nsc.adult.tsuga[!is.na(nsc.adult.tsuga$Canopy15),], aes(x = as.factor(Canopy15), y = total.nsc)) +
+  geom_boxplot() + theme(axis.text.x = element_text(angle=0,hjust=.5,vjust = .5, size=16)) +
+  theme(axis.text.y = element_text(size=12)) +
+  theme(axis.title.x = element_text(size=14)) +
+  theme(axis.title.y = element_text(size=14)) +
+  theme(axis.text.x = element_text(size=12)) +
+  stat_summary(fun.y="median", geom="point") +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 180)) + 
+  scale_x_discrete(labels = c("Understory", "Co-dominant", "Dominant")) +
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Canopy Status") # + ggtitle("All Canopy Statuses") +
+  #scale_fill_manual(values=rev(cbPalette))
+
+#ACRU dataframe
+acru.sort <- which(nsc.adult.total.mass.alive.common$GenusSpecies == "Acer rubrum")
+nsc.adult.acru <- nsc.adult.total.mass.alive.common[acru.sort,]
+
+#DBH ACRU
+dbh.nsc.acru <- ggplot(nsc.adult.acru, aes(x = DBH14, y = total.nsc)) +
+  geom_point(alpha = .3) +
+  geom_smooth() + # GAM model
+  xlab("DBH") + ylab(expression(paste("Total NSC (mg g"^"-1",")"))) +
+  theme(axis.text.x = element_text(size = 14))
+
+canopy.nsc.acru <- ggplot(nsc.adult.acru[!is.na(nsc.adult.acru$Canopy15),], aes(x = as.factor(Canopy15), y = total.nsc)) +
+  geom_boxplot() + theme(axis.text.x = element_text(angle=0,hjust=.5,vjust = .5, size=16)) +
+  theme(axis.text.y = element_text(size=12)) +
+  theme(axis.title.x = element_text(size=14)) +
+  theme(axis.title.y = element_text(size=14)) +
+  theme(axis.text.x = element_text(size=12)) +
+  stat_summary(fun.y="median", geom="point") +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 180)) + 
+  scale_x_discrete(labels = c("Understory", "Co-dominant", "Dominant")) +
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Canopy Status") # + ggtitle("All Canopy Statuses") +
+  #scale_fill_manual(values=rev(cbPalette))
+
+
 #Mortality
 ### some "A " and "A" rows - need to fix
 lm.mortality <- lm(total.nsc ~ Mortality15, data = nsc.adult.total.mass)
@@ -1487,6 +1588,11 @@ ggplot(nsc.adult.total.mass, aes(x = Mortality15, y = total.nsc, fill = Mortalit
 Region, Landscape, Microsite ANOVA exploratory analysis
 
 ```{r}
+#, control=lmerControl(check.nobs.vs.nlev="ignore")
+hierarchy.test <- lmer(total.nsc ~ DBH14 + (1|Site/Plot/Sub) + (1|Spp), data = nsc.adult.total.mass.alive.common)
+ summary(hierarchy.test)
+ plot((hierarchy.test))
+
 #Site ANOVA
 lm.site.total <- lm(total.nsc ~ Site, data = nsc.adult.total.mass.alive.common)
 anova(lm.site.total)
