@@ -12,6 +12,8 @@ library(ggplot2)
 library(plyr)
 #library(ape) not compiling right now
 library(gridExtra)
+library(multcompView)
+library(grid)
 
 #helper functions
 #function to find last value of vector
@@ -1258,6 +1260,16 @@ lm.species.total <- lm(total.nsc ~ GenusSpecies, data = nsc.adult.total.mass.ali
 anova(lm.species.total)
 summary(lm.species.total) #R^2 = .5877
 
+#TukeyHSD species
+#too many groups, not good to visualize
+# summary(aov.species <- aov(lm.species.total))
+# tukey.species <- TukeyHSD(aov.species, "GenusSpecies", ordered = FALSE)
+# plot(tukey.species)
+# species.levels <- tukey.species[["GenusSpecies"]][,4]
+# species.labels <- multcompLetters(species.levels)['Letters']
+# species.plot.labels <- names(species.labels[['Letters']])
+
+#Species boxplot
 nsc.species <- ggplot(nsc.adult.total.mass.alive.common, aes(x = GenusSpecies, y = total.nsc, fill = wood)) + 
   geom_boxplot() + theme(axis.text.x = element_text(angle=90,hjust=1,vjust=.5,size=10)) +
   theme(axis.text.y = element_text(size=12)) +
@@ -1267,7 +1279,7 @@ nsc.species <- ggplot(nsc.adult.total.mass.alive.common, aes(x = GenusSpecies, y
   theme(legend.title = element_text(size = 14)) +
   theme(legend.key.size = unit(.4, "cm")) +
   labs(fill = "Wood\nAnatomy") +
-  stat_summary(fun.data = give.n, geom= "text", size = 3, aes(y= 160)) + 
+  stat_summary(fun.data = give.n, geom= "text", size = 2.5, aes(y= 160)) + 
   ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("") + ggtitle("All Species") +
   scale_fill_manual(values=rev(cbPalette), labels = c("Large Resin", "Small Resin", "No Resin", "Ring Porous", "Semi-ring\nPorous", "Diffuse Porous"))
 
@@ -1359,6 +1371,14 @@ lm.pft.total <- lm(total.nsc ~ PFT, data = nsc.adult.total.mass.alive.common)
 anova(lm.pft.total)
 summary(lm.pft.total) #R^2 = .363
 
+#TukeyHSD PFT
+summary(aov.pft <- aov(lm.pft.total))
+tukey.pft <- TukeyHSD(aov.pft, "PFT", ordered = FALSE)
+plot(tukey.pft)
+pft.levels <- tukey.pft[["PFT"]][,4]
+pft.labels <- multcompLetters(pft.levels)['Letters']
+pft.plot.labels <- names(pft.labels[['Letters']])
+
 #PFT ggplot 
 pft.violin <- ggplot(nsc.adult.total.mass.alive.common, aes(x = PFT, y = total.nsc)) + #, fill = PFT
   geom_violin() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
@@ -1366,10 +1386,12 @@ pft.violin <- ggplot(nsc.adult.total.mass.alive.common, aes(x = PFT, y = total.n
   theme(axis.title.x = element_text(size=14)) +
   theme(axis.title.y = element_text(size=14)) +
   theme(axis.text.x = element_text(size=12)) +
-  stat_summary(fun.data = give.n, geom= "text", aes(y= 180)) + 
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 205)) + 
   stat_summary(fun.y="median", geom="point") +
-  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Plant Functional Type") #+ ggtitle("All PFTs")
-  #scale_fill_manual(values=rev(cbPalette))
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Plant Functional Type") +
+  annotate("text", x = 1:5, y = c(110, 95, 165, 185, 135), 
+           label = c("e","a","b","c","d"))
+
 
 ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/TotalNSC.AllCommonPFT.png", plot = pft.violin, dpi = 600, width = 7.5, height = 3.5, units = "in")
 
@@ -1377,6 +1399,14 @@ ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/To
 lm.wood.total <- lm(total.nsc ~ wood, data = nsc.adult.total.mass.alive.common)
 anova(lm.wood.total)
 summary(lm.wood.total) #R^2 = .4266
+
+#TukeyHSD wood anatomy
+summary(aov.wood <- aov(lm.wood.total))
+tukey.wood <- TukeyHSD(aov.wood, "wood", ordered = FALSE)
+plot(tukey.wood)
+wood.levels <- tukey.wood[["wood"]][,4]
+wood.labels <- multcompLetters(wood.levels)['Letters']
+wood.plot.labels <- names(wood.labels[['Letters']])
 
 #Wood anatomy ggplot boxplot
 wood.anatomy.nsc <- ggplot(nsc.adult.total.mass.alive.common, aes(x = wood, y = total.nsc, fill = wood)) +
@@ -1387,13 +1417,24 @@ wood.anatomy.nsc <- ggplot(nsc.adult.total.mass.alive.common, aes(x = wood, y = 
   theme(axis.text.x = element_text(size = 12)) +
   theme(legend.text = element_blank()) +
   theme(legend.position = "none") +
-  stat_summary(fun.data = give.n, geom= "text", size = 4, aes(y= 180)) + 
+  stat_summary(fun.data = give.n, geom= "text", size = 3.5, aes(y= 200)) + 
   stat_summary(fun.y="median", geom="point") +
   ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Wood Anatomy") + #ggtitle("All Wood Types") +
   scale_x_discrete(labels = c("Large Resin", "Small Resin", "No Resin", "Ring Porous", "Semi-ring Porous", "Diffuse Porous")) +
-  scale_fill_manual(values=rev(cbPalette))
+  scale_fill_manual(values=rev(cbPalette)) +
+  annotate("text", x = 1:6, y = c(110, 95, 72, 165, 185, 135), label = c("b","ab","a","c","c","d"))
+  #geom_text(data = wood.plot.labels)
 
 ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/TotalNSC.AllCommonWoodAnat.png", plot = wood.anatomy.nsc, dpi = 600, width = 7.5, height = 3.5, units = "in")
+
+
+
+###Anovas for hierarchical and individual effects
+fit.total.nsc.nested = aov(total.nsc ~ Site/Plot/Sub, 
+                 data = nsc.adult.total.mass.alive.common)
+summary(fit.total.nsc.nested)
+var.total.nsc.nested = anova(fit.total.nsc.nested)[,2]
+prop.var.total.nsc.nested = var.total.nsc.nested/sum(var.total.nsc.nested)
 
 #Kitchen sink: phylogenetics fit independently
 nsc.kitchen.lm <- lmer(total.nsc ~ DBH14 + Canopy15 + (1|Site) + (1|Site:GenusSpecies) + (1|GenusSpecies) + (1|genus) + (1|family) + (1|order) + (1|subclass) + (1|PFT) + (1|wood), nsc.adult.total.mass.alive.common)
@@ -1401,10 +1442,57 @@ summary(nsc.kitchen.lm)
 plot((nsc.kitchen.lm))
 
 #phylo emphasis
-nsc.phylo.lm <- lmer(total.nsc ~ DBH14 + Canopy15 + (1|Site) + (1|subclass/order/family/genus/GenusSpecies) + (1|PFT) + (1|wood), nsc.adult.total.mass.alive.common)
+nsc.phylo.lm <- lmer(total.nsc ~ DBH14 + Canopy15 + (1|Site/Plot/Sub) + (1|subclass/order/family/genus/GenusSpecies) + (1|PFT) + (1|wood), nsc.adult.total.mass.alive.common)
 summary(nsc.phylo.lm)
 #str(nsc.phylo.lm)
 plot((nsc.phylo.lm))
+
+#variances
+#vcov = variances of random effects
+phylo.vars <- as.data.frame(VarCorr(nsc.phylo.lm, order = "cov.last"))
+#calculating partial variances for random effects
+var.phylo.vars = phylo.vars$vcov/sum(phylo.vars$vcov)
+part.vars <- cbind(phylo.vars$grp,var.phylo.vars)
+#test
+sum(as.numeric(part.vars[,2]))
+#now have proportions of variance explained by each effect
+#Environment
+#1,2,7
+site.partvar <- sum(as.numeric(part.vars[1,2]),as.numeric(part.vars[2,2]),as.numeric(part.vars[7,2])) #sub, plot, site 11.88 %
+
+#include site x spp interaction
+nsc.phylo.int.lm <- lmer(total.nsc ~ DBH14 + Canopy15 + (1|Site/Plot/Sub) + (1|subclass/order/family/genus/GenusSpecies) + (1|PFT) + (1|wood) + (1|GenusSpecies:Site), nsc.adult.total.mass.alive.common)
+summary(nsc.phylo.int.lm)
+plot((nsc.phylo.int.lm))
+
+#variances
+#vcov = variances of random effects
+phylo.vars.int <- as.data.frame(VarCorr(nsc.phylo.int.lm, order = "cov.last"))
+#calculating partial variances for random effects
+var.phylo.vars.int = phylo.vars.int$vcov/sum(phylo.vars.int$vcov)
+part.vars.int <- cbind(phylo.vars.int$grp,var.phylo.vars.int)
+
+#file for table of mixed effects model partial variances
+write.csv(x = part.vars.int, file = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/part.variances.csv")
+#test
+sum(as.numeric(part.vars.int[,2]))
+#now have proportions of variance explained by each effect
+#Environment
+#1,2,7
+site.partvar.int <- sum(as.numeric(part.vars.int[1,2]),as.numeric(part.vars.int[3,2]),as.numeric(part.vars.int[8,2])) #sub, plot, site 11.875%
+
+trait.partvar.int <- sum(as.numeric(part.vars.int[9,2]),as.numeric(part.vars.int[11,2])) #pft & wood .5%
+
+Phylo.partvar.int <- sum(as.numeric(part.vars.int[4,2]),as.numeric(part.vars.int[5,2]),as.numeric(part.vars.int[6,2]),as.numeric(part.vars.int[7,2]),as.numeric(part.vars.int[10,2])) #species, genus, family, order, subclass, 45.08%, family & order alone: 38.3
+
+#Species * Site interaction: 6.2%
+
+#Everything - residual
+all.partvar.int <- sum(as.numeric(part.vars.int[,2])) - as.numeric(part.vars.int[12,2])
+#63.6%
+
+
+
 
 # total.var <- sum(52.68, 93.72, 207.88, 67.34, 36.01, 282.80)
 # phylo.vars <- sum(52.68, 93.72, 207.88,36.01)
@@ -1438,28 +1526,48 @@ lm.canopy.total <- lm(total.nsc ~ Canopy15, data = nsc.adult.total.mass.alive.co
 anova(lm.canopy.total)
 summary(lm.canopy.total)
 
+#Canopy Tukey HSD
+summary(aov.canopy <- aov(lm.canopy.total))
+tukey.canopy <- TukeyHSD(aov.canopy, "Canopy15", ordered = FALSE)
+plot(tukey.canopy)
+canopy.levels <- tukey.canopy[["Canopy15"]][,4]
+canopy.labels <- multcompLetters(canopy.levels)['Letters']
+canopy.plot.labels <- names(canopy.labels[['Letters']])
+
 canopy.nsc <- ggplot(nsc.adult.total.mass.alive.common[!is.na(nsc.adult.total.mass.alive.common$Canopy15),], aes(x = Canopy15, y = total.nsc)) +
-  geom_violin() + theme(axis.text.x = element_text(angle=0,hjust=.5,vjust = .5, size=16)) +
-  theme(axis.text.y = element_text(size=12)) +
-  theme(axis.title.x = element_text(size=14)) +
-  theme(axis.title.y = element_text(size=14)) +
-  theme(axis.text.x = element_text(size=12)) +
+  geom_violin() + theme(axis.text.x = element_text(angle=0,hjust=.5,vjust = .5, size=8)) +
+  theme(axis.title.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
   stat_summary(fun.y="median", geom="point") +
-  stat_summary(fun.data = give.n, geom= "text", aes(y= 180)) + 
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 198)) + 
   scale_x_discrete(labels = c("Understory", "Co-dominant", "Dominant")) +
-  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Canopy Status") # + ggtitle("All Canopy Statuses") +
-  #scale_fill_manual(values=rev(cbPalette))
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Canopy Status") +
+  annotate("text", x = 1:3, y = c(136, 155, 180), label = c("c","a","b")) +
+  ggtitle("All Species")
+
 
 ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/TotalNSC.AllCommonCanopy.png", plot = canopy.nsc, dpi = 600, width = 6.5, height = 3, units = "in")
+
+lm.can <- lm(total.nsc ~ Canopy15, data = nsc.adult.total.mass.alive.common)
+anova(lm.can)
+summary(lm.can)
 
 #DBH
 dbh.nsc <- ggplot(nsc.adult.total.mass.alive.common, aes(x = DBH14, y = total.nsc)) +
   geom_point(alpha = .3) +
-  geom_smooth() + # GAM model
-  xlab("DBH") + ylab(expression(paste("Total NSC (mg g"^"-1",")"))) +
-  theme(axis.text.x = element_text(size = 14))
+  geom_smooth(method = "gam", formula = y ~ s(x), size = 1, aes(color = "blue")) + # GAM model with smooth
+  geom_smooth(method = "lm", aes(color = "yellow")) +
+  theme(axis.title.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
+  scale_color_manual(name = "Fit", values = c("blue","yellow"), labels = c("GAM smooth", "linear")) + 
+  theme(legend.position = "none") +
+  ggtitle("All Species")
 
 ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/TotalNSC.AllCommon.DBH.png", plot = dbh.nsc, dpi = 600, width = 5, height = 3.5, units = "in")
+
+lm.dbh <- lm(total.nsc ~ DBH14, data = nsc.adult.total.mass.alive.common)
+anova(lm.dbh)
+summary(lm.dbh)
 
 
 ###DBH and Canopy Analysis for most common species
@@ -1470,28 +1578,43 @@ nsc.adult.quercus <- nsc.adult.total.mass.alive.common[quercus.sort,]
 #DBH quercus
 dbh.nsc.quercus <- ggplot(nsc.adult.quercus, aes(x = DBH14, y = total.nsc)) +
   geom_point(alpha = .3) +
-  geom_smooth() + # GAM model
-  xlab("DBH") + ylab(expression(paste("Total NSC (mg g"^"-1",")"))) +
-  theme(axis.text.x = element_text(size = 14))
+  geom_smooth() + #loess
+  #geom_smooth(method = "gam", formula = y ~ s(x), size = 1) + # GAM model with smooth
+  geom_smooth(method = "lm", col = "yellow") +
+  theme(axis.title.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
+  ggtitle("Quercus")
 
-#lm for DBH:NSC
+#lm for Quercus DBH:NSC
 lm.dbh.querc <- lm(total.nsc ~ DBH14, data = nsc.adult.quercus)
 anova(lm.dbh.querc)
 summary(lm.dbh.querc)
 
+#lm for Canopy:NSC
+lm.can.querc <- lm(total.nsc ~ Canopy15, data = nsc.adult.quercus)
+anova(lm.can.querc)
+summary(lm.can.querc)
+
+#TukeyHSD
+summary(aov.can.querc <- aov(lm.can.querc))
+tukey.can.querc <- TukeyHSD(aov.can.querc, "Canopy15", ordered = FALSE)
+plot(tukey.can.querc)
+canopy.levels.querc <- tukey.can.querc[["Canopy15"]][,4]
+canopy.labels.querc <- multcompLetters(canopy.levels.querc)['Letters']
+canopy.plot.labels.querc <- names(canopy.labels.querc[['Letters']])
+
 #Canopy quercus
 canopy.nsc.quercus <- ggplot(nsc.adult.quercus[!is.na(nsc.adult.quercus$Canopy15),], aes(x = as.factor(Canopy15), y = total.nsc)) +
-  geom_boxplot() + theme(axis.text.x = element_text(angle=0,hjust=.5,vjust = .5, size=16)) +
-  theme(axis.text.y = element_text(size=12)) +
-  theme(axis.title.x = element_text(size=14)) +
-  theme(axis.title.y = element_text(size=14)) +
-  theme(axis.text.x = element_text(size=12)) +
+  geom_violin() + theme(axis.text.x = element_text(angle=0,hjust=.5,vjust = .5, size=8)) +
+  theme(axis.title.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
   stat_summary(fun.y="median", geom="point") +
-  stat_summary(fun.data = give.n, geom= "text", aes(y= 180)) + 
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 170)) + 
   scale_x_discrete(labels = c("Understory", "Co-dominant", "Dominant")) +
-  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Canopy Status") # + ggtitle("All Canopy Statuses") +
-  #scale_fill_manual(values=rev(cbPalette))
-
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Canopy Status") +
+  annotate("text", x = 1:3, y = c(136, 155, 151), label = c("c","a","b")) +
+  ggtitle("Quercus")
+  
 #FAGR dataframe
 fagus.sort <- which(nsc.adult.total.mass.alive.common$genus == "Fagus")
 nsc.adult.fagus <- nsc.adult.total.mass.alive.common[fagus.sort,]
@@ -1499,22 +1622,41 @@ nsc.adult.fagus <- nsc.adult.total.mass.alive.common[fagus.sort,]
 #DBH fagus
 dbh.nsc.fagus <- ggplot(nsc.adult.fagus, aes(x = DBH14, y = total.nsc)) +
   geom_point(alpha = .3) +
-  geom_smooth() + # GAM model
-  xlab("DBH") + ylab(expression(paste("Total NSC (mg g"^"-1",")"))) +
-  theme(axis.text.x = element_text(size = 14))
+  geom_smooth() +
+  #geom_smooth(method = "gam", formula = y ~ s(x), size = 1) + # GAM model with smooth
+  geom_smooth(method = "lm", col = "yellow") +
+  theme(axis.title.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
+  ggtitle("Fagus grandifolia")
+
+lm.dbh.fagus <- lm(total.nsc ~ DBH14, data = nsc.adult.fagus)
+anova(lm.dbh.fagus)
+summary(lm.dbh.fagus)
+
+#lm for Canopy:NSC
+lm.can.fagus <- lm(total.nsc ~ Canopy15, data = nsc.adult.fagus)
+anova(lm.can.fagus)
+summary(lm.can.fagus)
+
+summary(aov.can.fagus <- aov(lm.can.fagus))
+tukey.can.fagus <- TukeyHSD(aov.can.fagus, "Canopy15", ordered = FALSE)
+plot(tukey.can.fagus)
+canopy.levels.fagus <- tukey.can.fagus[["Canopy15"]][,4]
+canopy.labels.fagus <- multcompLetters(canopy.levels.fagus)['Letters']
+canopy.plot.labels.fagus <- names(canopy.labels.fagus[['Letters']])
 
 #Canopy Fagus
 canopy.nsc.fagus <- ggplot(nsc.adult.fagus[!is.na(nsc.adult.fagus$Canopy15),], aes(x = as.factor(Canopy15), y = total.nsc)) +
-  geom_boxplot() + theme(axis.text.x = element_text(angle=0,hjust=.5,vjust = .5, size=16)) +
-  theme(axis.text.y = element_text(size=12)) +
-  theme(axis.title.x = element_text(size=14)) +
-  theme(axis.title.y = element_text(size=14)) +
-  theme(axis.text.x = element_text(size=12)) +
+  geom_violin() + theme(axis.text.x = element_text(angle=0,hjust=.5,vjust = .5, size=8)) +
+  theme(axis.title.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
   stat_summary(fun.y="median", geom="point") +
-  stat_summary(fun.data = give.n, geom= "text", aes(y= 180)) + 
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 170)) + 
   scale_x_discrete(labels = c("Understory", "Co-dominant", "Dominant")) +
-  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Canopy Status") # + ggtitle("All Canopy Statuses") +
-  #scale_fill_manual(values=rev(cbPalette))
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Canopy Status") +
+    annotate("text", x = 1:3, y = c(122, 126, 93), label = c("a","a","a")) +
+  ggtitle("Fagus grandifolia")
+
 
 #TSCA dataframe
 tsuga.sort <- which(nsc.adult.total.mass.alive.common$genus == "Tsuga")
@@ -1522,22 +1664,36 @@ nsc.adult.tsuga <- nsc.adult.total.mass.alive.common[tsuga.sort,]
 
 dbh.nsc.tsuga <- ggplot(nsc.adult.tsuga, aes(x = DBH14, y = total.nsc)) +
   geom_point(alpha = .3) +
-  geom_smooth() + # GAM model
-  xlab("DBH") + ylab(expression(paste("Total NSC (mg g"^"-1",")"))) +
-  theme(axis.text.x = element_text(size = 14))
+  geom_smooth() +
+  #geom_smooth(method = "gam", formula = y ~ s(x), size = 1) + # GAM model with smooth
+  geom_smooth(method = "lm", col = "yellow") +
+  theme(axis.title.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
+  ggtitle("Tsuga canadensis")
+
+lm.dbh.tsuga <- lm(total.nsc ~ DBH14, data = nsc.adult.tsuga)
+anova(lm.dbh.tsuga)
+summary(lm.dbh.tsuga)
 
 #Canopy Tsuga
+#lm for Canopy:NSC
+lm.can.tsuga <- lm(total.nsc ~ Canopy15, data = nsc.adult.tsuga)
+anova(lm.can.tsuga)
+summary(lm.can.tsuga)
+
+#only understory and co-dominant. so doing t-test for groups
+t.test(total.nsc ~ Canopy15, data = nsc.adult.tsuga)
+
 canopy.nsc.tsuga <- ggplot(nsc.adult.tsuga[!is.na(nsc.adult.tsuga$Canopy15),], aes(x = as.factor(Canopy15), y = total.nsc)) +
-  geom_boxplot() + theme(axis.text.x = element_text(angle=0,hjust=.5,vjust = .5, size=16)) +
-  theme(axis.text.y = element_text(size=12)) +
-  theme(axis.title.x = element_text(size=14)) +
-  theme(axis.title.y = element_text(size=14)) +
-  theme(axis.text.x = element_text(size=12)) +
+  geom_violin() + theme(axis.text.x = element_text(angle=0,hjust=.5,vjust = .5, size=8)) +
+  theme(axis.title.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
   stat_summary(fun.y="median", geom="point") +
-  stat_summary(fun.data = give.n, geom= "text", aes(y= 180)) + 
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 65)) + 
   scale_x_discrete(labels = c("Understory", "Co-dominant", "Dominant")) +
-  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Canopy Status") # + ggtitle("All Canopy Statuses") +
-  #scale_fill_manual(values=rev(cbPalette))
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Canopy Status") +
+  annotate("text", x = 1:2, y = c(59, 47), label = c("a","b")) +
+  ggtitle("Tsuga canadensis")
 
 #ACRU dataframe
 acru.sort <- which(nsc.adult.total.mass.alive.common$GenusSpecies == "Acer rubrum")
@@ -1562,14 +1718,84 @@ canopy.nsc.acru <- ggplot(nsc.adult.acru[!is.na(nsc.adult.acru$Canopy15),], aes(
   ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Canopy Status") # + ggtitle("All Canopy Statuses") +
   #scale_fill_manual(values=rev(cbPalette))
 
+#ACSA3 dataframe
+acsa.sort <- which(nsc.adult.total.mass.alive.common$GenusSpecies == "Acer saccharum")
+nsc.adult.acsa <- nsc.adult.total.mass.alive.common[acsa.sort,]
+
+#DBH ACSA3
+dbh.nsc.acsa <- ggplot(nsc.adult.acsa, aes(x = DBH14, y = total.nsc)) +
+  geom_point(alpha = .3) +
+  geom_smooth() + # GAM model
+  xlab("DBH") + ylab(expression(paste("Total NSC (mg g"^"-1",")"))) +
+  theme(axis.text.x = element_text(size = 14))
+
+canopy.nsc.acsa <- ggplot(nsc.adult.acsa[!is.na(nsc.adult.acsa$Canopy15),], aes(x = as.factor(Canopy15), y = total.nsc)) +
+  geom_boxplot() + theme(axis.text.x = element_text(angle=0,hjust=.5,vjust = .5, size=16)) +
+  theme(axis.text.y = element_text(size=12)) +
+  theme(axis.title.x = element_text(size=14)) +
+  theme(axis.title.y = element_text(size=14)) +
+  theme(axis.text.x = element_text(size=12)) +
+  stat_summary(fun.y="median", geom="point") +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 180)) + 
+  scale_x_discrete(labels = c("Understory", "Co-dominant", "Dominant")) +
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Canopy Status") # + ggtitle("All Canopy Statuses") +
+  #scale_fill_manual(values=rev(cbPalette))
+
+#DBH Acer
+acer.sort <- which(nsc.adult.total.mass.alive.common$genus == "Acer")
+nsc.adult.acer <- nsc.adult.total.mass.alive.common[acer.sort,]
+
+dbh.nsc.acer <- ggplot(nsc.adult.acer, aes(x = DBH14, y = total.nsc)) +
+  geom_point(alpha = .3) +
+  geom_smooth() +
+  #geom_smooth(method = "gam", formula = y ~ s(x), size = 1) + # GAM model with smooth
+  geom_smooth(method = "lm", col = "yellow") +
+  theme(axis.title.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
+  #xlab("DBH") + 
+  #theme(axis.text.x = element_text(size = 14)) +
+  ggtitle("Acer")
+
+lm.can.acer <- lm(total.nsc ~ Canopy15, data = nsc.adult.acer)
+anova(lm.dbh.acer)
+summary(lm.dbh.acer)
+
+summary(aov.can.acer <- aov(lm.can.acer))
+tukey.can.acer <- TukeyHSD(aov.can.acer, "Canopy15", ordered = FALSE)
+plot(tukey.can.acer)
+canopy.levels.acer <- tukey.can.acer[["Canopy15"]][,4]
+canopy.labels.acer <- multcompLetters(canopy.levels.acer)['Letters']
+canopy.plot.labels.acer <- names(canopy.labels.acer[['Letters']])
+
+#Acer canopy 
+canopy.nsc.acer <- ggplot(nsc.adult.acer[!is.na(nsc.adult.acer$Canopy15),], aes(x = as.factor(Canopy15), y = total.nsc)) +
+  geom_violin() + theme(axis.text.x =   element_text(angle=0,hjust=.5,vjust = .5, size=8)) +
+  theme(axis.title.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
+  stat_summary(fun.y="median", geom="point") +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 180)) + 
+  scale_x_discrete(labels = c("Understory", "Co-dominant", "Dominant")) +
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Canopy Status") +
+  annotate("text", x = 1:3, y = c(106, 129, 90), label = c("a","a","a")) +
+  ggtitle("Acer")
+
+#Combining all DBH plots into one figure#
+nsc.dbh.common <- grid.arrange(dbh.nsc, dbh.nsc.quercus, dbh.nsc.fagus, dbh.nsc.tsuga, dbh.nsc.acer, ncol = 2, bottom = "DBH", left = textGrob(label = expression(paste("Total NSC mg g"^"-1")), rot = 90))
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/nsc.dbh.commonspp.png", plot = nsc.dbh.common, dpi = 600, width = 4.5, height = 6, units = "in")
+
+#Combining all Canopy plots into one figure
+nsc.can.common <- grid.arrange(canopy.nsc, canopy.nsc.quercus, canopy.nsc.fagus, canopy.nsc.tsuga, canopy.nsc.acer, ncol = 2, bottom = "Canopy Status", left = textGrob(label = expression(paste("Total NSC mg g"^"-1")), rot = 90))
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/nsc.can.commonspp.png", plot = nsc.can.common, dpi = 600, width = 5.5, height = 6.5, units = "in")
 
 #Mortality
 ### some "A " and "A" rows - need to fix
-lm.mortality <- lm(total.nsc ~ Mortality15, data = nsc.adult.total.mass)
+lm.mortality <- lm(total.nsc ~ Mortality14, data = nsc.adult.total.mass)
 anova(lm.mortality)
 summary(lm.mortality)
 
-ggplot(nsc.adult.total.mass, aes(x = Mortality15, y = total.nsc, fill = Mortality15)) +
+ggplot(nsc.adult.total.mass, aes(x = Mortality14, y = total.nsc, fill = Mortality14)) +
   geom_boxplot() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
   theme(axis.text.y = element_text(size=16)) +
   theme(axis.title.x = element_text(size=20)) +
@@ -1598,19 +1824,29 @@ lm.site.total <- lm(total.nsc ~ Site, data = nsc.adult.total.mass.alive.common)
 anova(lm.site.total)
 summary(lm.site.total) #R^2 = 0.1997
 
-ggplot(nsc.adult.total.mass.alive.common, aes(x = Site, y = total.nsc, fill = "red")) +
-  geom_boxplot() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
-  theme(axis.text.y = element_text(size=16)) +
-  theme(axis.title.x = element_text(size=20)) +
-  theme(axis.title.y = element_text(size=20)) +
-  theme(legend.text = element_text(size=16)) +
-  stat_summary(fun.data = give.n, geom= "text", aes(y= 160)) + 
-  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Site") + ggtitle("All Sites") +
-#   geom_segment(aes(x=0,y=med.early.conif,xend=7.5,
-#                    yend=med.early.conif),linetype="longdash",color="indianred4") +
-#   geom_segment(aes(x=7.5,y=med.late.conif,xend=12,
-#                    yend=med.late.conif),linetype="longdash",color="darkgreen") +
-  scale_fill_manual(values=rev(cbPalette))
+#TukeyHSD site
+#TukeyHSD PFT # p = .05
+summary(aov.site <- aov(lm.site.total))
+tukey.site <- TukeyHSD(aov.site, "Site", ordered = FALSE)
+plot(tukey.site)
+site.levels <- tukey.site[["Site"]][,4]
+site.labels <- multcompLetters(site.levels)['Letters']
+site.plot.labels <- names(site.labels[['Letters']])
+
+site.nsc <- ggplot(nsc.adult.total.mass.alive.common, aes(x = Site, y = total.nsc)) +
+  geom_violin() + theme(axis.text.x = element_text(angle=45,hjust=1,size=12)) +
+  theme(axis.text.y = element_text(size=12)) +
+  theme(axis.title.x = element_text(size=14)) +
+  theme(axis.title.y = element_text(size=14)) +
+  theme(legend.text = element_text(size=12)) +
+  stat_summary(fun.y="median", geom="point") +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 200), size = 3) + 
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Site") +
+  scale_fill_manual(values=rev(cbPalette)) +
+  annotate("text", x = 1:10, y = c(125, 150, 128, 154, 148, 158, 162, 137, 182, 90), 
+           label = c("bc","ab","abc","a","cd","e","a","a","f","d"), size = 3.5)
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/TotalNSC.AllCommonSite.png", plot = site.nsc, dpi = 600, width = 7.5, height = 3.5, units = "in")
 
 #Site x Plot ANOVA
 lm.site.plot.total <- lm(total.nsc ~ Site/Plot, data = nsc.adult.total.mass.alive.common)
@@ -1658,50 +1894,70 @@ abline(lm.sucrose2total)
 
 #Violin plots of componenets of NSCs
 
-violin.glucose <- ggplot(nsc.adult.total.mass.alive.common, aes(x = Tag, y = glucose.mg.g)) +
+violin.glucose <- ggplot(nsc.adult.total.mass.alive.common, aes(x = nrow(nsc.adult.total.mass.alive.common), y = glucose.mg.g)) +
   geom_violin() +
   theme(axis.text.x = element_blank()) +
   theme(axis.ticks.x = element_blank()) +
+  stat_summary(fun.y="median", geom="point") +
   labs(x = "Glucose", y = expression(paste("Concentration (mg g"^"-1",")"))) +
-  ylim(0,105) +
+  ylim(0,172) +
   theme(plot.margin = unit(c(5.5,0,5.5,5.5), "pt"))
 
-violin.fructose <- ggplot(nsc.adult.total.mass.alive.common, aes(x = Tag, y = fructose.mg.g)) +
+violin.fructose <- ggplot(nsc.adult.total.mass.alive.common, aes(x = nrow(nsc.adult.total.mass.alive.common), y = fructose.mg.g)) +
   geom_violin() +
   theme(axis.text.x = element_blank()) +
   theme(axis.ticks.x = element_blank()) +
   theme(axis.ticks.y = element_blank()) +
   theme(axis.text.y = element_blank()) +
+  stat_summary(fun.y="median", geom="point") +
   labs(x = "Fructose", y = "") +
-  ylim(0,105) +
+  ylim(0,172) +
   theme(plot.margin = unit(c(5.5,0,5.5,-5), "pt"))
 
-violin.sucrose <- ggplot(nsc.adult.total.mass.alive.common, aes(x = Tag, y = sucrose.mg.g)) +
+violin.sucrose <- ggplot(nsc.adult.total.mass.alive.common, aes(x = nrow(nsc.adult.total.mass.alive.common), y = sucrose.mg.g)) +
   geom_violin() +
   theme(axis.text.x = element_blank()) +
   theme(axis.ticks.x = element_blank()) +
   theme(axis.ticks.y = element_blank()) +
   theme(axis.text.y = element_blank()) +
+  stat_summary(fun.y="median", geom="point") +
   labs(x = "Sucrose", y = "") +
-  ylim(0,105) +
+  ylim(0,172) +
   theme(plot.margin = unit(c(5.5,0,5.5,-5), "pt"))
 
-violin.starch <- ggplot(nsc.adult.total.mass.alive.common, aes(x = Tag, y = starch.mg.g)) +
+violin.starch <- ggplot(nsc.adult.total.mass.alive.common, aes(x = nrow(nsc.adult.total.mass.alive.common), y = starch.mg.g)) +
   geom_violin() +
   theme(axis.text.x = element_blank()) +
   theme(axis.ticks.x = element_blank()) +
   theme(axis.ticks.y = element_blank()) +
   theme(axis.text.y = element_blank()) +
+  stat_summary(fun.y="median", geom="point") +
   labs(x = "Starch", y = "") +
-  ylim(0,105) +
+  #ylim(0,105) +
+  ylim(0,172) +
+  theme(plot.margin = unit(c(5.5,5.5,5.5,-5), "pt"))
+
+violin.total <-ggplot(nsc.adult.total.mass.alive.common, aes(x = nrow(nsc.adult.total.mass.alive.common), y = total.nsc)) +
+  geom_violin() +
+  theme(axis.text.x = element_blank()) +
+  theme(axis.ticks.x = element_blank()) +
+  theme(axis.ticks.y = element_blank()) +
+  theme(axis.text.y = element_blank()) +
+  stat_summary(fun.y="median", geom="point") +
+  labs(x = "Total NSC", y = "") +
+  ylim(0,172) +
   theme(plot.margin = unit(c(5.5,5.5,5.5,-5), "pt"))
 
 #combine component concentration plots
-nsc.components <- grid.arrange(violin.glucose, violin.fructose, violin.sucrose, violin.starch, ncol = 4)
+nsc.components <- grid.arrange(violin.glucose, violin.fructose, violin.sucrose, violin.starch, violin.total, ncol = 5)
 
 ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/nsc.components.png", plot = nsc.components, dpi = 600, width = 8, height = 3.5, units = "in")
 
-
+median(nsc.adult.total.mass.alive.common$glucose.mg.g, na.rm = TRUE) #8.06
+median(nsc.adult.total.mass.alive.common$sucrose.mg.g, na.rm = TRUE) #13.6
+median(nsc.adult.total.mass.alive.common$fructose.mg.g, na.rm = TRUE) #7.10
+median(nsc.adult.total.mass.alive.common$starch.mg.g, na.rm = TRUE) #22.10
+median(nsc.adult.total.mass.alive.common$total.nsc, na.rm = TRUE) #53.52
 
 ```
 You can also embed plots, for example:
