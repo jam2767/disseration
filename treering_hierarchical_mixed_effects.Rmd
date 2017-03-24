@@ -20,11 +20,11 @@ Using most up-to-date version of adult census data for treering matching. Includ
 ```{r}
 #read Tucson format ringwidth files
 trees.diss <- read.csv("/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/Adult_Field_Data_JAM_MCD.csv")
-rings.diss <- Read_Tuscon("/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/Windendro_text/All_Sites")
+rings.diss <- Read_Tuscon("/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/Windendro_Dissertation")
 
 #Match Tucson ringwidth files and adult census data for 50yrs of growth
 combined.diss <- matchInventoryRings(trees=trees.diss,rings.diss)
-combined.diss <- data.frame(combined.diss)
+#combined.diss <- data.frame(combined.diss)
 # write.csv(combined.diss, file="/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/combined.diss.csv")
 #TODO correct cores with known suspiciously large growth increment
 #cores ID'd in /Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/qc_removed_cores.xlsx
@@ -78,7 +78,7 @@ Reformat combined census and treering data dataframe to comply with format requi
 ```{r}
 #JAGS Bayesian Hierarchical linear model 
 #Hierarchical terms for JAGS
-ringwidths <- combined.diss[93:142]
+ringwidths <- combined.diss[97:136]
 s<-as.numeric(as.factor(as.character(combined.diss$SITE)))
 p<-as.numeric(as.factor(paste0(as.character(combined.diss$SITE),
                                as.character(combined.diss$PLOT))))
@@ -98,11 +98,11 @@ sp <- as.numeric(as.factor(paste0(as.character(combined.diss$SITE),
 #y = mean(combined.diss$INCREMENT,na.rm=TRUE) #mean all years
 x = 1/var(as.vector(as.matrix(ringwidths)),na.rm=TRUE)
 y = mean(as.matrix(ringwidths),na.rm=TRUE) ## overall mean growth rate
-mean50yr = rowMeans(ringwidths,na.rm=TRUE) #means by individual
+mean40yr = rowMeans(ringwidths,na.rm=TRUE) #means by individual
 column.means = colMeans(ringwidths,na.rm=TRUE) #means by year
-us = tapply(X=mean50yr,INDEX=list(s),FUN=mean,na.rm=TRUE)
-up = tapply(X=mean50yr,INDEX=list(p),FUN=mean,na.rm=TRUE)
-usp = tapply(X=mean50yr,INDEX=list(sp),FUN=mean,na.rm=TRUE)
+us = tapply(X=mean40yr,INDEX=list(s),FUN=mean,na.rm=TRUE)
+up = tapply(X=mean40yr,INDEX=list(p),FUN=mean,na.rm=TRUE)
+usp = tapply(X=mean40yr,INDEX=list(sp),FUN=mean,na.rm=TRUE)
 #usy = tapply(X=mean50yr,INDEX=list(sy),FUN=mean,na.rm=TRUE)
 usy = apply(ringwidths,2,function(x1){tapply(x1,s,FUN=mean,na.rm=TRUE)})
 usy[is.nan(usy)] = 0
@@ -114,11 +114,11 @@ tsy= mean(1/var(usy))
 as = us - mean(us)
 ap = up - mean(up) 
 asp= usp - mean(usp)
-ai = mean50yr - mean(y)
+ai = mean40yr - mean(y)
 ay = column.means - mean(column.means)
 
-data2 = list(x=as.matrix(combined.diss[,93:142]), nyear=50, 
-             nrep = 1415,s=s,p=p,sp=sp,ns=max(s),np = max(p),nsp=max(sp))
+data2 = list(x=as.matrix(combined.diss[,93:142]), nyear=40, 
+             nrep = 1590,s=s,p=p,sp=sp,ns=max(s),np = max(p),nsp=max(sp))
 
 asy = apply(data2$x,2,function(x){tapply(x,s,function(w){mean(w-y,na.rm=TRUE)})})
 asy[is.nan(asy)]  = 0
