@@ -7,8 +7,10 @@ You can embed an R code chunk like this:
 
 ```{r}
 #Required Packages
+library(lme4)
 library(rjags)
 library(data.table)
+library(mcmcplots)
 
 #Source required PEcAn scripts for reading and matching treerings and plot data
 source("/Users/Josh/Documents/Research/pecan/modules/data.land/R/Read_Tuscon.R")
@@ -24,8 +26,15 @@ rings.diss <- Read_Tuscon("/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/W
 
 #Match Tucson ringwidth files and adult census data for 50yrs of growth
 combined.diss <- matchInventoryRings(trees=trees.diss,rings.diss)
-#combined.diss <- data.frame(combined.diss)
-# write.csv(combined.diss, file="/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/combined.diss.csv")
+combined.diss <- data.frame(combined.diss)
+#write.csv(combined.diss, file="/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/combined.diss.new2.csv")
+#manually added site average temp and precip
+combined.diss.clim <- read.csv("/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/combined.diss.clim.csv")
+#remove X before years
+colnames.yrs <- c("1967","1968","1969","1970","1971","1972","1973","1974","1975","1976","1977","1978","1979","1980","1981","1982","1983","1984","1985","1986","1987","1988","1989","1990","1991","1992","1993","1994","1995","1996","1997","1998","1999","2000","2001","2002","2003","2004","2005","2006","2007","2008","2009","2010","2011","2012","2013","2014","2015","2016")
+
+colnames(combined.diss.clim)[93:142] <- colnames.yrs#colnames(combined.dmg.clean) #get rid of stupid "x" before year
+
 #TODO correct cores with known suspiciously large growth increment
 #cores ID'd in /Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/qc_removed_cores.xlsx
 
@@ -78,24 +87,24 @@ Reformat combined census and treering data dataframe to comply with format requi
 ```{r}
 #JAGS Bayesian Hierarchical linear model 
 #Hierarchical terms for JAGS
-ringwidths <- combined.diss[97:136]
-s<-as.numeric(as.factor(as.character(combined.diss$SITE)))
-p<-as.numeric(as.factor(paste0(as.character(combined.diss$SITE),
-                               as.character(combined.diss$PLOT))))
-sp <- as.numeric(as.factor(paste0(as.character(combined.diss$SITE),
-                                  as.character(combined.diss$PLOT),
-                                  as.character(combined.diss$SUB))))
+ringwidths <- combined.diss.clim[97:136]
+s<-as.numeric(as.factor(as.character(combined.diss.clim$SITE)))
+p<-as.numeric(as.factor(paste0(as.character(combined.diss.clim$SITE),
+                               as.character(combined.diss.clim$PLOT))))
+sp <- as.numeric(as.factor(paste0(as.character(combined.diss.clim$SITE),
+                                  as.character(combined.diss.clim$PLOT),
+                                  as.character(combined.diss.clim$SUB))))
 #creating interaction terms for JAGS
 #Site by Year interaction, n = 400, 8 sites, 50 years each
-#sy <- as.numeric(as.factor(paste0(as.character(combined.diss$SITE),
-                                  #colnames(combined.diss[93:142]))))
+#sy <- as.numeric(as.factor(paste0(as.character(combined.diss.clim$SITE),
+                                  #colnames(combined.diss.clim[93:142]))))
 # #Plot by Year interaction, n = 2600, 8 sites, 6-7 plots each
-# spy <- as.numeric(as.factor(paste0(as.character(combined.diss$SITE),
-#                                   as.character(combined.diss$PLOT),
-#                                   colnames(combined.diss[93:142]))))
+# spy <- as.numeric(as.factor(paste0(as.character(combined.diss.clim$SITE),
+#                                   as.character(combined.diss.clim$PLOT),
+#                                   colnames(combined.diss.clim[93:142]))))
 
-#x = 1/var(combined.diss$INCREMENT,na.rm=TRUE) #precision on all years
-#y = mean(combined.diss$INCREMENT,na.rm=TRUE) #mean all years
+#x = 1/var(combined.diss.clim$INCREMENT,na.rm=TRUE) #precision on all years
+#y = mean(combined.diss.clim$INCREMENT,na.rm=TRUE) #mean all years
 x = 1/var(as.vector(as.matrix(ringwidths)),na.rm=TRUE)
 y = mean(as.matrix(ringwidths),na.rm=TRUE) ## overall mean growth rate
 mean40yr = rowMeans(ringwidths,na.rm=TRUE) #means by individual
@@ -117,8 +126,8 @@ asp= usp - mean(usp)
 ai = mean40yr - mean(y)
 ay = column.means - mean(column.means)
 
-data2 = list(x=as.matrix(combined.diss[,93:142]), nyear=40, 
-             nrep = 1590,s=s,p=p,sp=sp,ns=max(s),np = max(p),nsp=max(sp))
+data2 = list(x=as.matrix(combined.diss.clim[,97:136]), nyear=40, 
+             nrep = 1626,s=s,p=p,sp=sp,ns=max(s),np = max(p),nsp=max(sp))
 
 asy = apply(data2$x,2,function(x){tapply(x,s,function(w){mean(w-y,na.rm=TRUE)})})
 asy[is.nan(asy)]  = 0
@@ -173,7 +182,7 @@ j.model   <- jags.model (file = textConnection(FitRand.SiteYear),
 ## burn-in
 b   <- coda.samples (model = j.model,
                       variable.names = c("mu","prec","tau.y","tau.s","tau.p","tau.sp","tau.ind","tau.sy"),
-                      n.iter = 50,
+                      n.iter = 1000,
                       thin = 2)
 
 # bt   <- coda.samples (model = j.model,
@@ -194,22 +203,24 @@ update.jags<-function(model,previous.coda,variable.names,iter){
 }
 
 update.jags(j.model,b,c("mu","prec","tau.y","tau.s","tau.p","tau.sp","tau.ind","tau.sy"),500)
-# b1<- coda.samples (model = j.model,
-#                    variable.names = c("mu","prec","tau.y","tau.s","tau.p","tau.sp","tau.ind"),#,"alpha.y","alpha.site","alpha.plot","alpha.sub"),#,"alpha.ind"),
-#                    n.iter = 100)#,
-
 b.out<-b
 bmcmc1<-bmcmc
-# update.jags(j.model,bmcmc1,c("mu","prec","tau.y","tau.s","tau.p","tau.sp","tau.ind"),1000)
-# bmcmc2<-bmcmc
-# update.jags(j.model,bmcmc2,c("mu","prec","tau.y","tau.s","tau.p","tau.sp","tau.ind"),2000)
-# bmcmc3<-bmcmc
-# update.jags(j.model,bmcmc3,c("mu","prec","tau.y","tau.s","tau.p","tau.sp","tau.ind"),1000)
-# bmcmc4<-bmcmc
-# update.jags(j.model,bmcmc4,c("mu","prec","tau.y","tau.s","tau.p","tau.sp","tau.ind"),10000)
-# bmcmc5<-bmcmc
-# update.jags(j.model,bmcmc5,c("mu","prec","tau.y","tau.s","tau.p","tau.sp","tau.ind"),20000)
-# bmcmc6<-bmcmc
+
+update.jags(j.model,bmcmc1,c("mu","prec","tau.y","tau.s","tau.p","tau.sp","tau.ind","tau.sy"),1000)
+bmcmc2<-bmcmc
+
+update.jags(j.model,bmcmc2,c("mu","prec","tau.y","tau.s","tau.p","tau.sp","tau.ind","tau.sy"),2000)
+bmcmc3<-bmcmc
+
+update.jags(j.model,bmcmc3,c("mu","prec","tau.y","tau.s","tau.p","tau.sp","tau.ind","tau.sy"),2000)
+bmcmc4<-bmcmc
+
+update.jags(j.model,bmcmc4,c("mu","prec","tau.y","tau.s","tau.p","tau.sp","tau.ind","tau.sy"),5000)
+bmcmc5<-bmcmc
+
+update.jags(j.model,bmcmc5,c("mu","prec","tau.y","tau.s","tau.p","tau.sp","tau.ind","tau.sy"),5000)
+bmcmc6<-bmcmc
+
 # update.jags(j.model,bmcmc6,c("mu","prec","tau.y","tau.s","tau.p","tau.sp","tau.ind"),20000)
 # bmcmc7<-bmcmc
 # update.jags(j.model,bmcmc7,c("mu","prec","tau.y","tau.s","tau.p","tau.sp","tau.ind"),10000)
@@ -229,13 +240,14 @@ for(i in 1:8){
   plot(test.SD[,i],cex.lab=1.8,xlim=c(0,1.25))
 }
 
+
 str(summary(bmcmc1))
 #for(i in 1:7){
   summary(bmcmc1)#[,i])    ## summary table
 #}
 
 for(i in 1:8){
-  plot(bmcmc1[,i])
+  plot(b.out[,i])
   #plot(sqrt(1/(bmcmc9[,i]))) ## mcmc trace and density plots
 }
 
@@ -272,6 +284,20 @@ gelman.plot(b.out[,i])      ## GRB statistic
 for(i in 1:8){
 summary(b.out[,i])    ## summary table
 }
+
+  ####plot of all individuals####
+denplot(test.SD[,2:7],collapse=TRUE,xlim=c(0,1.25),main=c("Residual",
+                                                          "Individual",
+                                                          "Landscape",
+                                                          "Region",
+                                                          "Microsite",
+                                                          "Year"))
+
+##summary stats for making barplot of median variance explained
+summary.all <- summary(test.SD) 
+var.all<-summary.all$quantiles[2:8,3]
+#proportion of variance explained
+proportion.var.all<- var.all/sum(var.all)
 
 ##### done visualizing outputs #####
 
@@ -313,6 +339,877 @@ quantile(mu2,c(0.025,0.5,0.975))
 
 ```
 
+```{r}
+#Add covariates to data
+
+count(combined.diss.clim$SPP)
+#remove spp with very low sample size, setting cutoff below 5 because
+#of an arbitrary reason, need to do an actual power analysis
+
+abba <- which(combined.diss.clim$SPP == "ABBA")
+#acne2 <- which(combined.diss.clim$SPP == "ACNE2")
+acru <- which(combined.diss.clim$SPP == "ACRU")
+acsa3 <- which(combined.diss.clim$SPP == "ACSA3")
+beal2 <- which(combined.diss.clim$SPP == "BEAL2")
+bele <- which(combined.diss.clim$SPP == "BELE")
+bepa <- which(combined.diss.clim$SPP == "BEPA")
+#caco15 <- which(combined.diss.clim$SPP == "CACO15")
+cagl8 <- which(combined.diss.clim$SPP == "CAGL8")
+#caov2 <- which(combined.diss.clim$SPP == "CAOV2")
+cato6 <- which(combined.diss.clim$SPP == "CATO6")
+fagr <- which(combined.diss.clim$SPP == "FAGR")
+fram2 <- which(combined.diss.clim$SPP == "FRAM2")
+frni <- which(combined.diss.clim$SPP == "FRNI")
+#juni <- which(combined.diss.clim$SPP == "JUNI")
+juvi <- which(combined.diss.clim$SPP == "JUVI")
+#list2 <- which(combined.diss.clim$SPP == "LIST2")
+litu <- which(combined.diss.clim$SPP == "LITU")
+mavi2 <- which(combined.diss.clim$SPP == "MAVI2")
+nysy <- which(combined.diss.clim$SPP == "NYSY")
+oxar <- which(combined.diss.clim$SPP == "OXAR")
+pima <- which(combined.diss.clim$SPP == "PIMA")
+pipa2 <- which(combined.diss.clim$SPP == "PIPA2")
+#piri <- which(combined.diss.clim$SPP == "PIRI")
+piru <- which(combined.diss.clim$SPP == "PIRU")
+pist <- which(combined.diss.clim$SPP == "PIST")
+pita <- which(combined.diss.clim$SPP == "PITA")
+pogr4 <- which(combined.diss.clim$SPP == "POGR4")
+potr5 <- which(combined.diss.clim$SPP == "POTR5")
+prse2 <- which(combined.diss.clim$SPP == "PRSE2")
+qual <- which(combined.diss.clim$SPP == "QUAL")
+quco2 <- which(combined.diss.clim$SPP == "QUCO2")
+qula2 <- which(combined.diss.clim$SPP == "QULA2")
+qula3 <- which(combined.diss.clim$SPP == "QULA3")
+qumo4 <- which(combined.diss.clim$SPP == "QUMO4")
+qumu <- which(combined.diss.clim$SPP == "QUMU")
+quni <- which(combined.diss.clim$SPP == "QUNI")
+#quph <- which(combined.diss.clim$SPP == "QUPH")
+quru <- which(combined.diss.clim$SPP == "QURU")
+quve <- which(combined.diss.clim$SPP == "QUVE")
+#quvi <- which(combined.diss.clim$SPP == "QUVI")
+saal5 <- which(combined.diss.clim$SPP == "SAAL5")
+thoc2 <- which(combined.diss.clim$SPP == "THOC2")
+#tiam <- which(combined.diss.clim$SPP == "TIAM")
+tsca <- which(combined.diss.clim$SPP == "TSCA")
+ulam <- which(combined.diss.clim$SPP == "ULAM")
+
+combined.diss.clim.common <- rbind(
+                             combined.diss.clim[abba,],
+                             combined.diss.clim[acru,],
+                             combined.diss.clim[acsa3,],
+                             combined.diss.clim[beal2,],
+                             combined.diss.clim[bele,],
+                             combined.diss.clim[bepa,],
+                             combined.diss.clim[cagl8,],
+                             combined.diss.clim[cato6,],
+                             combined.diss.clim[fagr,],
+                             combined.diss.clim[fram2,],
+                             combined.diss.clim[frni,],
+                             combined.diss.clim[juvi,],
+                             combined.diss.clim[litu,],
+                             combined.diss.clim[mavi2,],
+                             combined.diss.clim[nysy,],
+                             combined.diss.clim[oxar,],
+                             combined.diss.clim[pima,],
+                             combined.diss.clim[pipa2,],
+                             combined.diss.clim[piru,],
+                             combined.diss.clim[pist,],
+                             combined.diss.clim[pita,],
+                             combined.diss.clim[pogr4,],
+                             combined.diss.clim[potr5,],
+                             combined.diss.clim[prse2,],
+                             combined.diss.clim[quco2,],
+                             combined.diss.clim[qual,],
+                             combined.diss.clim[qula2,],
+                             combined.diss.clim[qula3,],
+                             combined.diss.clim[qumo4,],
+                             combined.diss.clim[qumu,],
+                             combined.diss.clim[quni,],
+                             combined.diss.clim[quru,],
+                             combined.diss.clim[quve,],
+                             combined.diss.clim[saal5,],
+                             combined.diss.clim[thoc2,],
+                             combined.diss.clim[tsca,],
+                             combined.diss.clim[ulam,])
+### Adding PFT and Wood Anatomy covariates ###
+
+##adding PFTs
+###Reference: http://plants.usda.gov/java/
+### Also USFS silvics manual: https://www.na.fs.fed.us/spfo/pubs/silvics_manual/table_of_contents.htm
+
+# Hardwoods
+Early.Hardwood <- c(
+                    which(combined.diss.clim.common$SPP == "ACPE"),#
+                    which(combined.diss.clim.common$SPP == "AIAL"),#
+                    which(combined.diss.clim.common$SPP == "BEAL2"),#
+                    which(combined.diss.clim.common$SPP == "BELE"),#
+                    which(combined.diss.clim.common$SPP == "BEPA"),#
+                    which(combined.diss.clim.common$SPP == "BETUL"),#
+                    which(combined.diss.clim.common$SPP == "COFL2"),#
+                    which(combined.diss.clim.common$SPP == "JUCI"),#
+                    which(combined.diss.clim.common$SPP == "JUNI"),#
+                    which(combined.diss.clim.common$SPP == "LIST2"),#
+                    which(combined.diss.clim.common$SPP == "LITU"),#
+                    which(combined.diss.clim.common$SPP == "POGR4"),#
+                    which(combined.diss.clim.common$SPP == "POTR5"),#
+                    which(combined.diss.clim.common$SPP == "PRSE2"),#
+                    which(combined.diss.clim.common$SPP == "ROPS"),#
+                    which(combined.diss.clim.common$SPP == "SAAL5")#
+                    ) #16 Spp
+
+Mid.Hardwood <- c(
+                  which(combined.diss.clim.common$SPP == "FRAM2"),#
+                  which(combined.diss.clim.common$SPP == "FRNI"),#
+                  which(combined.diss.clim.common$SPP == "FRQU"),#
+                  which(combined.diss.clim.common$SPP == "ACNE2"),#
+                  which(combined.diss.clim.common$SPP == "ACRU"),#
+                  which(combined.diss.clim.common$SPP == "CACA18"),#
+                  which(combined.diss.clim.common$SPP == "CACO15"),#
+                  which(combined.diss.clim.common$SPP == "CAGL8"),#
+                  which(combined.diss.clim.common$SPP == "CALA21"),#
+                  which(combined.diss.clim.common$SPP == "CAOV2"),#
+                  which(combined.diss.clim.common$SPP == "CATO6"),#
+                  which(combined.diss.clim.common$SPP == "CECA4"),#
+                  which(combined.diss.clim.common$SPP == "MAAC"),#
+                  which(combined.diss.clim.common$SPP == "MAFR"),#
+                  which(combined.diss.clim.common$SPP == "MAVI2"),#
+                  which(combined.diss.clim.common$SPP == "PLOC"),#
+                  which(combined.diss.clim.common$SPP == "QUAL"),#
+                  which(combined.diss.clim.common$SPP == "QUCO2"),#
+                  which(combined.diss.clim.common$SPP == "QUERC"),#
+                  which(combined.diss.clim.common$SPP == "QUIM"),#
+                  which(combined.diss.clim.common$SPP == "QULA2"),#
+                  which(combined.diss.clim.common$SPP == "QULA3"),#
+                  which(combined.diss.clim.common$SPP == "QUMO4"),#
+                  which(combined.diss.clim.common$SPP == "QUMU"),#
+                  which(combined.diss.clim.common$SPP == "QUNI"),#
+                  which(combined.diss.clim.common$SPP == "QUPH"),#
+                  which(combined.diss.clim.common$SPP == "QURU"),#
+                  which(combined.diss.clim.common$SPP == "QUST"),#
+                  which(combined.diss.clim.common$SPP == "QUVE"),#
+                  which(combined.diss.clim.common$SPP == "QUVI"),#
+                  which(combined.diss.clim.common$SPP == "ULAM"),
+                  which(combined.diss.clim.common$SPP == "ULAL")#
+                  ) #32 Spp
+
+Late.Hardwood <- c(
+                  which(combined.diss.clim.common$SPP == "ACFL"),#
+                  which(combined.diss.clim.common$SPP == "ACSA3"),#
+                  which(combined.diss.clim.common$SPP == "AEGL"),#
+                  which(combined.diss.clim.common$SPP == "DIVI5"),#
+                  which(combined.diss.clim.common$SPP == "FAGR"),#
+                  which(combined.diss.clim.common$SPP == "MAGR4"),#
+                  which(combined.diss.clim.common$SPP == "NYSY"),#
+                  which(combined.diss.clim.common$SPP == "OXAR"),#
+                  which(combined.diss.clim.common$SPP == "TIAM")#
+                  ) #9 Spp
+
+# set PFTs
+combined.diss.clim.common$PFT <- NA
+combined.diss.clim.common$PFT[Early.Hardwood] <- "Early.Hardwood"
+combined.diss.clim.common$PFT[Mid.Hardwood] <- "Mid.Hardwood"
+combined.diss.clim.common$PFT[Late.Hardwood] <- "Late.Hardwood"
+
+# Conifers
+Early.Conifer <- c(
+                  which(combined.diss.clim.common$SPP == "ABBA"),#
+                  which(combined.diss.clim.common$SPP == "JUVI"),#
+                  which(combined.diss.clim.common$SPP == "PIPA2"),#
+                  which(combined.diss.clim.common$SPP == "PIST"),#
+                  which(combined.diss.clim.common$SPP == "PIVI2"),#
+                  which(combined.diss.clim.common$SPP == "PIRE"),#
+                  which(combined.diss.clim.common$SPP == "PIRI"),#
+                  which(combined.diss.clim.common$SPP == "PITA")#
+                  ) #8 Spp
+
+Late.Conifer <- c(
+                  which(combined.diss.clim.common$SPP == "LALA"),#
+                  which(combined.diss.clim.common$SPP == "PIGL"),#
+                  which(combined.diss.clim.common$SPP == "PIMA"),#
+                  which(combined.diss.clim.common$SPP == "PIRU"),#
+                  which(combined.diss.clim.common$SPP == "THOC2"),#
+                  which(combined.diss.clim.common$SPP == "TSCA")#
+                  ) #6 Spp
+
+combined.diss.clim.common$PFT[Early.Conifer] <- "Early.Conifer"
+combined.diss.clim.common$PFT[Late.Conifer] <- "Late.Conifer"
+
+# adding wood anatomy
+###Reference http://www.wood-database.com/
+###Disagree with reference for hickory classification - put all as semi-ring porous. conferred with Christy
+
+large.resin <- c(
+                which(combined.diss.clim.common$SPP == "PIPA2"),
+                which(combined.diss.clim.common$SPP == "PIST"),
+                which(combined.diss.clim.common$SPP == "PIVI2"),
+                which(combined.diss.clim.common$SPP == "PIRE"),
+                which(combined.diss.clim.common$SPP == "PIRI"),
+                which(combined.diss.clim.common$SPP == "PITA")
+                )
+
+small.resin <- c(
+                which(combined.diss.clim.common$SPP == "LALA"),
+                which(combined.diss.clim.common$SPP == "PIGL"),
+                which(combined.diss.clim.common$SPP == "PIMA"),
+                which(combined.diss.clim.common$SPP == "PIRU")
+                )
+
+no.resin <- c(
+              which(combined.diss.clim.common$SPP == "ABBA"),
+              which(combined.diss.clim.common$SPP == "JUVI"),
+              which(combined.diss.clim.common$SPP == "THOC2"),
+              which(combined.diss.clim.common$SPP == "TSCA")
+              )
+
+ring.porous <- c(
+                which(combined.diss.clim.common$SPP == "AIAL"),              
+                which(combined.diss.clim.common$SPP == "FRAM2"),
+                which(combined.diss.clim.common$SPP == "FRNI"),
+                which(combined.diss.clim.common$SPP == "FRQU"),
+                which(combined.diss.clim.common$SPP == "QUAL"),
+                which(combined.diss.clim.common$SPP == "QUCO2"),
+                which(combined.diss.clim.common$SPP == "QUERC"),
+                which(combined.diss.clim.common$SPP == "QUIM"),
+                which(combined.diss.clim.common$SPP == "QULA2"),
+                which(combined.diss.clim.common$SPP == "QULA3"),
+                which(combined.diss.clim.common$SPP == "QUMO4"),
+                which(combined.diss.clim.common$SPP == "QUMU"),
+                which(combined.diss.clim.common$SPP == "QUNI"),
+                which(combined.diss.clim.common$SPP == "QUPH"),
+                which(combined.diss.clim.common$SPP == "QURU"),
+                which(combined.diss.clim.common$SPP == "QUST"),
+                which(combined.diss.clim.common$SPP == "QUVE"),
+                which(combined.diss.clim.common$SPP == "QUVI"),
+                which(combined.diss.clim.common$SPP == "ROPS"),
+                which(combined.diss.clim.common$SPP == "SAAL5")
+                )
+
+diffuse.porous <- c(
+                    which(combined.diss.clim.common$SPP == "ACNE2"),
+                    which(combined.diss.clim.common$SPP == "ACPE"),
+                    which(combined.diss.clim.common$SPP == "ACRU"),
+                    which(combined.diss.clim.common$SPP == "ACSA3"),
+                    which(combined.diss.clim.common$SPP == "AEGL"),
+                    which(combined.diss.clim.common$SPP == "BEAL2"),
+                    which(combined.diss.clim.common$SPP == "BELE"),
+                    which(combined.diss.clim.common$SPP == "BEPA"),
+                    which(combined.diss.clim.common$SPP == "BETUL"),
+                    which(combined.diss.clim.common$SPP == "CACA18"),
+                    which(combined.diss.clim.common$SPP == "COFL2"),
+                    which(combined.diss.clim.common$SPP == "LIST2"),
+                    which(combined.diss.clim.common$SPP == "LITU"),
+                    which(combined.diss.clim.common$SPP == "MAAC"),
+                    which(combined.diss.clim.common$SPP == "MAFR"),
+                    which(combined.diss.clim.common$SPP == "MAVI2"),                  
+                    which(combined.diss.clim.common$SPP == "PLOC"),
+                    which(combined.diss.clim.common$SPP == "FAGR"),
+                    which(combined.diss.clim.common$SPP == "MAGR4"),
+                    which(combined.diss.clim.common$SPP == "NYSY"),
+                    which(combined.diss.clim.common$SPP == "OXAR"),
+                    which(combined.diss.clim.common$SPP == "TIAM"),
+                    which(combined.diss.clim.common$SPP == "POGR4"),
+                    which(combined.diss.clim.common$SPP == "POTR5"),
+                    which(combined.diss.clim.common$SPP == "PRSE2")               
+                    )
+
+semiring.porous <- c(
+                    which(combined.diss.clim.common$SPP == "CACO15"),
+                    which(combined.diss.clim.common$SPP == "CAGL8"),
+                    which(combined.diss.clim.common$SPP == "CALA21"),
+                    which(combined.diss.clim.common$SPP == "CAOV2"),
+                    which(combined.diss.clim.common$SPP == "CATO6"),
+                    which(combined.diss.clim.common$SPP == "CECA4"),
+                    which(combined.diss.clim.common$SPP == "DIVI5"), #bordering diffuse porous
+                    which(combined.diss.clim.common$SPP == "JUCI"),
+                    which(combined.diss.clim.common$SPP == "JUNI"),
+                    which(combined.diss.clim.common$SPP == "ULAM"),
+                    which(combined.diss.clim.common$SPP == "ULAL")
+                    )
+
+#set anatomy
+combined.diss.clim.common$WOOD <- NA
+combined.diss.clim.common$WOOD[large.resin] <- "large.resin"
+combined.diss.clim.common$WOOD[small.resin] <- "small.resin"
+combined.diss.clim.common$WOOD[no.resin] <- "no.resin"
+combined.diss.clim.common$WOOD[ring.porous] <- "ring.porous"
+combined.diss.clim.common$WOOD[diffuse.porous] <- "diffuse.porous"
+combined.diss.clim.common$WOOD[semiring.porous] <- "semiring.porous"
+
+#Relevel Factors
+combined.diss.clim.common$WOOD <- factor(combined.diss.clim.common$WOOD, 
+                                    levels = c("large.resin","small.resin","no.resin",
+                                               "ring.porous","semiring.porous",
+                                               "diffuse.porous"), ordered = TRUE)
+
+#write file to see if missing any species
+write.csv(combined.diss.clim.common, file="/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/combined.diss.clim.common.wood.csv")
+
+################## Haven't added species and other phylogeny yet 3/30/2017 ####################
+###############################################################################################
+###Reference: http://plants.usda.gov/java/
+# adding species string
+    alba <- which(combined.diss.clim.common$SPP == "QUAL")
+    coccinea <- which(combined.diss.clim.common$SPP == "QUCO2")
+    none <- c(which(combined.diss.clim.common$SPP == "QUERC"),
+              which(combined.diss.clim.common$SPP == "BETUL"))
+    imbricaria <- which(combined.diss.clim.common$SPP == "QUIM")
+    laevis <- which(combined.diss.clim.common$SPP == "QULA2")
+    laurifolia <- which(combined.diss.clim.common$SPP == "QULA3")
+    montana <- which(combined.diss.clim.common$SPP == "QUMO4")
+    muehlenbergii <- which(combined.diss.clim.common$SPP == "QUMU")
+    nigra <- c(which(combined.diss.clim.common$SPP == "QUNI"),
+               which(combined.diss.clim.common$SPP == "FRNI"),
+               which(combined.diss.clim.common$SPP == "JUNI"))
+    phellos <- which(combined.diss.clim.common$SPP == "QUPH")
+    rubra <- which(combined.diss.clim.common$SPP == "QURU")
+    stellata <- which(combined.diss.clim.common$SPP == "QUST")
+    velutina <- which(combined.diss.clim.common$SPP == "QUVE")
+    virginiana <- c(which(combined.diss.clim.common$SPP == "QUVI"),
+                  which(combined.diss.clim.common$SPP == "MAVI2"),
+                  which(combined.diss.clim.common$SPP == "DIVI5"),
+                  which(combined.diss.clim.common$SPP == "PIVI2"),
+                  which(combined.diss.clim.common$SPP == "JUVI"))
+    americana <- c(which(combined.diss.clim.common$SPP == "FRAM2"),
+                   which(combined.diss.clim.common$SPP == "TIAM"),
+                   which(combined.diss.clim.common$SPP == "ULAM"))
+    quadrangulata <- which(combined.diss.clim.common$SPP == "FRQU")
+    altissima <- which(combined.diss.clim.common$SPP == "AIAL")
+    pseudoacacia <- which(combined.diss.clim.common$SPP == "ROPS")
+    albidum <- which(combined.diss.clim.common$SPP == "SAAL5")
+    negundo <- which(combined.diss.clim.common$SPP == "ACNE2")
+    pensylvanicum <- which(combined.diss.clim.common$SPP == "ACPE")
+    rubrum <- which(combined.diss.clim.common$SPP == "ACRU")
+    saccharum <- which(combined.diss.clim.common$SPP == "ACSA3")
+    glabra <- c(which(combined.diss.clim.common$SPP == "AEGL"),
+                which(combined.diss.clim.common$SPP == "CAGL8"))
+    alleghaniensis <- which(combined.diss.clim.common$SPP == "BEAL2")
+    lenta <- which(combined.diss.clim.common$SPP == "BELE")
+    papyrifera <- which(combined.diss.clim.common$SPP == "BEPA")
+    caroliniana <- which(combined.diss.clim.common$SPP == "CACA18")
+    florida <- which(combined.diss.clim.common$SPP == "COFL2")
+    styraciflua <- which(combined.diss.clim.common$SPP == "LIST2")
+    tulipifera <- which(combined.diss.clim.common$SPP == "LITU")
+    acuminata <- which(combined.diss.clim.common$SPP == "MAAC")
+    fraseri <- which(combined.diss.clim.common$SPP == "MAFR")
+    grandiflora <- which(combined.diss.clim.common$SPP == "MAGR4")
+    occidentalis <- which(combined.diss.clim.common$SPP == "PLOC")
+    grandifolia <- which(combined.diss.clim.common$SPP == "FAGR")
+    sylvatica <- which(combined.diss.clim.common$SPP == "NYSY")
+    arboreum <- which(combined.diss.clim.common$SPP == "OXAR")
+    grandidentata <- which(combined.diss.clim.common$SPP == "POGR4")
+    tremuloides <- which(combined.diss.clim.common$SPP == "POTR5")
+    serotina <- which(combined.diss.clim.common$SPP == "PRSE2")
+    cordiformis <- which(combined.diss.clim.common$SPP == "CACO15")
+    laciniosa <- which(combined.diss.clim.common$SPP == "CALA21")
+    ovata <- which(combined.diss.clim.common$SPP == "CAOV2")
+    tomentosa <- which(combined.diss.clim.common$SPP == "CATO6")
+    canadensis <- c(which(combined.diss.clim.common$SPP == "CECA4"),
+                    which(combined.diss.clim.common$SPP == "TSCA"))
+    cinerea <- which(combined.diss.clim.common$SPP == "JUCI")
+    palustris <- which(combined.diss.clim.common$SPP == "PIPA2")
+    strobus <- which(combined.diss.clim.common$SPP == "PIST")
+    resinosa <- which(combined.diss.clim.common$SPP == "PIRE")
+    rigida <- which(combined.diss.clim.common$SPP == "PIRI")
+    taeda <- which(combined.diss.clim.common$SPP == "PITA")
+    laricina <- which(combined.diss.clim.common$SPP == "LALA")
+    glauca <- which(combined.diss.clim.common$SPP == "PIGL")
+    mariana <- which(combined.diss.clim.common$SPP == "PIMA")
+    rubens <- which(combined.diss.clim.common$SPP == "PIRU")
+    balsamea <- which(combined.diss.clim.common$SPP == "ABBA")
+    occidentalis <- which(combined.diss.clim.common$SPP == "THOC2")
+    
+    ### Set total dataframe for species
+    
+    combined.diss.clim.common$species <- NA
+    combined.diss.clim.common$species[alba] <- "alba"
+    combined.diss.clim.common$species[coccinea] <- "coccinea"
+    combined.diss.clim.common$species[none] <- "none"
+    combined.diss.clim.common$species[imbricaria] <- "imbricaria"
+    combined.diss.clim.common$species[laevis] <- "laevis"
+    combined.diss.clim.common$species[laurifolia] <- "laurifolia"
+    combined.diss.clim.common$species[montana] <- "montana"
+    combined.diss.clim.common$species[muehlenbergii] <- "muehlenbergii"
+    combined.diss.clim.common$species[nigra] <- "nigra"
+    combined.diss.clim.common$species[phellos] <- "phellos"
+    combined.diss.clim.common$species[rubra] <- "rubra"
+    combined.diss.clim.common$species[stellata] <- "stellata"
+    combined.diss.clim.common$species[velutina] <- "velutina"
+    combined.diss.clim.common$species[virginiana] <- "virginiana"
+    combined.diss.clim.common$species[americana] <- "americana"
+    combined.diss.clim.common$species[quadrangulata] <- "quadrangulata"
+    combined.diss.clim.common$species[altissima] <- "altissima"
+    combined.diss.clim.common$species[pseudoacacia] <- "pseudoacacia"
+    combined.diss.clim.common$species[albidum] <- "albidum"
+    combined.diss.clim.common$species[negundo] <- "negundo"
+    combined.diss.clim.common$species[pensylvanicum] <- "pensylvanicum"
+    combined.diss.clim.common$species[rubrum] <- "rubrum"
+    combined.diss.clim.common$species[saccharum] <- "saccharum"
+    combined.diss.clim.common$species[glabra] <- "glabra"
+    combined.diss.clim.common$species[alleghaniensis] <- "alleghaniensis"
+    combined.diss.clim.common$species[lenta] <- "lenta"
+    combined.diss.clim.common$species[papyrifera] <- "papyrifera"
+    combined.diss.clim.common$species[caroliniana] <- "caroliniana"
+    combined.diss.clim.common$species[florida] <- "florida"
+    combined.diss.clim.common$species[styraciflua] <- "styraciflua"
+    combined.diss.clim.common$species[tulipifera] <- "tulipifera"
+    combined.diss.clim.common$species[acuminata] <- "acuminata"
+    combined.diss.clim.common$species[fraseri] <- "fraseri"
+    combined.diss.clim.common$species[grandiflora] <- "grandiflora"
+    combined.diss.clim.common$species[occidentalis] <- "occidentalis"
+    combined.diss.clim.common$species[grandifolia] <- "grandifolia"
+    combined.diss.clim.common$species[sylvatica] <- "sylvatica"
+    combined.diss.clim.common$species[arboreum] <- "arboreum"
+    combined.diss.clim.common$species[grandidentata] <- "grandidentata"
+    combined.diss.clim.common$species[tremuloides] <- "tremuloides"
+    combined.diss.clim.common$species[serotina] <- "serotina"
+    combined.diss.clim.common$species[cordiformis] <- "cordiformis"
+    combined.diss.clim.common$species[laciniosa] <- "laciniosa"
+    combined.diss.clim.common$species[ovata] <- "ovata"
+    combined.diss.clim.common$species[tomentosa] <- "tomentosa"
+    combined.diss.clim.common$species[canadensis] <- "canadensis"
+    combined.diss.clim.common$species[cinerea] <- "cinerea"
+    combined.diss.clim.common$species[palustris] <- "palustris"
+    combined.diss.clim.common$species[strobus] <- "strobus"
+    combined.diss.clim.common$species[resinosa] <- "resinosa"
+    combined.diss.clim.common$species[rigida] <- "rigida"
+    combined.diss.clim.common$species[taeda] <- "taeda"
+    combined.diss.clim.common$species[laricina] <- "laricina"
+    combined.diss.clim.common$species[glauca] <- "glauca"
+    combined.diss.clim.common$species[mariana] <- "mariana"
+    combined.diss.clim.common$species[rubens] <- "rubens"
+    combined.diss.clim.common$species[balsamea] <- "balsamea"
+    combined.diss.clim.common$species[occidentalis] <- "occidentalis"
+
+# adding genus and family
+  ### Hardwoods
+
+    Quercus <- c(                
+                which(combined.diss.clim.common$SPP == "QUAL"),
+                which(combined.diss.clim.common$SPP == "QUCO2"),
+                which(combined.diss.clim.common$SPP == "QUERC"),
+                which(combined.diss.clim.common$SPP == "QUIM"),
+                which(combined.diss.clim.common$SPP == "QULA2"),
+                which(combined.diss.clim.common$SPP == "QULA3"),
+                which(combined.diss.clim.common$SPP == "QUMO4"),
+                which(combined.diss.clim.common$SPP == "QUMU"),
+                which(combined.diss.clim.common$SPP == "QUNI"),
+                which(combined.diss.clim.common$SPP == "QUPH"),
+                which(combined.diss.clim.common$SPP == "QURU"),
+                which(combined.diss.clim.common$SPP == "QUST"),
+                which(combined.diss.clim.common$SPP == "QUVE"),
+                which(combined.diss.clim.common$SPP == "QUVI")
+                )
+    
+   Fraxinus <- c(
+                which(combined.diss.clim.common$SPP == "FRAM2"),
+                which(combined.diss.clim.common$SPP == "FRNI"),
+                which(combined.diss.clim.common$SPP == "FRQU")
+                )
+   
+  Ailanthus <- c(
+                which(combined.diss.clim.common$SPP == "AIAL")
+                )
+   
+    Robinia <- c(
+                which(combined.diss.clim.common$SPP == "ROPS")
+                )
+    
+  Sassafras <- c(
+                which(combined.diss.clim.common$SPP == "SAAL5")
+                )
+  
+      Acer <- c(
+                which(combined.diss.clim.common$SPP == "ACNE2"),
+                which(combined.diss.clim.common$SPP == "ACPE"),
+                which(combined.diss.clim.common$SPP == "ACRU"),
+                which(combined.diss.clim.common$SPP == "ACSA3")
+                )
+      
+  Aesculus <- c(
+                which(combined.diss.clim.common$SPP == "AEGL")
+                )
+  
+    Betula <- c(
+                which(combined.diss.clim.common$SPP == "BEAL2"),
+                which(combined.diss.clim.common$SPP == "BELE"),
+                which(combined.diss.clim.common$SPP == "BEPA"),
+                which(combined.diss.clim.common$SPP == "BETUL")
+                )
+    
+  Carpinus <- c(
+                which(combined.diss.clim.common$SPP == "CACA18")
+                )
+    
+    Cornus <- c(
+                which(combined.diss.clim.common$SPP == "COFL2")
+                )
+    
+Liquidambar <- c(
+                which(combined.diss.clim.common$SPP == "LIST2")
+                )
+
+Liriodendron <- c(
+                which(combined.diss.clim.common$SPP == "LITU")
+                )
+
+    Magnolia <- c(
+                which(combined.diss.clim.common$SPP == "MAAC"),
+                which(combined.diss.clim.common$SPP == "MAFR"),
+                which(combined.diss.clim.common$SPP == "MAVI2"),
+                which(combined.diss.clim.common$SPP == "MAGR4")
+                )
+    
+    Platanus <- c(
+                which(combined.diss.clim.common$SPP == "PLOC")
+                )
+    
+       Fagus <- c(
+                which(combined.diss.clim.common$SPP == "FAGR")
+                )
+       
+       Nyssa <- c(
+                which(combined.diss.clim.common$SPP == "NYSY")
+                )
+       
+       Oxydendrum <- c(
+                which(combined.diss.clim.common$SPP == "OXAR")
+                )
+       
+       Tilia <- c(
+                which(combined.diss.clim.common$SPP == "TIAM")
+                )
+    
+     Populus <- c(
+                which(combined.diss.clim.common$SPP == "POGR4"),
+                which(combined.diss.clim.common$SPP == "POTR5")
+                )
+       
+     Prunus <- c(
+                which(combined.diss.clim.common$SPP == "PRSE2")
+                )
+
+       Carya <- c(
+                which(combined.diss.clim.common$SPP == "CACO15"),
+                which(combined.diss.clim.common$SPP == "CAGL8"),
+                which(combined.diss.clim.common$SPP == "CALA21"),
+                which(combined.diss.clim.common$SPP == "CAOV2"),
+                which(combined.diss.clim.common$SPP == "CATO6")
+                )
+       
+     Cercis <- c(
+                which(combined.diss.clim.common$SPP == "CECA4")
+                )
+     
+  Diospyros <- c(
+                which(combined.diss.clim.common$SPP == "DIVI5")
+                )
+  
+    Juglans <- c(
+                which(combined.diss.clim.common$SPP == "JUCI"),
+                which(combined.diss.clim.common$SPP == "JUNI")
+                )
+    
+      Ulmus <- c(
+                which(combined.diss.clim.common$SPP == "ULAM")
+                )
+
+  ### Conifers
+      Pinus <- c(
+                which(combined.diss.clim.common$SPP == "PIPA2"),
+                which(combined.diss.clim.common$SPP == "PIST"),
+                which(combined.diss.clim.common$SPP == "PIVI2"),
+                which(combined.diss.clim.common$SPP == "PIRE"),
+                which(combined.diss.clim.common$SPP == "PIRI"),
+                which(combined.diss.clim.common$SPP == "PITA")
+                )
+      
+      Larix <- c(
+                which(combined.diss.clim.common$SPP == "LALA")
+                )
+      
+      Picea <- c(
+                which(combined.diss.clim.common$SPP == "PIGL"),
+                which(combined.diss.clim.common$SPP == "PIMA"),
+                which(combined.diss.clim.common$SPP == "PIRU")
+                )
+
+      Abies <- c(
+              which(combined.diss.clim.common$SPP == "ABBA")
+              )
+      
+Juniperus <- c(
+              which(combined.diss.clim.common$SPP == "JUVI")
+              )
+
+    Thuja <- c(
+              which(combined.diss.clim.common$SPP == "THOC2")
+              )
+    
+    Tsuga <- c(
+              which(combined.diss.clim.common$SPP == "TSCA")
+              )
+    
+    
+    
+    ### Set total dataframe for Genus
+    
+    combined.diss.clim.common$genus <- NA
+    combined.diss.clim.common$genus[Pinus] <- "Pinus"
+    combined.diss.clim.common$genus[Larix] <- "Larix"
+    combined.diss.clim.common$genus[Picea] <- "Picea"
+    combined.diss.clim.common$genus[Abies] <- "Abies"
+    combined.diss.clim.common$genus[Thuja] <- "Thuja"
+    combined.diss.clim.common$genus[Tsuga] <- "Tsuga"
+    combined.diss.clim.common$genus[Juniperus] <- "Juniperus"
+    combined.diss.clim.common$genus[Quercus] <- "Quercus"
+    combined.diss.clim.common$genus[Fraxinus] <- "Fraxinus"
+    combined.diss.clim.common$genus[Ailanthus] <- "Ailanthus"
+    combined.diss.clim.common$genus[Robinia] <- "Robinia"
+    combined.diss.clim.common$genus[Sassafras] <- "Sassafras"
+    combined.diss.clim.common$genus[Acer] <- "Acer"
+    combined.diss.clim.common$genus[Aesculus] <- "Aesculus"
+    combined.diss.clim.common$genus[Betula] <- "Betula"
+    combined.diss.clim.common$genus[Carpinus] <- "Carpinus"
+    combined.diss.clim.common$genus[Cornus] <- "Cornus"
+    combined.diss.clim.common$genus[Liquidambar] <- "Liquidambar"
+    combined.diss.clim.common$genus[Liriodendron] <- "Liriodendron"
+    combined.diss.clim.common$genus[Magnolia] <- "Magnolia"
+    combined.diss.clim.common$genus[Platanus] <- "Platanus"
+    combined.diss.clim.common$genus[Fagus] <- "Fagus"
+    combined.diss.clim.common$genus[Nyssa] <- "Nyssa"
+    combined.diss.clim.common$genus[Oxydendrum] <- "Oxydendrum"
+    combined.diss.clim.common$genus[Tilia] <- "Tilia"
+    combined.diss.clim.common$genus[Populus] <- "Populus"
+    combined.diss.clim.common$genus[Prunus] <- "Prunus"
+    combined.diss.clim.common$genus[Carya] <- "Carya"
+    combined.diss.clim.common$genus[Cercis] <- "Cercis"
+    combined.diss.clim.common$genus[Diospyros] <- "Diospyros"
+    combined.diss.clim.common$genus[Juglans] <- "Juglans"
+    combined.diss.clim.common$genus[Ulmus] <- "Ulmus"
+    
+  ###Add Family
+  Aceraceae <- c(
+              which(combined.diss.clim.common$genus == "Acer")
+              )
+  
+  Betulaceae <- c(
+                which(combined.diss.clim.common$genus == "Betula"),
+                which(combined.diss.clim.common$genus == "Carpinus")
+                )
+  
+  Cornaceae <- c(which(combined.diss.clim.common$genus == "Cornus"),
+                 which(combined.diss.clim.common$genus == "Nyssa"))
+  
+  Cupressaceae <- c(which(combined.diss.clim.common$genus == "Thuja"),
+                    which(combined.diss.clim.common$genus == "Juniperus"))
+  
+  Ebenaceae <- c(which(combined.diss.clim.common$genus == "Diospyros"))
+  
+  Ericaceae <- c(which(combined.diss.clim.common$genus == "Oxydendrum"))
+  
+  Fabaceae <- c(which(combined.diss.clim.common$genus == "Robinia"),
+                    which(combined.diss.clim.common$genus == "Cercis"))
+  
+  Fagaceae <- c(which(combined.diss.clim.common$genus == "Quercus"),
+                which(combined.diss.clim.common$genus == "Fagus"))
+  
+  Hamamelidaceae <- c(which(combined.diss.clim.common$genus == "Liquidambar"))
+  
+  Hippocastanaceae <- c(which(combined.diss.clim.common$genus == "Aesculus"))
+  
+  Juglandaceae <- c(which(combined.diss.clim.common$genus == "Carya"),
+                    which(combined.diss.clim.common$genus == "Juglans"))
+  
+  Lauraceae <- c(which(combined.diss.clim.common$genus == "Sassafras"))
+  
+  Magnoliaceae <- c(which(combined.diss.clim.common$genus == "Liriodendron"),
+                    which(combined.diss.clim.common$genus == "Magnolia"))
+  
+  Oleaceae <- c(which(combined.diss.clim.common$genus == "Fraxinus"))
+  
+  Pinaceae <- c(which(combined.diss.clim.common$genus == "Pinus"),
+                which(combined.diss.clim.common$genus == "Larix"),
+                which(combined.diss.clim.common$genus == "Picea"),
+                which(combined.diss.clim.common$genus == "Abies"),
+                which(combined.diss.clim.common$genus == "Tsuga")
+                )
+  
+  Platanaceae <- c(which(combined.diss.clim.common$genus == "Platanus"))
+  
+  Rosaceae <- c(which(combined.diss.clim.common$genus == "Prunus"))
+  
+  Salicaceae <- c(which(combined.diss.clim.common$genus == "Populus"))
+  
+  Simaroubaceae <- c(which(combined.diss.clim.common$genus == "Ailanthus"))
+  
+  Tiliaceae <- c(which(combined.diss.clim.common$genus == "Tilia"))
+  
+  Ulmaceae <- c(which(combined.diss.clim.common$genus == "Ulmus"))
+  
+  #Make single genus-species column
+    combined.diss.clim.common$GenusSpecies <- NA
+    combined.diss.clim.common$GenusSpecies <- with(combined.diss.clim.common, paste(genus, species))
+  
+  #Set total dataframe for Family
+  combined.diss.clim.common$family <- NA
+    combined.diss.clim.common$family[Aceraceae] <- "Aceraceae"
+    combined.diss.clim.common$family[Betulaceae] <- "Betulaceae"       
+    combined.diss.clim.common$family[Cornaceae] <- "Cornaceae"
+    combined.diss.clim.common$family[Cupressaceae] <- "Cupressaceae"
+    combined.diss.clim.common$family[Ebenaceae] <- "Ebenaceae"
+    combined.diss.clim.common$family[Ericaceae] <- "Ericaceae"
+    combined.diss.clim.common$family[Fabaceae] <- "Fabaceae"
+    combined.diss.clim.common$family[Fagaceae] <- "Fagaceae"
+    combined.diss.clim.common$family[Hamamelidaceae] <- "Hamamelidaceae"
+    combined.diss.clim.common$family[Hippocastanaceae] <- "Hippocastanaceae"
+    combined.diss.clim.common$family[Juglandaceae] <- "Juglandaceae"
+    combined.diss.clim.common$family[Sassafras] <- "Lauraceae"
+    combined.diss.clim.common$family[Magnoliaceae] <- "Magnoliaceae"
+    combined.diss.clim.common$family[Oleaceae] <- "Oleaceae"   
+    combined.diss.clim.common$family[Pinaceae] <- "Pinaceae"
+    combined.diss.clim.common$family[Platanaceae] <- "Platanaceae"
+    combined.diss.clim.common$family[Rosaceae] <- "Rosaceae"
+    combined.diss.clim.common$family[Salicaceae] <- "Salicaceae"
+    combined.diss.clim.common$family[Simaroubaceae] <- "Simaroubaceae"
+    combined.diss.clim.common$family[Tiliaceae] <- "Tiliaceae"
+    combined.diss.clim.common$family[Ulmaceae] <- "Ulmaceae"
+
+    #Order
+    Sapindales <- c(which(combined.diss.clim.common$family == "Aceraceae"),
+                    which(combined.diss.clim.common$family == "Hippocastanaceae"),
+                    which(combined.diss.clim.common$family == "Simaroubaceae"))
+    
+    Fagales <- c(which(combined.diss.clim.common$family == "Betulaceae"),
+                 which(combined.diss.clim.common$family == "Fagaceae"))
+    
+    Cornales <- c(which(combined.diss.clim.common$family == "Cornaceae"))
+    
+    Pinales <- c(which(combined.diss.clim.common$family == "Cupressaceae"),
+                 which(combined.diss.clim.common$family == "Pinaceae"))
+    
+    Ebenales <- c(which(combined.diss.clim.common$family == "Ebenaceae"))
+    Ericales <- c(which(combined.diss.clim.common$family == "Ericaceae"))
+    Fabales <- c(which(combined.diss.clim.common$family == "Fabaceae"))
+    
+    Hamamelidales <- c(which(combined.diss.clim.common$family == "Hamamelidaceae"),
+                       which(combined.diss.clim.common$family == "Platanaceae"))
+    
+    Juglandales <- c(which(combined.diss.clim.common$family == "Juglandaceae"))
+    Laurales <- c(which(combined.diss.clim.common$family == "Lauraceae"))
+    Magnoliales <- c(which(combined.diss.clim.common$family == "Magnoliaceae"))
+    Scrophulariales <- c(which(combined.diss.clim.common$family == "Oleaceae"))
+    Rosales <- c(which(combined.diss.clim.common$family == "Rosaceae"))
+    Salicales <- c(which(combined.diss.clim.common$family == "Salicaceae"))
+    Malvales <- c(which(combined.diss.clim.common$family == "Tiliaceae"))
+    Urticales <- c(which(combined.diss.clim.common$family == "Ulmaceae"))
+    
+    #Set total dataframe for order
+    combined.diss.clim.common$order <- NA
+    combined.diss.clim.common$order[Sapindales] <- "Sapindales"
+    combined.diss.clim.common$order[Fagales] <- "Fagales"       
+    combined.diss.clim.common$order[Cornales] <- "Cornales"
+    combined.diss.clim.common$order[Pinales] <- "Pinales"
+    combined.diss.clim.common$order[Ebenales] <- "Ebenales"
+    combined.diss.clim.common$order[Ericales] <- "Ericales"
+    combined.diss.clim.common$order[Fabales] <- "Fabales"
+    combined.diss.clim.common$order[Hamamelidales] <- "Hamamelidales"
+    combined.diss.clim.common$order[Juglandales] <- "Juglandales"
+    combined.diss.clim.common$order[Laurales] <- "Laurales"
+    combined.diss.clim.common$order[Magnoliales] <- "Magnoliales"
+    combined.diss.clim.common$order[Scrophulariales] <- "Scrophulariales"
+    combined.diss.clim.common$order[Rosales] <- "Rosales"
+    combined.diss.clim.common$order[Salicales] <- "Salicales"   
+    combined.diss.clim.common$order[Malvales] <- "Malvales"
+    combined.diss.clim.common$order[Urticales] <- "Urticales"
+
+    #Subclass
+    Rosidae <- c(which(combined.diss.clim.common$order == "Sapindales"),
+                 which(combined.diss.clim.common$order == "Cornales"),
+                 which(combined.diss.clim.common$order == "Fabales"),
+                 which(combined.diss.clim.common$order == "Rosales"))
+    
+    Hamamelididae <- c(which(combined.diss.clim.common$order == "Fagales"),
+                       which(combined.diss.clim.common$order == "Hamamelidales"),
+                       which(combined.diss.clim.common$order == "Juglandales"),
+                       which(combined.diss.clim.common$order == "Urticales"))
+    
+    Pinopsida <- c(which(combined.diss.clim.common$order == "Pinales"))
+    
+    Dilleniidae <- c(which(combined.diss.clim.common$order == "Ebenales"),
+                     which(combined.diss.clim.common$order == "Ericales"),
+                     which(combined.diss.clim.common$order == "Salicales"),
+                     which(combined.diss.clim.common$order == "Malvales"))
+    
+    Magnoliidae <- c(which(combined.diss.clim.common$order == "Magnoliales"),
+                     which(combined.diss.clim.common$order == "Laurales"))
+    
+    Asteridae <- c(which(combined.diss.clim.common$order == "Scrophulariales"))
+    
+        #Set total dataframe for Subclass
+    combined.diss.clim.common$subclass <- NA
+    combined.diss.clim.common$subclass[Rosidae] <- "Rosidae"
+    combined.diss.clim.common$subclass[Hamamelididae] <- "Hamamelididae"       
+    combined.diss.clim.common$subclass[Pinopsida] <- "Pinopsida"
+    combined.diss.clim.common$subclass[Dilleniidae] <- "Dilleniidae"
+    combined.diss.clim.common$subclass[Magnoliidae] <- "Magnoliidae"
+    combined.diss.clim.common$subclass[Asteridae] <- "Asteridae"
+
+
+combined.diss.clim.common$GenusSpecies <- factor(combined.diss.clim.common$GenusSpecies, 
+                  levels = c("Juniperus virginiana","Thuja occidentalis","Abies balsamea","Tsuga canadensis","Picea mariana", "Picea rubens","Pinus strobus","Pinus palustris","Pinus taeda","Pinus rigida","Sassafras albidum","Magnolia virginiana","Liriodendron tulipifera","Liquidambar styraciflua","Oxydendrum arboreum","Nyssa sylvatica","Fraxinus americana","Fraxinus nigra","Tilia americana","Acer rubrum","Acer saccharum","Acer negundo","Populus grandidentata","Populus tremuloides","Prunus serotina","Ulmus americana","Betula lenta","Betula papyrifera","Betula alleghaniensis","Juglans nigra","Carya glabra","Carya cordiformis","Carya ovata","Carya tomentosa","Fagus grandifolia","Quercus laurifolia","Quercus alba","Quercus velutina","Quercus nigra","Quercus laevis","Quercus montana","Quercus rubra","Quercus virginiana","Quercus coccinea","Quercus muehlenbergii","Quercus phellos"), ordered = TRUE) #Quercus coccinea added after tree made need to figure out where it actually belongs
+
+combined.diss.clim.common$WOOD <- factor(combined.diss.clim.common$WOOD, levels = c("large.resin","small.resin", "no.resin","ring.porous","semiring.porous","diffuse.porous"), ordered = TRUE)
+
+combined.diss.clim.common$PFT <- factor(combined.diss.clim.common$PFT, levels = c("Early.Conifer","Late.Conifer","Early.Hardwood","Mid.Hardwood","Late.Hardwood"), ordered = TRUE)
+
+write.csv(x = combined.diss.clim.common, file = "/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/combined.diss.clim.common.wood.phyl.csv")
+
+#manually moved columns
+combined.diss.clim.common.order <- read.csv("/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/combined.diss.clim.common.wood.phyl.csv")
+
+colnames(combined.diss.clim.common.order)[104:153] <- colnames.yrs#colnames(combined.dmg.clean) #get rid of stupid "x" before year
+
+#Reformat data so I can do linear models for more detailed analysis
+# #recreate data frame to be compliant with structure needed to include time as a variable (50 years)
+ids.rep.new.diss.common.order <- data.frame(matrix(NA,nrow=1,ncol=103))
+colnames(ids.rep.new.diss.common.order) <- colnames(combined.diss.clim.common.order[1:103])
+for(i in 1:nrow(combined.diss.clim.common.order)){
+  ids.rep.diss.common.order <- combined.diss.clim.common.order[rep(i,times=50),1:103]
+  ids.rep.new.diss.common.order <- rbind(ids.rep.new.diss.common.order,ids.rep.diss.common.order)
+}
+#remove row of NAs
+combined.ids.diss.common.order <- ids.rep.new.diss.common.order[2:nrow(ids.rep.new.diss.common.order),]
+
+#transpose and concatenate increments for all trees
+inc.new.diss.common.order <- vector("numeric",length=0)
+for(i in 1:nrow(combined.diss.clim.common.order)){
+  inc.diss.common.order <- as.matrix(combined.diss.clim.common.order[i,104:153])
+  inc.new.diss.common.order <- as.numeric(c(inc.new.diss.common.order,inc.diss.common.order))
+}
+
+#add ring increments
+combined.ids.incs.diss <- cbind(combined.ids.diss.common.order,inc.new.diss.common.order)
+
+#rename inc variable
+setnames(combined.ids.incs.diss,old='inc.new.diss.common.order',new='INCREMENT')
+
+YEAR <- seq(1967,2016,1)
+YEAR <- rep(YEAR,1568)
+
+#final version with 50yrs of growth
+combined.all.diss.common <- cbind(combined.ids.incs.diss,YEAR)
+
+#ANALYSIS
+lm.space <- lmer(INCREMENT ~ YEAR + (1|SITE/PLOT/SUB/TAG), data = combined.all.diss.common)
+summary(lm.space)
+
+lm.clim.trait.spp <- lmer(INCREMENT ~ YEAR + (1|SPP) + (1|TEMP_K) +(1|PRECIP) + (1|PFT) + (1|WOOD) + (1|SITE/PLOT/SUB/TAG), data = combined.all.diss.common)
+summary(lm.clim.trait.spp)
+
+
+summary(nsc.kitchen.lm)
+plot((nsc.kitchen.lm))
+```
 You can also embed plots, for example:
 
 ```{r fig.width=7, fig.height=6}
