@@ -25,30 +25,33 @@ trees.diss <- read.csv("/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/Adul
 rings.diss <- Read_Tuscon("/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/Windendro_Dissertation")
 
 #Match Tucson ringwidth files and adult census data for 50yrs of growth
-combined.diss <- matchInventoryRings(trees=trees.diss,rings.diss)
+combined.diss <- matchInventoryRings(trees=trees.diss,rings.diss,nyears=60)
 combined.diss <- data.frame(combined.diss)
 #write.csv(combined.diss, file="/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/combined.diss.new2.csv")
+write.csv(combined.diss, file="/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/combined.diss.new3.csv")
 #manually added site average temp and precip
-combined.diss.clim <- read.csv("/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/combined.diss.clim.csv")
+#combined.diss.clim <- read.csv("/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/combined.diss.clim.csv")
+combined.diss.clim <- read.csv("/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/combined.diss.clim2.csv")
+combined.diss.clim <- combined.diss.clim[,2:156]
 #remove X before years
-colnames.yrs <- c("1967","1968","1969","1970","1971","1972","1973","1974","1975","1976","1977","1978","1979","1980","1981","1982","1983","1984","1985","1986","1987","1988","1989","1990","1991","1992","1993","1994","1995","1996","1997","1998","1999","2000","2001","2002","2003","2004","2005","2006","2007","2008","2009","2010","2011","2012","2013","2014","2015","2016")
+colnames.yrs <- c("1957","1958","1959","1960","1961","1962","1963","1964","1965","1966","1967","1968","1969","1970","1971","1972","1973","1974","1975","1976","1977","1978","1979","1980","1981","1982","1983","1984","1985","1986","1987","1988","1989","1990","1991","1992","1993","1994","1995","1996","1997","1998","1999","2000","2001","2002","2003","2004","2005","2006","2007","2008","2009","2010","2011","2012","2013","2014","2015","2016")
 
-colnames(combined.diss.clim)[93:142] <- colnames.yrs#colnames(combined.dmg.clean) #get rid of stupid "x" before year
+colnames(combined.diss.clim)[93:152] <- colnames.yrs#colnames(combined.dmg.clean) #get rid of stupid "x" before year
 
 #TODO correct cores with known suspiciously large growth increment
 #cores ID'd in /Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/qc_removed_cores.xlsx
 
 #write file to check which cores still need to be analyzed
 #common sample ID to match with
-combined.diss$sampleID <- mapply(combined.diss$SITE, combined.diss$PLOT, combined.diss$SUB, combined.diss$TAG, FUN = paste0)
-
-trees.diss$sampleID <- mapply(trees.diss$Site, trees.diss$Plot, trees.diss$Sub, trees.diss$Tag, FUN = paste0)
-
-analyzed.trees.growth <- merge(combined.diss, trees.diss, by = "sampleID", all.x = TRUE, all.y = TRUE)
-check.growth.analyzed <- cbind(analyzed.trees.growth[,1:9],analyzed.trees.growth[,131:139],analyzed.trees.growth[,144:151],analyzed.trees.growth[,208],analyzed.trees.growth[,223])
-names(check.growth.analyzed)[27] <- "DBH14"
-names(check.growth.analyzed)[28] <- "DBH15"
-write.csv(check.growth.analyzed, file = "alltrees_growth_analyzed_tracking_CDincluded.csv")
+# combined.diss$sampleID <- mapply(combined.diss$SITE, combined.diss$PLOT, combined.diss$SUB, combined.diss$TAG, FUN = paste0)
+# 
+# trees.diss$sampleID <- mapply(trees.diss$Site, trees.diss$Plot, trees.diss$Sub, trees.diss$Tag, FUN = paste0)
+# 
+# analyzed.trees.growth <- merge(combined.diss, trees.diss, by = "sampleID", all.x = TRUE, all.y = TRUE)
+# check.growth.analyzed <- cbind(analyzed.trees.growth[,1:9],analyzed.trees.growth[,131:139],analyzed.trees.growth[,144:151],analyzed.trees.growth[,208],analyzed.trees.growth[,223])
+# names(check.growth.analyzed)[27] <- "DBH14"
+# names(check.growth.analyzed)[28] <- "DBH15"
+# write.csv(check.growth.analyzed, file = "alltrees_growth_analyzed_tracking_CDincluded.csv")
 
 ```
 Reformat combined census and treering data dataframe to comply with format required for including time explicitly, which includes year by site and year by plot interaction terms.
@@ -641,8 +644,11 @@ combined.diss.clim.common$WOOD <- factor(combined.diss.clim.common$WOOD,
                                                "ring.porous","semiring.porous",
                                                "diffuse.porous"), ordered = TRUE)
 
+# #write file to see if missing any species
+# write.csv(combined.diss.clim.common, file="/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/combined.diss.clim.common.wood.csv")
+
 #write file to see if missing any species
-write.csv(combined.diss.clim.common, file="/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/combined.diss.clim.common.wood.csv")
+write.csv(combined.diss.clim.common, file="/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/combined.diss.clim.common.wood2.csv")
 
 ################## Haven't added species and other phylogeny yet 3/30/2017 ####################
 ###############################################################################################
@@ -1162,12 +1168,18 @@ combined.diss.clim.common$WOOD <- factor(combined.diss.clim.common$WOOD, levels 
 
 combined.diss.clim.common$PFT <- factor(combined.diss.clim.common$PFT, levels = c("Early.Conifer","Late.Conifer","Early.Hardwood","Mid.Hardwood","Late.Hardwood"), ordered = TRUE)
 
-write.csv(x = combined.diss.clim.common, file = "/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/combined.diss.clim.common.wood.phyl.csv")
+#write.csv(x = combined.diss.clim.common, file = "/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/combined.diss.clim.common.wood.phyl.csv")
 
-#manually moved columns
-combined.diss.clim.common.order <- read.csv("/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/combined.diss.clim.common.wood.phyl.csv")
+write.csv(x = combined.diss.clim.common, file = "/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/combined.diss.clim.common.wood.phyl2.csv")
 
-colnames(combined.diss.clim.common.order)[104:153] <- colnames.yrs#colnames(combined.dmg.clean) #get rid of stupid "x" before year
+# #manually moved columns to before increment years
+# combined.diss.clim.common.order <- read.csv("/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/combined.diss.clim.common.wood.phyl.csv")
+
+#manually moved columns to before increment years
+combined.diss.clim.common.order <- read.csv("/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/combined.diss.clim.common.wood.phyl2.csv")
+
+combined.diss.clim.common.order <- combined.diss.clim.common.order[,2:164]
+colnames(combined.diss.clim.common.order)[104:163] <- colnames.yrs#colnames(combined.dmg.clean) #get rid of stupid "x" before year
 
 #Reformat data so I can do linear models for more detailed analysis
 # #recreate data frame to be compliant with structure needed to include time as a variable (50 years)
@@ -1183,7 +1195,7 @@ combined.ids.diss.common.order <- ids.rep.new.diss.common.order[2:nrow(ids.rep.n
 #transpose and concatenate increments for all trees
 inc.new.diss.common.order <- vector("numeric",length=0)
 for(i in 1:nrow(combined.diss.clim.common.order)){
-  inc.diss.common.order <- as.matrix(combined.diss.clim.common.order[i,104:153])
+  inc.diss.common.order <- as.matrix(combined.diss.clim.common.order[i,108:157])
   inc.new.diss.common.order <- as.numeric(c(inc.new.diss.common.order,inc.diss.common.order))
 }
 
@@ -1193,22 +1205,120 @@ combined.ids.incs.diss <- cbind(combined.ids.diss.common.order,inc.new.diss.comm
 #rename inc variable
 setnames(combined.ids.incs.diss,old='inc.new.diss.common.order',new='INCREMENT')
 
-YEAR <- seq(1967,2016,1)
+YEAR <- seq(1961,2010,1)
 YEAR <- rep(YEAR,1568)
 
 #final version with 50yrs of growth
 combined.all.diss.common <- cbind(combined.ids.incs.diss,YEAR)
 
-#ANALYSIS
+#Simplest ANOVAs to start with - single variable mostly#
+
+#year
+lm.year <- lm(INCREMENT ~ YEAR, data = combined.all.diss.common)
+summary(lm.year)
+
+#space
+lm.space.simp <- lm(INCREMENT ~ SITE/PLOT/SUB/TAG, data = combined.all.diss.common)
+summary(lm.space.simp)
+
+#wood
+lm.wood.simp <- lm(INCREMENT ~ WOOD, data = combined.all.diss.common)
+summary(lm.wood.simp)
+
+#canopy
+lm.canopy.simp <- lm(INCREMENT ~ CANOPY15, data = combined.all.diss.common)
+summary(lm.canopy.simp)
+
+#pft
+lm.pft.simp <- lm(INCREMENT ~ PFT, data = combined.all.diss.common)
+summary(lm.pft.simp)
+
+#DBH
+lm.size.simp <- lm(INCREMENT ~ DBH14, data = combined.all.diss.common)
+summary(lm.size.simp)
+
+#species
+lm.spp.simp <- lm(INCREMENT ~ GenusSpecies, data = combined.all.diss.common)
+summary(lm.spp.simp)
+
+#genus/species
+lm.genus.simp <- lm(INCREMENT ~ genus/GenusSpecies, data = combined.all.diss.common)
+summary(lm.genus.simp)
+
+#taxonomy
+#crashes R don't use
+# lm.tax.simp <- lm(INCREMENT ~ subclass/order/family/genus/GenusSpecies, data = combined.all.diss.common)
+# summary(lm.tax.simp)
+
+#Won't run. R crashes
+# lm.phylo.simp <- lm(INCREMENT ~ subclass/order/family/genus/GenusSpecies, data = combined.all.diss.common)
+# summary(lm.phylo.simp)
+
+#temperature
+lm.temp.simp <- lm(INCREMENT ~ TEMP_C, data = combined.all.diss.common)
+summary(lm.temp.simp)
+
+#precipitation
+lm.precip.simp <- lm(INCREMENT ~ PRECIP, data = combined.all.diss.common)
+summary(lm.precip.simp)
+
+#Multi-variable linear models
+#space only, fixed effect for year
 lm.space <- lmer(INCREMENT ~ YEAR + (1|SITE/PLOT/SUB/TAG), data = combined.all.diss.common)
 summary(lm.space)
 
-lm.clim.trait.spp <- lmer(INCREMENT ~ YEAR + (1|SPP) + (1|TEMP_K) +(1|PRECIP) + (1|PFT) + (1|WOOD) + (1|SITE/PLOT/SUB/TAG), data = combined.all.diss.common)
+#Phylogeny only
+lm.phylo <- lmer(INCREMENT ~ YEAR + (1|subclass/order/family/genus/GenusSpecies), data = combined.all.diss.common)
+summary(lm.phylo)
+
+lmer.space <- lmer(INCREMENT ~ YEAR + (1|SITE/PLOT/SUB/TAG), data = combined.all.diss.common)
+summary(lmer.space)
+
+lm.pft.size <- lm(INCREMENT ~ PFT + DBH14 +I(DBH14^2), data = combined.all.diss.common)
+summary(lm.pft.size)
+
+#Crashes R, don't use
+# lm.phylo <- lm(INCREMENT ~ family/genus/GenusSpecies, data = combined.all.diss.common)
+# summary(lm.phylo)
+
+# lm.trait <- lm(INCREMENT ~ WOOD + PFT, data = combined.all.diss.common)
+# summary(lm.trait)
+
+#space only, size fixed effect, random year effect
+lm.space.year <- lmer(INCREMENT ~ DBH14 + (1|YEAR) + (1|SITE/PLOT/SUB/TAG), data = combined.all.diss.common)
+summary(lm.space.year)
+
+#space, size and canopy fixed, random year
+lm.space.year.f <- lmer(INCREMENT ~ DBH14 + CANOPY15 + (1|YEAR) + (1|SITE:YEAR) + (1|SITE/PLOT/SUB/TAG), data = combined.all.diss.common)
+summary(lm.space.year.f)
+
+lm.space.year.sy <- lmer(INCREMENT ~ DBH14 + CANOPY15 + YEAR + (1|SITE:YEAR) + (1|SITE/PLOT/SUB/TAG), data = combined.all.diss.common)
+summary(lm.space.year.sy)
+
+#space and regional climate
+lm.clim <- lmer(INCREMENT ~ YEAR + (1|SITE:YEAR) + (1|SITE/PLOT/SUB/TAG) + (1|TEMP_C) + (1|PRECIP) , data = combined.all.diss.common)
+summary(lm.clim)
+
+#space, climate, and species
+lm.clim.spp <- lmer(INCREMENT ~ YEAR + (1|SITE/PLOT/SUB/TAG) + (1|TEMP_C) + (1|PRECIP) + (1|GenusSpecies), data = combined.all.diss.common)
+summary(lm.clim.spp)
+
+#space and species
+lm.spp <- lmer(INCREMENT ~ YEAR + (1|SITE/PLOT/SUB/TAG) +  (1|GenusSpecies), data = combined.all.diss.common)
+summary(lm.spp)
+
+#space, climate, species, and species:site interaction
+lm.clim.spp.int <- lmer(INCREMENT ~ YEAR + (1|SITE/PLOT/SUB/TAG) + (1|TEMP_C) + (1|PRECIP) + (1|GenusSpecies) + (1|GenusSpecies:SITE) , data = combined.all.diss.common)
+summary(lm.clim.spp.int)
+
+#space, climate, traits, and phylogeny
+lm.clim.trait.spp <- lmer(INCREMENT ~ YEAR + (1|SITE/PLOT/SUB/TAG) + (1|TEMP_C) +(1|PRECIP) + (1|GenusSpecies) + (1|GenusSpecies:SITE) + (1|PFT) + (1|WOOD), data = combined.all.diss.common)
 summary(lm.clim.trait.spp)
 
+#space, climte, traits, DBH and phylogeny
+lm.kitchen <- lmer(INCREMENT ~ YEAR + (1|SITE/PLOT/SUB/TAG) + (1|TEMP_C) +(1|PRECIP) + (1|GenusSpecies) + (1|GenusSpecies:SITE) + (1|PFT) + (1|WOOD) + DBH14, data = combined.all.diss.common)
+summary(lm.kitchen)
 
-summary(nsc.kitchen.lm)
-plot((nsc.kitchen.lm))
 ```
 You can also embed plots, for example:
 
