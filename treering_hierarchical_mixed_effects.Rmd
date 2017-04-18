@@ -12,6 +12,7 @@ library(rjags)
 library(data.table)
 library(mcmcplots)
 library(ggplot2)
+library(plyr)
 
 #Source required PEcAn scripts for reading and matching treerings and plot data
 source("/Users/Josh/Documents/Research/pecan/modules/data.land/R/Read_Tuscon.R")
@@ -1182,6 +1183,113 @@ combined.diss.clim.common.order <- read.csv("/Users/josh/Dropbox/Dissertation/CH
 combined.diss.clim.common.order <- combined.diss.clim.common.order[,2:164]
 colnames(combined.diss.clim.common.order)[104:163] <- colnames.yrs#colnames(combined.dmg.clean) #get rid of stupid "x" before year
 
+####### cores with full 50yrs of data #######
+#only cores with 50yrs of growth 2010 - 1961, n = 1193
+combined.diss.clim.common.order.50 <- combined.diss.clim.common.order[complete.cases(combined.diss.clim.common.order[,108:157]),]
+
+write.csv(x = combined.diss.clim.common.order.50, file = "/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/combined.diss.clim.common.wood.phyl3.csv")
+
+#removed suspiciously large increments <1.5cm by hand
+combined.diss.clim.common.order.50.QC <- read.csv("/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/combined.diss.clim.common.wood.phyl3.QC.csv")
+
+combined.diss.clim.common.order.50.QC <- combined.diss.clim.common.order.50.QC[,2:164]
+colnames(combined.diss.clim.common.order.50.QC)[104:163] <- colnames.yrs#colnames(combined.dmg.clean) #get rid of stupid "x" before year
+
+#remove spp that don't meet threshold anymore#
+count(combined.diss.clim.common.order.50.QC$SPP)
+#remove spp with very low sample size, setting cutoff below 5 because
+#of an arbitrary reason, need to do an actual power analysis
+
+abba <- which(combined.diss.clim.common.order.50.QC$SPP == "ABBA")
+#acne2 <- which(combined.diss.clim.common.order.50.QC$SPP == "ACNE2")
+acru <- which(combined.diss.clim.common.order.50.QC$SPP == "ACRU")
+acsa3 <- which(combined.diss.clim.common.order.50.QC$SPP == "ACSA3")
+beal2 <- which(combined.diss.clim.common.order.50.QC$SPP == "BEAL2")
+bele <- which(combined.diss.clim.common.order.50.QC$SPP == "BELE")
+bepa <- which(combined.diss.clim.common.order.50.QC$SPP == "BEPA")
+#caco15 <- which(combined.diss.clim.common.order.50.QC$SPP == "CACO15")
+cagl8 <- which(combined.diss.clim.common.order.50.QC$SPP == "CAGL8")
+#caov2 <- which(combined.diss.clim.common.order.50.QC$SPP == "CAOV2")
+cato6 <- which(combined.diss.clim.common.order.50.QC$SPP == "CATO6")
+fagr <- which(combined.diss.clim.common.order.50.QC$SPP == "FAGR")
+fram2 <- which(combined.diss.clim.common.order.50.QC$SPP == "FRAM2")
+frni <- which(combined.diss.clim.common.order.50.QC$SPP == "FRNI")
+#juni <- which(combined.diss.clim.common.order.50.QC$SPP == "JUNI")
+juvi <- which(combined.diss.clim.common.order.50.QC$SPP == "JUVI")
+#list2 <- which(combined.diss.clim.common.order.50.QC$SPP == "LIST2")
+litu <- which(combined.diss.clim.common.order.50.QC$SPP == "LITU")
+#mavi2 <- which(combined.diss.clim.common.order.50.QC$SPP == "MAVI2")
+#nysy <- which(combined.diss.clim.common.order.50.QC$SPP == "NYSY")
+oxar <- which(combined.diss.clim.common.order.50.QC$SPP == "OXAR")
+pima <- which(combined.diss.clim.common.order.50.QC$SPP == "PIMA")
+pipa2 <- which(combined.diss.clim.common.order.50.QC$SPP == "PIPA2")
+#piri <- which(combined.diss.clim.common.order.50.QC$SPP == "PIRI")
+piru <- which(combined.diss.clim.common.order.50.QC$SPP == "PIRU")
+pist <- which(combined.diss.clim.common.order.50.QC$SPP == "PIST")
+pita <- which(combined.diss.clim.common.order.50.QC$SPP == "PITA")
+pogr4 <- which(combined.diss.clim.common.order.50.QC$SPP == "POGR4")
+potr5 <- which(combined.diss.clim.common.order.50.QC$SPP == "POTR5")
+prse2 <- which(combined.diss.clim.common.order.50.QC$SPP == "PRSE2")
+qual <- which(combined.diss.clim.common.order.50.QC$SPP == "QUAL")
+quco2 <- which(combined.diss.clim.common.order.50.QC$SPP == "QUCO2")
+qula2 <- which(combined.diss.clim.common.order.50.QC$SPP == "QULA2")
+#qula3 <- which(combined.diss.clim.common.order.50.QC$SPP == "QULA3")
+qumo4 <- which(combined.diss.clim.common.order.50.QC$SPP == "QUMO4")
+qumu <- which(combined.diss.clim.common.order.50.QC$SPP == "QUMU")
+quni <- which(combined.diss.clim.common.order.50.QC$SPP == "QUNI")
+#quph <- which(combined.diss.clim.common.order.50.QC$SPP == "QUPH")
+quru <- which(combined.diss.clim.common.order.50.QC$SPP == "QURU")
+quve <- which(combined.diss.clim.common.order.50.QC$SPP == "QUVE")
+#quvi <- which(combined.diss.clim.common.order.50.QC$SPP == "QUVI")
+#saal5 <- which(combined.diss.clim.common.order.50.QC$SPP == "SAAL5")
+thoc2 <- which(combined.diss.clim.common.order.50.QC$SPP == "THOC2")
+#tiam <- which(combined.diss.clim.common.order.50.QC$SPP == "TIAM")
+tsca <- which(combined.diss.clim.common.order.50.QC$SPP == "TSCA")
+ulam <- which(combined.diss.clim.common.order.50.QC$SPP == "ULAM")
+
+####This is the dataset to use for average figures and to convert into increment dataset####
+growth.50yr.QC.final <- rbind(
+                             combined.diss.clim.common.order.50.QC[abba,],
+                             combined.diss.clim.common.order.50.QC[acru,],
+                             combined.diss.clim.common.order.50.QC[acsa3,],
+                             combined.diss.clim.common.order.50.QC[beal2,],
+                             combined.diss.clim.common.order.50.QC[bele,],
+                             combined.diss.clim.common.order.50.QC[bepa,],
+                             combined.diss.clim.common.order.50.QC[cagl8,],
+                             combined.diss.clim.common.order.50.QC[cato6,],
+                             combined.diss.clim.common.order.50.QC[fagr,],
+                             combined.diss.clim.common.order.50.QC[fram2,],
+                             combined.diss.clim.common.order.50.QC[frni,],
+                             combined.diss.clim.common.order.50.QC[juvi,],
+                             combined.diss.clim.common.order.50.QC[litu,],
+                             combined.diss.clim.common.order.50.QC[oxar,],
+                             combined.diss.clim.common.order.50.QC[pima,],
+                             combined.diss.clim.common.order.50.QC[pipa2,],
+                             combined.diss.clim.common.order.50.QC[piru,],
+                             combined.diss.clim.common.order.50.QC[pist,],
+                             combined.diss.clim.common.order.50.QC[pita,],
+                             combined.diss.clim.common.order.50.QC[pogr4,],
+                             combined.diss.clim.common.order.50.QC[potr5,],
+                             combined.diss.clim.common.order.50.QC[prse2,],
+                             combined.diss.clim.common.order.50.QC[quco2,],
+                             combined.diss.clim.common.order.50.QC[qual,],
+                             combined.diss.clim.common.order.50.QC[qula2,],
+                             combined.diss.clim.common.order.50.QC[qumo4,],
+                             combined.diss.clim.common.order.50.QC[qumu,],
+                             combined.diss.clim.common.order.50.QC[quni,],
+                             combined.diss.clim.common.order.50.QC[quru,],
+                             combined.diss.clim.common.order.50.QC[quve,],
+                             combined.diss.clim.common.order.50.QC[thoc2,],
+                             combined.diss.clim.common.order.50.QC[tsca,],
+                             combined.diss.clim.common.order.50.QC[ulam,])
+
+#only cores with 30yrs of growth 2010 - 1981, n = 1389
+combined.diss.clim.common.order.complete.30 <- combined.diss.clim.common.order[complete.cases(combined.diss.clim.common.order[,128:157]),]
+####################
+#################### Come back to decide which cores to use
+####################
+
+#####reformat for all cores, including partial 50yr records####
 #Reformat data so I can do linear models for more detailed analysis
 # #recreate data frame to be compliant with structure needed to include time as a variable (50 years)
 ids.rep.new.diss.common.order <- data.frame(matrix(NA,nrow=1,ncol=103))
@@ -1211,6 +1319,39 @@ YEAR <- rep(YEAR,1568)
 
 #final version with 50yrs of growth
 combined.all.diss.common <- cbind(combined.ids.incs.diss,YEAR)
+#### includes cores with only partial record of 50 years ####
+
+#### reformat for only cores with full 50yrs worth of data ###
+ids.rep.new.diss.common.order.50.QC <- data.frame(matrix(NA,nrow=1,ncol=103))
+colnames(ids.rep.new.diss.common.order.50.QC) <- colnames(growth.50yr.QC.final[1:103])
+for(i in 1:nrow(growth.50yr.QC.final)){
+  ids.rep.diss.common.order.50.QC <- growth.50yr.QC.final[rep(i,times=50),1:103]
+  ids.rep.new.diss.common.order.50.QC <- rbind(ids.rep.new.diss.common.order.50.QC,ids.rep.diss.common.order.50.QC)
+}
+#remove row of NAs
+combined.ids.diss.common.order.50.QC <- ids.rep.new.diss.common.order.50.QC[2:nrow(ids.rep.new.diss.common.order.50.QC),]
+
+#transpose and concatenate increments for all trees
+growth.50yr.QC.inc.new <- vector("numeric",length=0)
+for(i in 1:nrow(growth.50yr.QC.final)){
+  inc.diss.common.order.50.QC <- as.matrix(growth.50yr.QC.final[i,108:157])
+  growth.50yr.QC.inc.new <- as.numeric(c(growth.50yr.QC.inc.new,inc.diss.common.order.50.QC))
+}
+
+#add ring increments
+growth.50yr.QC.increment <- cbind(combined.ids.diss.common.order.50.QC,growth.50yr.QC.inc.new)
+
+#rename inc variable
+setnames(growth.50yr.QC.increment,old='growth.50yr.QC.inc.new',new='INCREMENT')
+
+YEAR <- seq(1961,2010,1)
+YEAR <- rep(YEAR,1179)
+
+#final version with 50yrs complete growth record
+growth.50yr.QC.increment.final <- cbind(growth.50yr.QC.increment,YEAR)
+#record to use with average growth figures: growth.50yr.QC.final
+
+
 
 #Simplest ANOVAs to start with - single variable mostly#
 
@@ -1352,7 +1493,7 @@ growth.spp.plot <- ggplot(mean.growth.fig.data, aes(x = GenusSpecies, y = mean.g
   theme(legend.title = element_text(size = 14)) +
   theme(legend.key.size = unit(.4, "cm")) +
   labs(fill = "PFT") +
-  stat_summary(fun.data = give.n, geom= "text", size = 2.5, aes(y= 6)) + 
+  stat_summary(fun.data = give.n, geom= "text", size = 2.5, aes(y= 7.7)) + 
   ylab(expression(paste("Mean Ring Width mm yr"^"-1"))) + xlab("") + ggtitle("All Species") +
   scale_fill_manual(values=rev(cbPalette), labels = c("Early.Conifer","Late.Conifer","Early.Hardwood",
                                                       "Mid.Hardwood","Late.Hardwood"))
@@ -1360,6 +1501,152 @@ growth.spp.plot <- ggplot(mean.growth.fig.data, aes(x = GenusSpecies, y = mean.g
 #Associated Phylogenetic Tree is phylogeny.png
 
 ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings//Figures/Growth.AllCommonSpp.png", plot = growth.spp.plot, dpi = 600, width = 10, height = 4.75, units = "in")
+
+###################################### Using full 50 yr data #############################################
+#similar to NSC figure, show mean growth rate by species and color by PFT#
+#just growth years 1961 - 2010
+growth.50yr.QC <- combined.diss.clim.common.order.50.QC[,108:157]
+mean.growth.50yr.QC <- rowMeans(growth.50yr.QC)
+mean.growth.fig.data.50yr.QC <- cbind(combined.diss.clim.common.order.50.QC, mean.growth.50yr.QC)
+
+#Relevel Factors, PFT
+mean.growth.fig.data.50yr.QC$PFT <- factor(mean.growth.fig.data.50yr.QC$PFT, 
+                                    levels = c("Early.Conifer","Late.Conifer","Early.Hardwood",
+                                               "Mid.Hardwood","Late.Hardwood"
+                                               ), ordered = TRUE)
+
+#Remove spp that don't meet threshold anymore
+count(combined.diss.clim$SPP)
+#remove spp with very low sample size, setting cutoff below 5 because
+#of an arbitrary reason, need to do an actual power analysis
+
+abba <- which(combined.diss.clim$SPP == "ABBA")
+#acne2 <- which(combined.diss.clim$SPP == "ACNE2")
+acru <- which(combined.diss.clim$SPP == "ACRU")
+acsa3 <- which(combined.diss.clim$SPP == "ACSA3")
+beal2 <- which(combined.diss.clim$SPP == "BEAL2")
+bele <- which(combined.diss.clim$SPP == "BELE")
+bepa <- which(combined.diss.clim$SPP == "BEPA")
+#caco15 <- which(combined.diss.clim$SPP == "CACO15")
+cagl8 <- which(combined.diss.clim$SPP == "CAGL8")
+#caov2 <- which(combined.diss.clim$SPP == "CAOV2")
+cato6 <- which(combined.diss.clim$SPP == "CATO6")
+fagr <- which(combined.diss.clim$SPP == "FAGR")
+fram2 <- which(combined.diss.clim$SPP == "FRAM2")
+frni <- which(combined.diss.clim$SPP == "FRNI")
+#juni <- which(combined.diss.clim$SPP == "JUNI")
+juvi <- which(combined.diss.clim$SPP == "JUVI")
+#list2 <- which(combined.diss.clim$SPP == "LIST2")
+litu <- which(combined.diss.clim$SPP == "LITU")
+mavi2 <- which(combined.diss.clim$SPP == "MAVI2")
+nysy <- which(combined.diss.clim$SPP == "NYSY")
+oxar <- which(combined.diss.clim$SPP == "OXAR")
+pima <- which(combined.diss.clim$SPP == "PIMA")
+pipa2 <- which(combined.diss.clim$SPP == "PIPA2")
+#piri <- which(combined.diss.clim$SPP == "PIRI")
+piru <- which(combined.diss.clim$SPP == "PIRU")
+pist <- which(combined.diss.clim$SPP == "PIST")
+pita <- which(combined.diss.clim$SPP == "PITA")
+pogr4 <- which(combined.diss.clim$SPP == "POGR4")
+potr5 <- which(combined.diss.clim$SPP == "POTR5")
+prse2 <- which(combined.diss.clim$SPP == "PRSE2")
+qual <- which(combined.diss.clim$SPP == "QUAL")
+quco2 <- which(combined.diss.clim$SPP == "QUCO2")
+qula2 <- which(combined.diss.clim$SPP == "QULA2")
+qula3 <- which(combined.diss.clim$SPP == "QULA3")
+qumo4 <- which(combined.diss.clim$SPP == "QUMO4")
+qumu <- which(combined.diss.clim$SPP == "QUMU")
+quni <- which(combined.diss.clim$SPP == "QUNI")
+#quph <- which(combined.diss.clim$SPP == "QUPH")
+quru <- which(combined.diss.clim$SPP == "QURU")
+quve <- which(combined.diss.clim$SPP == "QUVE")
+#quvi <- which(combined.diss.clim$SPP == "QUVI")
+saal5 <- which(combined.diss.clim$SPP == "SAAL5")
+thoc2 <- which(combined.diss.clim$SPP == "THOC2")
+#tiam <- which(combined.diss.clim$SPP == "TIAM")
+tsca <- which(combined.diss.clim$SPP == "TSCA")
+ulam <- which(combined.diss.clim$SPP == "ULAM")
+
+combined.diss.clim.common <- rbind(
+                             combined.diss.clim[abba,],
+                             combined.diss.clim[acru,],
+                             combined.diss.clim[acsa3,],
+                             combined.diss.clim[beal2,],
+                             combined.diss.clim[bele,],
+                             combined.diss.clim[bepa,],
+                             combined.diss.clim[cagl8,],
+                             combined.diss.clim[cato6,],
+                             combined.diss.clim[fagr,],
+                             combined.diss.clim[fram2,],
+                             combined.diss.clim[frni,],
+                             combined.diss.clim[juvi,],
+                             combined.diss.clim[litu,],
+                             combined.diss.clim[mavi2,],
+                             combined.diss.clim[nysy,],
+                             combined.diss.clim[oxar,],
+                             combined.diss.clim[pima,],
+                             combined.diss.clim[pipa2,],
+                             combined.diss.clim[piru,],
+                             combined.diss.clim[pist,],
+                             combined.diss.clim[pita,],
+                             combined.diss.clim[pogr4,],
+                             combined.diss.clim[potr5,],
+                             combined.diss.clim[prse2,],
+                             combined.diss.clim[quco2,],
+                             combined.diss.clim[qual,],
+                             combined.diss.clim[qula2,],
+                             combined.diss.clim[qula3,],
+                             combined.diss.clim[qumo4,],
+                             combined.diss.clim[qumu,],
+                             combined.diss.clim[quni,],
+                             combined.diss.clim[quru,],
+                             combined.diss.clim[quve,],
+                             combined.diss.clim[saal5,],
+                             combined.diss.clim[thoc2,],
+                             combined.diss.clim[tsca,],
+                             combined.diss.clim[ulam,])
+
+
+
+#tree: http://itol.embl.de/tree/2131659112772721492482874
+mean.growth.fig.data$GenusSpecies <- factor(mean.growth.fig.data$GenusSpecies, 
+                  levels = c("Juniperus virginiana","Thuja occidentalis","Abies balsamea","Tsuga canadensis","Picea mariana", "Picea rubens","Pinus strobus","Pinus taeda","Pinus palustris","Sassafras albidum","Magnolia virginiana","Liriodendron tulipifera","Oxydendrum arboreum","Nyssa sylvatica","Fraxinus nigra","Fraxinus americana","Acer rubrum","Acer saccharum","Prunus serotina","Ulmus americana","Populus grandidentata","Populus tremuloides","Carya glabra","Carya tomentosa","Betula lenta","Betula alleghaniensis","Betula papyrifera","Fagus grandifolia","Quercus alba","Quercus laevis","Quercus velutina","Quercus rubra","Quercus laurifolia","Quercus coccinea","Quercus nigra","Quercus montana","Quercus virginiana","Quercus muehlenbergii"), ordered = TRUE)
+
+#boxplot
+growth.spp.plot <- ggplot(mean.growth.fig.data.50yr.QC, aes(x = GenusSpecies, y = mean.growth.50yr.QC, fill = PFT)) + 
+  geom_boxplot() + theme(axis.text.x = element_text(angle=90,hjust=1,vjust=.5,size=10)) +
+  theme(axis.text.y = element_text(size=12)) +
+  #theme(axis.title.x = element_text(size=16)) +
+  theme(axis.title.y = element_text(size=14)) +
+  theme(legend.text = element_text(size=10)) + 
+  theme(legend.title = element_text(size = 14)) +
+  theme(legend.key.size = unit(.4, "cm")) +
+  labs(fill = "PFT") +
+  stat_summary(fun.data = give.n, geom= "text", size = 2.5, aes(y= 7.7)) + 
+  ylab(expression(paste("Mean Ring Width mm yr"^"-1"))) + xlab("") + ggtitle("All Species") +
+  scale_fill_manual(values=rev(cbPalette), labels = c("Early.Conifer","Late.Conifer","Early.Hardwood",
+                                                      "Mid.Hardwood","Late.Hardwood"))
+
+#Associated Phylogenetic Tree is phylogeny.png
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings//Figures/Growth.AllCommonSpp.png", plot = growth.spp.plot, dpi = 600, width = 10, height = 4.75, units = "in")
+
+
+#PFT
+pft.violin <- ggplot(combined.all.diss.common.50.QC, aes(x = PFT, y = INCREMENT)) + #, fill = PFT
+  geom_violin() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
+  theme(axis.text.y = element_text(size=12)) +
+  theme(axis.title.x = element_text(size=14)) +
+  theme(axis.title.y = element_text(size=14)) +
+  theme(axis.text.x = element_text(size=12)) +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 10)) + 
+  stat_summary(fun.y="median", geom="point") +
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Plant Functional Type") +
+  annotate("text", x = 1:5, y = c(110, 95, 165, 185, 135), 
+           label = c("e","a","b","c","d"))
+
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/TotalNSC.AllCommonPFT.png", plot = pft.violin, dpi = 600, width = 7.5, height = 3.5, units = "in")
 ```
 
 
