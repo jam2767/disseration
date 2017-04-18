@@ -11,6 +11,7 @@ library(lme4)
 library(rjags)
 library(data.table)
 library(mcmcplots)
+library(ggplot2)
 
 #Source required PEcAn scripts for reading and matching treerings and plot data
 source("/Users/Josh/Documents/Research/pecan/modules/data.land/R/Read_Tuscon.R")
@@ -1264,7 +1265,7 @@ summary(lm.precip.simp)
 
 #Multi-variable linear models
 #space only, fixed effect for year
-lm.space <- lmer(INCREMENT ~ YEAR + (1|SITE/PLOT/SUB/TAG), data = combined.all.diss.common)
+lmer.space <- lmer(INCREMENT ~ YEAR + (1|SITE/PLOT/SUB/TAG), data = combined.all.diss.common)
 summary(lm.space)
 
 #Phylogeny only
@@ -1296,6 +1297,7 @@ lm.space.year.sy <- lmer(INCREMENT ~ DBH14 + CANOPY15 + YEAR + (1|SITE:YEAR) + (
 summary(lm.space.year.sy)
 
 #space and regional climate
+####highlight this one - reasoning for not using annually resolved met####
 lm.clim <- lmer(INCREMENT ~ YEAR + (1|SITE:YEAR) + (1|SITE/PLOT/SUB/TAG) + (1|TEMP_C) + (1|PRECIP) , data = combined.all.diss.common)
 summary(lm.clim)
 
@@ -1322,8 +1324,42 @@ summary(lm.kitchen)
 ```
 You can also embed plots, for example:
 
-```{r fig.width=7, fig.height=6}
-plot(cars)
+```{r}
+###Figures###
+#similar to NSC figure, show mean growth rate by species and color by PFT#
+#just growth years 1961 - 2010
+growth.50yr <- combined.diss.clim.common.order[,108:157]
+mean.growth.50yr <- rowMeans(growth.50yr, na.rm = TRUE)
+mean.growth.fig.data <- cbind(combined.diss.clim.common.order, mean.growth.50yr)
+
+#Relevel Factors, PFT
+mean.growth.fig.data$PFT <- factor(mean.growth.fig.data$PFT, 
+                                    levels = c("Early.Conifer","Late.Conifer","Early.Hardwood",
+                                               "Mid.Hardwood","Late.Hardwood"
+                                               ), ordered = TRUE)
+
+#tree: http://itol.embl.de/tree/2131659112772721492482874
+mean.growth.fig.data$GenusSpecies <- factor(mean.growth.fig.data$GenusSpecies, 
+                  levels = c("Juniperus virginiana","Thuja occidentalis","Abies balsamea","Tsuga canadensis","Picea mariana", "Picea rubens","Pinus strobus","Pinus taeda","Pinus palustris","Sassafras albidum","Magnolia virginiana","Liriodendron tulipifera","Oxydendrum arboreum","Nyssa sylvatica","Fraxinus nigra","Fraxinus americana","Acer rubrum","Acer saccharum","Prunus serotina","Ulmus americana","Populus grandidentata","Populus tremuloides","Carya glabra","Carya tomentosa","Betula lenta","Betula alleghaniensis","Betula papyrifera","Fagus grandifolia","Quercus alba","Quercus laevis","Quercus velutina","Quercus rubra","Quercus laurifolia","Quercus coccinea","Quercus nigra","Quercus montana","Quercus virginiana","Quercus muehlenbergii"), ordered = TRUE)
+
+#boxplot
+growth.spp.plot <- ggplot(mean.growth.fig.data, aes(x = GenusSpecies, y = mean.growth.50yr, fill = PFT)) + 
+  geom_boxplot() + theme(axis.text.x = element_text(angle=90,hjust=1,vjust=.5,size=10)) +
+  theme(axis.text.y = element_text(size=12)) +
+  #theme(axis.title.x = element_text(size=16)) +
+  theme(axis.title.y = element_text(size=14)) +
+  theme(legend.text = element_text(size=10)) + 
+  theme(legend.title = element_text(size = 14)) +
+  theme(legend.key.size = unit(.4, "cm")) +
+  labs(fill = "PFT") +
+  stat_summary(fun.data = give.n, geom= "text", size = 2.5, aes(y= 6)) + 
+  ylab(expression(paste("Mean Ring Width mm yr"^"-1"))) + xlab("") + ggtitle("All Species") +
+  scale_fill_manual(values=rev(cbPalette), labels = c("Early.Conifer","Late.Conifer","Early.Hardwood",
+                                                      "Mid.Hardwood","Late.Hardwood"))
+
+#Associated Phylogenetic Tree is phylogeny.png
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings//Figures/Growth.AllCommonSpp.png", plot = growth.spp.plot, dpi = 600, width = 10, height = 4.75, units = "in")
 ```
 
 
