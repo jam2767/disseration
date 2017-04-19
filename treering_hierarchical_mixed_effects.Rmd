@@ -1505,9 +1505,9 @@ ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings//Figures/Growt
 ###################################### Using full 50 yr data #############################################
 #similar to NSC figure, show mean growth rate by species and color by PFT#
 #just growth years 1961 - 2010
-growth.50yr.QC <- combined.diss.clim.common.order.50.QC[,108:157]
-mean.growth.50yr.QC <- rowMeans(growth.50yr.QC)
-mean.growth.fig.data.50yr.QC <- cbind(combined.diss.clim.common.order.50.QC, mean.growth.50yr.QC)
+growth.only <- growth.50yr.QC.final[,108:157]
+mean.growth.50yr.QC <- rowMeans(growth.only)
+mean.growth.fig.data.50yr.QC <- cbind(growth.50yr.QC.final, mean.growth.50yr.QC)
 
 #Relevel Factors, PFT
 mean.growth.fig.data.50yr.QC$PFT <- factor(mean.growth.fig.data.50yr.QC$PFT, 
@@ -1515,102 +1515,9 @@ mean.growth.fig.data.50yr.QC$PFT <- factor(mean.growth.fig.data.50yr.QC$PFT,
                                                "Mid.Hardwood","Late.Hardwood"
                                                ), ordered = TRUE)
 
-#Remove spp that don't meet threshold anymore
-count(combined.diss.clim$SPP)
-#remove spp with very low sample size, setting cutoff below 5 because
-#of an arbitrary reason, need to do an actual power analysis
-
-abba <- which(combined.diss.clim$SPP == "ABBA")
-#acne2 <- which(combined.diss.clim$SPP == "ACNE2")
-acru <- which(combined.diss.clim$SPP == "ACRU")
-acsa3 <- which(combined.diss.clim$SPP == "ACSA3")
-beal2 <- which(combined.diss.clim$SPP == "BEAL2")
-bele <- which(combined.diss.clim$SPP == "BELE")
-bepa <- which(combined.diss.clim$SPP == "BEPA")
-#caco15 <- which(combined.diss.clim$SPP == "CACO15")
-cagl8 <- which(combined.diss.clim$SPP == "CAGL8")
-#caov2 <- which(combined.diss.clim$SPP == "CAOV2")
-cato6 <- which(combined.diss.clim$SPP == "CATO6")
-fagr <- which(combined.diss.clim$SPP == "FAGR")
-fram2 <- which(combined.diss.clim$SPP == "FRAM2")
-frni <- which(combined.diss.clim$SPP == "FRNI")
-#juni <- which(combined.diss.clim$SPP == "JUNI")
-juvi <- which(combined.diss.clim$SPP == "JUVI")
-#list2 <- which(combined.diss.clim$SPP == "LIST2")
-litu <- which(combined.diss.clim$SPP == "LITU")
-mavi2 <- which(combined.diss.clim$SPP == "MAVI2")
-nysy <- which(combined.diss.clim$SPP == "NYSY")
-oxar <- which(combined.diss.clim$SPP == "OXAR")
-pima <- which(combined.diss.clim$SPP == "PIMA")
-pipa2 <- which(combined.diss.clim$SPP == "PIPA2")
-#piri <- which(combined.diss.clim$SPP == "PIRI")
-piru <- which(combined.diss.clim$SPP == "PIRU")
-pist <- which(combined.diss.clim$SPP == "PIST")
-pita <- which(combined.diss.clim$SPP == "PITA")
-pogr4 <- which(combined.diss.clim$SPP == "POGR4")
-potr5 <- which(combined.diss.clim$SPP == "POTR5")
-prse2 <- which(combined.diss.clim$SPP == "PRSE2")
-qual <- which(combined.diss.clim$SPP == "QUAL")
-quco2 <- which(combined.diss.clim$SPP == "QUCO2")
-qula2 <- which(combined.diss.clim$SPP == "QULA2")
-qula3 <- which(combined.diss.clim$SPP == "QULA3")
-qumo4 <- which(combined.diss.clim$SPP == "QUMO4")
-qumu <- which(combined.diss.clim$SPP == "QUMU")
-quni <- which(combined.diss.clim$SPP == "QUNI")
-#quph <- which(combined.diss.clim$SPP == "QUPH")
-quru <- which(combined.diss.clim$SPP == "QURU")
-quve <- which(combined.diss.clim$SPP == "QUVE")
-#quvi <- which(combined.diss.clim$SPP == "QUVI")
-saal5 <- which(combined.diss.clim$SPP == "SAAL5")
-thoc2 <- which(combined.diss.clim$SPP == "THOC2")
-#tiam <- which(combined.diss.clim$SPP == "TIAM")
-tsca <- which(combined.diss.clim$SPP == "TSCA")
-ulam <- which(combined.diss.clim$SPP == "ULAM")
-
-combined.diss.clim.common <- rbind(
-                             combined.diss.clim[abba,],
-                             combined.diss.clim[acru,],
-                             combined.diss.clim[acsa3,],
-                             combined.diss.clim[beal2,],
-                             combined.diss.clim[bele,],
-                             combined.diss.clim[bepa,],
-                             combined.diss.clim[cagl8,],
-                             combined.diss.clim[cato6,],
-                             combined.diss.clim[fagr,],
-                             combined.diss.clim[fram2,],
-                             combined.diss.clim[frni,],
-                             combined.diss.clim[juvi,],
-                             combined.diss.clim[litu,],
-                             combined.diss.clim[mavi2,],
-                             combined.diss.clim[nysy,],
-                             combined.diss.clim[oxar,],
-                             combined.diss.clim[pima,],
-                             combined.diss.clim[pipa2,],
-                             combined.diss.clim[piru,],
-                             combined.diss.clim[pist,],
-                             combined.diss.clim[pita,],
-                             combined.diss.clim[pogr4,],
-                             combined.diss.clim[potr5,],
-                             combined.diss.clim[prse2,],
-                             combined.diss.clim[quco2,],
-                             combined.diss.clim[qual,],
-                             combined.diss.clim[qula2,],
-                             combined.diss.clim[qula3,],
-                             combined.diss.clim[qumo4,],
-                             combined.diss.clim[qumu,],
-                             combined.diss.clim[quni,],
-                             combined.diss.clim[quru,],
-                             combined.diss.clim[quve,],
-                             combined.diss.clim[saal5,],
-                             combined.diss.clim[thoc2,],
-                             combined.diss.clim[tsca,],
-                             combined.diss.clim[ulam,])
-
-
-
-#tree: http://itol.embl.de/tree/2131659112772721492482874
-mean.growth.fig.data$GenusSpecies <- factor(mean.growth.fig.data$GenusSpecies, 
-                  levels = c("Juniperus virginiana","Thuja occidentalis","Abies balsamea","Tsuga canadensis","Picea mariana", "Picea rubens","Pinus strobus","Pinus taeda","Pinus palustris","Sassafras albidum","Magnolia virginiana","Liriodendron tulipifera","Oxydendrum arboreum","Nyssa sylvatica","Fraxinus nigra","Fraxinus americana","Acer rubrum","Acer saccharum","Prunus serotina","Ulmus americana","Populus grandidentata","Populus tremuloides","Carya glabra","Carya tomentosa","Betula lenta","Betula alleghaniensis","Betula papyrifera","Fagus grandifolia","Quercus alba","Quercus laevis","Quercus velutina","Quercus rubra","Quercus laurifolia","Quercus coccinea","Quercus nigra","Quercus montana","Quercus virginiana","Quercus muehlenbergii"), ordered = TRUE)
+#tree: http://itol.embl.de/tree/21316591127300121492568435
+mean.growth.fig.data.50yr.QC$GenusSpecies <- factor(mean.growth.fig.data.50yr.QC$GenusSpecies, 
+                  levels = c("Thuja occidentalis", "Juniperus virginiana", "Tsuga canadensis", "Abies balsamea", "Picea rubens", "Picea mariana", "Pinus strobus", "Pinus taeda", "Pinus palustris", "Liriodendron tulipifera", "Oxydendrum arboreum", "Fraxinus nigra", "Fraxinus americana", "Acer saccharum", "Acer rubrum", "Prunus serotina", "Ulmus americana", "Populus tremuloides", "Populus grandidentata", "Carya glabra", "Carya tomentosa", "Betula papyrifera", "Betula lenta", "Betula alleghaniensis", "Fagus grandifolia", "Quercus muehlenbergii", "Quercus rubra", "Quercus velutina", "Quercus laevis", "Quercus montana", "Quercus alba"), ordered = TRUE)
 
 #boxplot
 growth.spp.plot <- ggplot(mean.growth.fig.data.50yr.QC, aes(x = GenusSpecies, y = mean.growth.50yr.QC, fill = PFT)) + 
@@ -1622,18 +1529,18 @@ growth.spp.plot <- ggplot(mean.growth.fig.data.50yr.QC, aes(x = GenusSpecies, y 
   theme(legend.title = element_text(size = 14)) +
   theme(legend.key.size = unit(.4, "cm")) +
   labs(fill = "PFT") +
-  stat_summary(fun.data = give.n, geom= "text", size = 2.5, aes(y= 7.7)) + 
-  ylab(expression(paste("Mean Ring Width mm yr"^"-1"))) + xlab("") + ggtitle("All Species") +
+  stat_summary(fun.data = give.n, geom= "text", size = 2.5, aes(y= 5)) + 
+  ylab(expression(paste("Mean Ring Width mm yr"^"-1"))) + xlab("") + #ggtitle("All Species") +
   scale_fill_manual(values=rev(cbPalette), labels = c("Early.Conifer","Late.Conifer","Early.Hardwood",
                                                       "Mid.Hardwood","Late.Hardwood"))
 
 #Associated Phylogenetic Tree is phylogeny.png
 
-ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings//Figures/Growth.AllCommonSpp.png", plot = growth.spp.plot, dpi = 600, width = 10, height = 4.75, units = "in")
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings//Figures/Growth.AllCommonSpp.50yr.png", plot = growth.spp.plot, dpi = 600, width = 10, height = 4.75, units = "in")
 
 
 #PFT
-pft.violin <- ggplot(combined.all.diss.common.50.QC, aes(x = PFT, y = INCREMENT)) + #, fill = PFT
+pft.violin <- ggplot(growth.50yr.QC.increment.final, aes(x = PFT, y = INCREMENT)) + #, fill = PFT
   geom_violin() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
   theme(axis.text.y = element_text(size=12)) +
   theme(axis.title.x = element_text(size=14)) +
@@ -1641,12 +1548,127 @@ pft.violin <- ggplot(combined.all.diss.common.50.QC, aes(x = PFT, y = INCREMENT)
   theme(axis.text.x = element_text(size=12)) +
   stat_summary(fun.data = give.n, geom= "text", aes(y= 10)) + 
   stat_summary(fun.y="median", geom="point") +
-  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Plant Functional Type") +
+  ylab(expression(paste("Mean Ring Width mm yr"^"-1"))) + xlab("Plant Functional Type") +
   annotate("text", x = 1:5, y = c(110, 95, 165, 185, 135), 
            label = c("e","a","b","c","d"))
 
 
 ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/TotalNSC.AllCommonPFT.png", plot = pft.violin, dpi = 600, width = 7.5, height = 3.5, units = "in")
+
+
+################ANOVAs for full 50yr cores###############
+
+#year
+lm.year <- lm(INCREMENT ~ YEAR, data = growth.50yr.QC.increment.final)
+summary(lm.year)
+
+#space
+lm.space.simp <- lm(INCREMENT ~ SITE/PLOT/SUB/TAG, data = growth.50yr.QC.increment.final)
+summary(lm.space.simp)
+
+#wood
+lm.wood.simp <- lm(INCREMENT ~ WOOD, data = growth.50yr.QC.increment.final)
+summary(lm.wood.simp)
+
+#canopy
+lm.canopy.simp <- lm(INCREMENT ~ CANOPY15, data = growth.50yr.QC.increment.final)
+summary(lm.canopy.simp)
+
+#pft
+lm.pft.simp <- lm(INCREMENT ~ PFT, data = growth.50yr.QC.increment.final)
+summary(lm.pft.simp)
+
+#DBH
+lm.size.simp <- lm(INCREMENT ~ DBH14, data = growth.50yr.QC.increment.final)
+summary(lm.size.simp)
+
+#avg growth and DBH
+lm.size.avg <- lm(mean.growth.50yr.QC ~ DBH14, data = mean.growth.fig.data.50yr.QC)
+summary(lm.size.avg)
+plot(mean.growth.50yr.QC ~ DBH14, data = mean.growth.fig.data.50yr.QC)
+abline(lm.size.avg)
+
+#species
+lm.spp.simp <- lm(INCREMENT ~ GenusSpecies, data = growth.50yr.QC.increment.final)
+summary(lm.spp.simp)
+
+#genus/species
+lm.genus.simp <- lm(INCREMENT ~ genus/GenusSpecies, data = growth.50yr.QC.increment.final)
+summary(lm.genus.simp)
+
+#taxonomy
+#crashes R don't use
+# lm.tax.simp <- lm(INCREMENT ~ subclass/order/family/genus/GenusSpecies, data = growth.50yr.QC.increment.final)
+# summary(lm.tax.simp)
+
+#Won't run. R crashes
+# lm.phylo.simp <- lm(INCREMENT ~ subclass/order/family/genus/GenusSpecies, data = growth.50yr.QC.increment.final)
+# summary(lm.phylo.simp)
+
+#temperature
+lm.temp.simp <- lm(INCREMENT ~ TEMP_C, data = growth.50yr.QC.increment.final)
+summary(lm.temp.simp)
+
+#precipitation
+lm.precip.simp <- lm(INCREMENT ~ PRECIP, data = growth.50yr.QC.increment.final)
+summary(lm.precip.simp)
+
+#Multi-variable linear models
+#space only, fixed effect for year
+lmer.space <- lmer(INCREMENT ~ YEAR + (1|SITE/PLOT/SUB/TAG), data = growth.50yr.QC.increment.final)
+summary(lmer.space)
+
+#Phylogeny only
+lmer.phylo <- lmer(INCREMENT ~ YEAR + (1|subclass/order/family/genus/GenusSpecies), data = growth.50yr.QC.increment.final)
+summary(lmer.phylo)
+
+#quadratic size
+lm.pft.size <- lm(INCREMENT ~ PFT + DBH14 +I(DBH14^2), data = growth.50yr.QC.increment.final)
+summary(lm.pft.size)
+
+#Crashes R, don't use
+# lm.phylo <- lm(INCREMENT ~ family/genus/GenusSpecies, data = growth.50yr.QC.increment.final)
+# summary(lm.phylo)
+
+# lm.trait <- lm(INCREMENT ~ WOOD + PFT, data = growth.50yr.QC.increment.final)
+# summary(lm.trait)
+
+#space only, size fixed effect, random year effect
+lm.space.year <- lmer(INCREMENT ~ DBH14 + (1|YEAR) + (1|SITE/PLOT/SUB/TAG), data = growth.50yr.QC.increment.final)
+summary(lm.space.year)
+
+#space, size and canopy fixed, random year
+lm.space.year.f <- lmer(INCREMENT ~ DBH14 + CANOPY15 + (1|YEAR) + (1|SITE:YEAR) + (1|SITE/PLOT/SUB/TAG), data = growth.50yr.QC.increment.final)
+summary(lm.space.year.f)
+
+lm.space.year.sy <- lmer(INCREMENT ~ DBH14 + CANOPY15 + YEAR + (1|SITE:YEAR) + (1|SITE/PLOT/SUB/TAG), data = growth.50yr.QC.increment.final)
+summary(lm.space.year.sy)
+
+#space and regional climate
+####highlight this one - reasoning for not using annually resolved met####
+lmer.clim <- lmer(INCREMENT ~ YEAR + (1|SITE:YEAR) + (1|SITE/PLOT/SUB/TAG) + (1|TEMP_C) + (1|PRECIP) , data = growth.50yr.QC.increment.final)
+summary(lmer.clim)
+
+#space, climate, and species
+lm.clim.spp <- lmer(INCREMENT ~ YEAR + (1|SITE/PLOT/SUB/TAG) + (1|TEMP_C) + (1|PRECIP) + (1|GenusSpecies), data = growth.50yr.QC.increment.final)
+summary(lm.clim.spp)
+
+#space and species
+lm.spp <- lmer(INCREMENT ~ YEAR + (1|SITE/PLOT/SUB/TAG) +  (1|GenusSpecies), data = growth.50yr.QC.increment.final)
+summary(lm.spp)
+
+#space, climate, species, and species:site interaction
+lm.clim.spp.int <- lmer(INCREMENT ~ YEAR + (1|SITE/PLOT/SUB/TAG) + (1|TEMP_C) + (1|PRECIP) + (1|GenusSpecies) + (1|GenusSpecies:SITE) , data = growth.50yr.QC.increment.final)
+summary(lm.clim.spp.int)
+
+#space, climate, traits, and phylogeny
+lm.clim.trait.spp <- lmer(INCREMENT ~ YEAR + (1|SITE/PLOT/SUB/TAG) + (1|TEMP_C) +(1|PRECIP) + (1|GenusSpecies) + (1|GenusSpecies:SITE) + (1|PFT) + (1|WOOD), data = growth.50yr.QC.increment.final)
+summary(lm.clim.trait.spp)
+
+#space, climte, traits, DBH and phylogeny
+lm.kitchen <- lmer(INCREMENT ~ YEAR + (1|SITE/PLOT/SUB/TAG) + (1|TEMP_C) +(1|PRECIP) + (1|GenusSpecies) + (1|GenusSpecies:SITE) + (1|PFT) + (1|WOOD) + DBH14, data = growth.50yr.QC.increment.final)
+summary(lm.kitchen)
+
 ```
 
 
