@@ -1183,7 +1183,194 @@ combined.diss.clim.common.order <- read.csv("/Users/josh/Dropbox/Dissertation/CH
 combined.diss.clim.common.order <- combined.diss.clim.common.order[,2:164]
 colnames(combined.diss.clim.common.order)[104:163] <- colnames.yrs#colnames(combined.dmg.clean) #get rid of stupid "x" before year
 
-####### cores with full 50yrs of data #######
+#only cores with 30yrs of growth 2010 - 1981, n = 1389
+combined.diss.clim.common.order.complete.30 <- combined.diss.clim.common.order[complete.cases(combined.diss.clim.common.order[,128:157]),]
+####################
+#################### Come back to decide which cores to use
+####################
+
+#####reformat for all cores, including partial 50yr records####
+#Reformat data so I can do linear models for more detailed analysis
+# #recreate data frame to be compliant with structure needed to include time as a variable (50 years)
+ids.rep.new.diss.common.order <- data.frame(matrix(NA,nrow=1,ncol=103))
+colnames(ids.rep.new.diss.common.order) <- colnames(combined.diss.clim.common.order[1:103])
+for(i in 1:nrow(combined.diss.clim.common.order)){
+  ids.rep.diss.common.order <- combined.diss.clim.common.order[rep(i,times=50),1:103]
+  ids.rep.new.diss.common.order <- rbind(ids.rep.new.diss.common.order,ids.rep.diss.common.order)
+}
+#remove row of NAs
+combined.ids.diss.common.order <- ids.rep.new.diss.common.order[2:nrow(ids.rep.new.diss.common.order),]
+
+#transpose and concatenate increments for all trees
+inc.new.diss.common.order <- vector("numeric",length=0)
+for(i in 1:nrow(combined.diss.clim.common.order)){
+  inc.diss.common.order <- as.matrix(combined.diss.clim.common.order[i,108:157])
+  inc.new.diss.common.order <- as.numeric(c(inc.new.diss.common.order,inc.diss.common.order))
+}
+
+#add ring increments
+combined.ids.incs.diss <- cbind(combined.ids.diss.common.order,inc.new.diss.common.order)
+
+#rename inc variable
+setnames(combined.ids.incs.diss,old='inc.new.diss.common.order',new='INCREMENT')
+
+YEAR <- seq(1961,2010,1)
+YEAR <- rep(YEAR,1568)
+
+#final version with 50yrs of growth
+combined.all.diss.common <- cbind(combined.ids.incs.diss,YEAR)
+#### includes cores with only partial record of 50 years ####
+
+
+# #Simplest ANOVAs to start with - single variable mostly#
+# 
+# #similar to NSC figure, show mean growth rate by species and color by PFT#
+# #just growth years 1961 - 2010
+# growth.50yr <- combined.diss.clim.common.order[,108:157]
+# mean.growth.50yr <- rowMeans(growth.50yr, na.rm = TRUE)
+# mean.growth.fig.data <- cbind(combined.diss.clim.common.order, mean.growth.50yr)
+# 
+# #Relevel Factors, PFT
+# mean.growth.fig.data$PFT <- factor(mean.growth.fig.data$PFT, 
+#                                     levels = c("Early.Conifer","Late.Conifer","Early.Hardwood",
+#                                                "Mid.Hardwood","Late.Hardwood"
+#                                                ), ordered = TRUE)
+# 
+# #tree: http://itol.embl.de/tree/2131659112772721492482874
+# mean.growth.fig.data$GenusSpecies <- factor(mean.growth.fig.data$GenusSpecies, 
+#                   levels = c("Juniperus virginiana","Thuja occidentalis","Abies balsamea","Tsuga canadensis","Picea mariana", "Picea rubens","Pinus strobus","Pinus taeda","Pinus palustris","Sassafras albidum","Magnolia virginiana","Liriodendron tulipifera","Oxydendrum arboreum","Nyssa sylvatica","Fraxinus nigra","Fraxinus americana","Acer rubrum","Acer saccharum","Prunus serotina","Ulmus americana","Populus grandidentata","Populus tremuloides","Carya glabra","Carya tomentosa","Betula lenta","Betula alleghaniensis","Betula papyrifera","Fagus grandifolia","Quercus alba","Quercus laevis","Quercus velutina","Quercus rubra","Quercus laurifolia","Quercus coccinea","Quercus nigra","Quercus montana","Quercus virginiana","Quercus muehlenbergii"), ordered = TRUE)
+# 
+# #boxplot
+# growth.spp.plot <- ggplot(mean.growth.fig.data, aes(x = GenusSpecies, y = mean.growth.50yr, fill = PFT)) + 
+#   geom_boxplot() + theme(axis.text.x = element_text(angle=90,hjust=1,vjust=.5,size=10)) +
+#   theme(axis.text.y = element_text(size=12)) +
+#   #theme(axis.title.x = element_text(size=16)) +
+#   theme(axis.title.y = element_text(size=14)) +
+#   theme(legend.text = element_text(size=10)) + 
+#   theme(legend.title = element_text(size = 14)) +
+#   theme(legend.key.size = unit(.4, "cm")) +
+#   labs(fill = "PFT") +
+#   stat_summary(fun.data = give.n, geom= "text", size = 2.5, aes(y= 7.7)) + 
+#   ylab(expression(paste("Mean Ring Width mm yr"^"-1"))) + xlab("") + ggtitle("All Species") +
+#   scale_fill_manual(values=rev(cbPalette), labels = c("Early.Conifer","Late.Conifer","Early.Hardwood",
+#                                                       "Mid.Hardwood","Late.Hardwood"))
+# 
+# #Associated Phylogenetic Tree is phylogeny.png
+# 
+# ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings//Figures/Growth.AllCommonSpp.png", plot = growth.spp.plot, dpi = 600, width = 10, height = 4.75, units = "in")
+# 
+# #year
+# lm.year <- lm(INCREMENT ~ YEAR, data = combined.all.diss.common)
+# summary(lm.year)
+# 
+# #space
+# lm.space.simp <- lm(INCREMENT ~ SITE/PLOT/SUB/TAG, data = combined.all.diss.common)
+# summary(lm.space.simp)
+# 
+# #wood
+# lm.wood.simp <- lm(INCREMENT ~ WOOD, data = combined.all.diss.common)
+# summary(lm.wood.simp)
+# 
+# #canopy
+# lm.canopy.simp <- lm(INCREMENT ~ CANOPY15, data = combined.all.diss.common)
+# summary(lm.canopy.simp)
+# 
+# #pft
+# lm.pft.simp <- lm(INCREMENT ~ PFT, data = combined.all.diss.common)
+# summary(lm.pft.simp)
+# 
+# #DBH
+# lm.size.simp <- lm(INCREMENT ~ DBH14, data = combined.all.diss.common)
+# summary(lm.size.simp)
+# 
+# #species
+# lm.spp.simp <- lm(INCREMENT ~ GenusSpecies, data = combined.all.diss.common)
+# summary(lm.spp.simp)
+# 
+# #genus/species
+# lm.genus.simp <- lm(INCREMENT ~ genus/GenusSpecies, data = combined.all.diss.common)
+# summary(lm.genus.simp)
+# 
+# #taxonomy
+# #crashes R don't use
+# # lm.tax.simp <- lm(INCREMENT ~ subclass/order/family/genus/GenusSpecies, data = combined.all.diss.common)
+# # summary(lm.tax.simp)
+# 
+# #Won't run. R crashes
+# # lm.phylo.simp <- lm(INCREMENT ~ subclass/order/family/genus/GenusSpecies, data = combined.all.diss.common)
+# # summary(lm.phylo.simp)
+# 
+# #temperature
+# lm.temp.simp <- lm(INCREMENT ~ TEMP_C, data = combined.all.diss.common)
+# summary(lm.temp.simp)
+# 
+# #precipitation
+# lm.precip.simp <- lm(INCREMENT ~ PRECIP, data = combined.all.diss.common)
+# summary(lm.precip.simp)
+# 
+# #Multi-variable linear models
+# #space only, fixed effect for year
+# lmer.space <- lmer(INCREMENT ~ YEAR + (1|SITE/PLOT/SUB/TAG), data = combined.all.diss.common)
+# summary(lm.space)
+# 
+# #Phylogeny only
+# lm.phylo <- lmer(INCREMENT ~ YEAR + (1|subclass/order/family/genus/GenusSpecies), data = combined.all.diss.common)
+# summary(lm.phylo)
+# 
+# lmer.space <- lmer(INCREMENT ~ YEAR + (1|SITE/PLOT/SUB/TAG), data = combined.all.diss.common)
+# summary(lmer.space)
+# 
+# lm.pft.size <- lm(INCREMENT ~ PFT + DBH14 +I(DBH14^2), data = combined.all.diss.common)
+# summary(lm.pft.size)
+# 
+# #Crashes R, don't use
+# # lm.phylo <- lm(INCREMENT ~ family/genus/GenusSpecies, data = combined.all.diss.common)
+# # summary(lm.phylo)
+# 
+# # lm.trait <- lm(INCREMENT ~ WOOD + PFT, data = combined.all.diss.common)
+# # summary(lm.trait)
+# 
+# #space only, size fixed effect, random year effect
+# lm.space.year <- lmer(INCREMENT ~ DBH14 + (1|YEAR) + (1|SITE/PLOT/SUB/TAG), data = combined.all.diss.common)
+# summary(lm.space.year)
+# 
+# #space, size and canopy fixed, random year
+# lm.space.year.f <- lmer(INCREMENT ~ DBH14 + CANOPY15 + (1|YEAR) + (1|SITE:YEAR) + (1|SITE/PLOT/SUB/TAG), data = combined.all.diss.common)
+# summary(lm.space.year.f)
+# 
+# lm.space.year.sy <- lmer(INCREMENT ~ DBH14 + CANOPY15 + YEAR + (1|SITE:YEAR) + (1|SITE/PLOT/SUB/TAG), data = combined.all.diss.common)
+# summary(lm.space.year.sy)
+# 
+# #space and regional climate
+# ####highlight this one - reasoning for not using annually resolved met####
+# lm.clim <- lmer(INCREMENT ~ YEAR + (1|SITE:YEAR) + (1|SITE/PLOT/SUB/TAG) + (1|TEMP_C) + (1|PRECIP) , data = combined.all.diss.common)
+# summary(lm.clim)
+# 
+# #space, climate, and species
+# lm.clim.spp <- lmer(INCREMENT ~ YEAR + (1|SITE/PLOT/SUB/TAG) + (1|TEMP_C) + (1|PRECIP) + (1|GenusSpecies), data = combined.all.diss.common)
+# summary(lm.clim.spp)
+# 
+# #space and species
+# lm.spp <- lmer(INCREMENT ~ YEAR + (1|SITE/PLOT/SUB/TAG) +  (1|GenusSpecies), data = combined.all.diss.common)
+# summary(lm.spp)
+# 
+# #space, climate, species, and species:site interaction
+# lm.clim.spp.int <- lmer(INCREMENT ~ YEAR + (1|SITE/PLOT/SUB/TAG) + (1|TEMP_C) + (1|PRECIP) + (1|GenusSpecies) + (1|GenusSpecies:SITE) , data = combined.all.diss.common)
+# summary(lm.clim.spp.int)
+# 
+# #space, climate, traits, and phylogeny
+# lm.clim.trait.spp <- lmer(INCREMENT ~ YEAR + (1|SITE/PLOT/SUB/TAG) + (1|TEMP_C) +(1|PRECIP) + (1|GenusSpecies) + (1|GenusSpecies:SITE) + (1|PFT) + (1|WOOD), data = combined.all.diss.common)
+# summary(lm.clim.trait.spp)
+# 
+# #space, climte, traits, DBH and phylogeny
+# lm.kitchen <- lmer(INCREMENT ~ YEAR + (1|SITE/PLOT/SUB/TAG) + (1|TEMP_C) +(1|PRECIP) + (1|GenusSpecies) + (1|GenusSpecies:SITE) + (1|PFT) + (1|WOOD) + DBH14, data = combined.all.diss.common)
+# summary(lm.kitchen)
+```
+
+```{r}
+################################### cores with full 50yrs of data #####################################
+################################### Used for analysis in chapter  #####################################
+
 #only cores with 50yrs of growth 2010 - 1961, n = 1193
 combined.diss.clim.common.order.50 <- combined.diss.clim.common.order[complete.cases(combined.diss.clim.common.order[,108:157]),]
 
@@ -1283,44 +1470,6 @@ growth.50yr.QC.final <- rbind(
                              combined.diss.clim.common.order.50.QC[tsca,],
                              combined.diss.clim.common.order.50.QC[ulam,])
 
-#only cores with 30yrs of growth 2010 - 1981, n = 1389
-combined.diss.clim.common.order.complete.30 <- combined.diss.clim.common.order[complete.cases(combined.diss.clim.common.order[,128:157]),]
-####################
-#################### Come back to decide which cores to use
-####################
-
-#####reformat for all cores, including partial 50yr records####
-#Reformat data so I can do linear models for more detailed analysis
-# #recreate data frame to be compliant with structure needed to include time as a variable (50 years)
-ids.rep.new.diss.common.order <- data.frame(matrix(NA,nrow=1,ncol=103))
-colnames(ids.rep.new.diss.common.order) <- colnames(combined.diss.clim.common.order[1:103])
-for(i in 1:nrow(combined.diss.clim.common.order)){
-  ids.rep.diss.common.order <- combined.diss.clim.common.order[rep(i,times=50),1:103]
-  ids.rep.new.diss.common.order <- rbind(ids.rep.new.diss.common.order,ids.rep.diss.common.order)
-}
-#remove row of NAs
-combined.ids.diss.common.order <- ids.rep.new.diss.common.order[2:nrow(ids.rep.new.diss.common.order),]
-
-#transpose and concatenate increments for all trees
-inc.new.diss.common.order <- vector("numeric",length=0)
-for(i in 1:nrow(combined.diss.clim.common.order)){
-  inc.diss.common.order <- as.matrix(combined.diss.clim.common.order[i,108:157])
-  inc.new.diss.common.order <- as.numeric(c(inc.new.diss.common.order,inc.diss.common.order))
-}
-
-#add ring increments
-combined.ids.incs.diss <- cbind(combined.ids.diss.common.order,inc.new.diss.common.order)
-
-#rename inc variable
-setnames(combined.ids.incs.diss,old='inc.new.diss.common.order',new='INCREMENT')
-
-YEAR <- seq(1961,2010,1)
-YEAR <- rep(YEAR,1568)
-
-#final version with 50yrs of growth
-combined.all.diss.common <- cbind(combined.ids.incs.diss,YEAR)
-#### includes cores with only partial record of 50 years ####
-
 #### reformat for only cores with full 50yrs worth of data ###
 ids.rep.new.diss.common.order.50.QC <- data.frame(matrix(NA,nrow=1,ncol=103))
 colnames(ids.rep.new.diss.common.order.50.QC) <- colnames(growth.50yr.QC.final[1:103])
@@ -1351,157 +1500,11 @@ YEAR <- rep(YEAR,1179)
 growth.50yr.QC.increment.final <- cbind(growth.50yr.QC.increment,YEAR)
 #record to use with average growth figures: growth.50yr.QC.final
 
-
-
-#Simplest ANOVAs to start with - single variable mostly#
-
-#year
-lm.year <- lm(INCREMENT ~ YEAR, data = combined.all.diss.common)
-summary(lm.year)
-
-#space
-lm.space.simp <- lm(INCREMENT ~ SITE/PLOT/SUB/TAG, data = combined.all.diss.common)
-summary(lm.space.simp)
-
-#wood
-lm.wood.simp <- lm(INCREMENT ~ WOOD, data = combined.all.diss.common)
-summary(lm.wood.simp)
-
-#canopy
-lm.canopy.simp <- lm(INCREMENT ~ CANOPY15, data = combined.all.diss.common)
-summary(lm.canopy.simp)
-
-#pft
-lm.pft.simp <- lm(INCREMENT ~ PFT, data = combined.all.diss.common)
-summary(lm.pft.simp)
-
-#DBH
-lm.size.simp <- lm(INCREMENT ~ DBH14, data = combined.all.diss.common)
-summary(lm.size.simp)
-
-#species
-lm.spp.simp <- lm(INCREMENT ~ GenusSpecies, data = combined.all.diss.common)
-summary(lm.spp.simp)
-
-#genus/species
-lm.genus.simp <- lm(INCREMENT ~ genus/GenusSpecies, data = combined.all.diss.common)
-summary(lm.genus.simp)
-
-#taxonomy
-#crashes R don't use
-# lm.tax.simp <- lm(INCREMENT ~ subclass/order/family/genus/GenusSpecies, data = combined.all.diss.common)
-# summary(lm.tax.simp)
-
-#Won't run. R crashes
-# lm.phylo.simp <- lm(INCREMENT ~ subclass/order/family/genus/GenusSpecies, data = combined.all.diss.common)
-# summary(lm.phylo.simp)
-
-#temperature
-lm.temp.simp <- lm(INCREMENT ~ TEMP_C, data = combined.all.diss.common)
-summary(lm.temp.simp)
-
-#precipitation
-lm.precip.simp <- lm(INCREMENT ~ PRECIP, data = combined.all.diss.common)
-summary(lm.precip.simp)
-
-#Multi-variable linear models
-#space only, fixed effect for year
-lmer.space <- lmer(INCREMENT ~ YEAR + (1|SITE/PLOT/SUB/TAG), data = combined.all.diss.common)
-summary(lm.space)
-
-#Phylogeny only
-lm.phylo <- lmer(INCREMENT ~ YEAR + (1|subclass/order/family/genus/GenusSpecies), data = combined.all.diss.common)
-summary(lm.phylo)
-
-lmer.space <- lmer(INCREMENT ~ YEAR + (1|SITE/PLOT/SUB/TAG), data = combined.all.diss.common)
-summary(lmer.space)
-
-lm.pft.size <- lm(INCREMENT ~ PFT + DBH14 +I(DBH14^2), data = combined.all.diss.common)
-summary(lm.pft.size)
-
-#Crashes R, don't use
-# lm.phylo <- lm(INCREMENT ~ family/genus/GenusSpecies, data = combined.all.diss.common)
-# summary(lm.phylo)
-
-# lm.trait <- lm(INCREMENT ~ WOOD + PFT, data = combined.all.diss.common)
-# summary(lm.trait)
-
-#space only, size fixed effect, random year effect
-lm.space.year <- lmer(INCREMENT ~ DBH14 + (1|YEAR) + (1|SITE/PLOT/SUB/TAG), data = combined.all.diss.common)
-summary(lm.space.year)
-
-#space, size and canopy fixed, random year
-lm.space.year.f <- lmer(INCREMENT ~ DBH14 + CANOPY15 + (1|YEAR) + (1|SITE:YEAR) + (1|SITE/PLOT/SUB/TAG), data = combined.all.diss.common)
-summary(lm.space.year.f)
-
-lm.space.year.sy <- lmer(INCREMENT ~ DBH14 + CANOPY15 + YEAR + (1|SITE:YEAR) + (1|SITE/PLOT/SUB/TAG), data = combined.all.diss.common)
-summary(lm.space.year.sy)
-
-#space and regional climate
-####highlight this one - reasoning for not using annually resolved met####
-lm.clim <- lmer(INCREMENT ~ YEAR + (1|SITE:YEAR) + (1|SITE/PLOT/SUB/TAG) + (1|TEMP_C) + (1|PRECIP) , data = combined.all.diss.common)
-summary(lm.clim)
-
-#space, climate, and species
-lm.clim.spp <- lmer(INCREMENT ~ YEAR + (1|SITE/PLOT/SUB/TAG) + (1|TEMP_C) + (1|PRECIP) + (1|GenusSpecies), data = combined.all.diss.common)
-summary(lm.clim.spp)
-
-#space and species
-lm.spp <- lmer(INCREMENT ~ YEAR + (1|SITE/PLOT/SUB/TAG) +  (1|GenusSpecies), data = combined.all.diss.common)
-summary(lm.spp)
-
-#space, climate, species, and species:site interaction
-lm.clim.spp.int <- lmer(INCREMENT ~ YEAR + (1|SITE/PLOT/SUB/TAG) + (1|TEMP_C) + (1|PRECIP) + (1|GenusSpecies) + (1|GenusSpecies:SITE) , data = combined.all.diss.common)
-summary(lm.clim.spp.int)
-
-#space, climate, traits, and phylogeny
-lm.clim.trait.spp <- lmer(INCREMENT ~ YEAR + (1|SITE/PLOT/SUB/TAG) + (1|TEMP_C) +(1|PRECIP) + (1|GenusSpecies) + (1|GenusSpecies:SITE) + (1|PFT) + (1|WOOD), data = combined.all.diss.common)
-summary(lm.clim.trait.spp)
-
-#space, climte, traits, DBH and phylogeny
-lm.kitchen <- lmer(INCREMENT ~ YEAR + (1|SITE/PLOT/SUB/TAG) + (1|TEMP_C) +(1|PRECIP) + (1|GenusSpecies) + (1|GenusSpecies:SITE) + (1|PFT) + (1|WOOD) + DBH14, data = combined.all.diss.common)
-summary(lm.kitchen)
-
 ```
 You can also embed plots, for example:
 
 ```{r}
 ###Figures###
-#similar to NSC figure, show mean growth rate by species and color by PFT#
-#just growth years 1961 - 2010
-growth.50yr <- combined.diss.clim.common.order[,108:157]
-mean.growth.50yr <- rowMeans(growth.50yr, na.rm = TRUE)
-mean.growth.fig.data <- cbind(combined.diss.clim.common.order, mean.growth.50yr)
-
-#Relevel Factors, PFT
-mean.growth.fig.data$PFT <- factor(mean.growth.fig.data$PFT, 
-                                    levels = c("Early.Conifer","Late.Conifer","Early.Hardwood",
-                                               "Mid.Hardwood","Late.Hardwood"
-                                               ), ordered = TRUE)
-
-#tree: http://itol.embl.de/tree/2131659112772721492482874
-mean.growth.fig.data$GenusSpecies <- factor(mean.growth.fig.data$GenusSpecies, 
-                  levels = c("Juniperus virginiana","Thuja occidentalis","Abies balsamea","Tsuga canadensis","Picea mariana", "Picea rubens","Pinus strobus","Pinus taeda","Pinus palustris","Sassafras albidum","Magnolia virginiana","Liriodendron tulipifera","Oxydendrum arboreum","Nyssa sylvatica","Fraxinus nigra","Fraxinus americana","Acer rubrum","Acer saccharum","Prunus serotina","Ulmus americana","Populus grandidentata","Populus tremuloides","Carya glabra","Carya tomentosa","Betula lenta","Betula alleghaniensis","Betula papyrifera","Fagus grandifolia","Quercus alba","Quercus laevis","Quercus velutina","Quercus rubra","Quercus laurifolia","Quercus coccinea","Quercus nigra","Quercus montana","Quercus virginiana","Quercus muehlenbergii"), ordered = TRUE)
-
-#boxplot
-growth.spp.plot <- ggplot(mean.growth.fig.data, aes(x = GenusSpecies, y = mean.growth.50yr, fill = PFT)) + 
-  geom_boxplot() + theme(axis.text.x = element_text(angle=90,hjust=1,vjust=.5,size=10)) +
-  theme(axis.text.y = element_text(size=12)) +
-  #theme(axis.title.x = element_text(size=16)) +
-  theme(axis.title.y = element_text(size=14)) +
-  theme(legend.text = element_text(size=10)) + 
-  theme(legend.title = element_text(size = 14)) +
-  theme(legend.key.size = unit(.4, "cm")) +
-  labs(fill = "PFT") +
-  stat_summary(fun.data = give.n, geom= "text", size = 2.5, aes(y= 7.7)) + 
-  ylab(expression(paste("Mean Ring Width mm yr"^"-1"))) + xlab("") + ggtitle("All Species") +
-  scale_fill_manual(values=rev(cbPalette), labels = c("Early.Conifer","Late.Conifer","Early.Hardwood",
-                                                      "Mid.Hardwood","Late.Hardwood"))
-
-#Associated Phylogenetic Tree is phylogeny.png
-
-ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings//Figures/Growth.AllCommonSpp.png", plot = growth.spp.plot, dpi = 600, width = 10, height = 4.75, units = "in")
-
 ###################################### Using full 50 yr data #############################################
 #similar to NSC figure, show mean growth rate by species and color by PFT#
 #just growth years 1961 - 2010
@@ -1517,9 +1520,9 @@ mean.growth.fig.data.50yr.QC$PFT <- factor(mean.growth.fig.data.50yr.QC$PFT,
 
 #Relevel Factors, Wood Anatomy
 mean.growth.fig.data.50yr.QC$WOOD <- factor(mean.growth.fig.data.50yr.QC$WOOD, 
-                                     levels = c("Early.Conifer","Late.Conifer",
-                                                "Early.Hardwood","Mid.Hardwood",
-                                                "Late.Hardwood"), ordered = TRUE)
+                                     levels = c("large.resin","small.resin", 
+                                                "no.resin","ring.porous",
+                                                "semiring.porous","diffuse.porous"), ordered = TRUE)
 
 #relevel species to match phylogenetic tree
 #tree: http://itol.embl.de/tree/21316591127300121492568435
@@ -1535,9 +1538,9 @@ growth.50yr.QC.increment.final$PFT <- factor(growth.50yr.QC.increment.final$PFT,
 
 #Relevel Factors, Wood Anatomy
 growth.50yr.QC.increment.final$WOOD <- factor(growth.50yr.QC.increment.final$WOOD, 
-                                     levels = c("Early.Conifer","Late.Conifer",
-                                                "Early.Hardwood","Mid.Hardwood",
-                                                "Late.Hardwood"), ordered = TRUE)
+                                     levels = c("large.resin","small.resin", 
+                                                "no.resin","ring.porous",
+                                                "semiring.porous","diffuse.porous"), ordered = TRUE)
 
 #relevel species to match phylogenetic tree
 #tree: http://itol.embl.de/tree/21316591127300121492568435
@@ -1573,16 +1576,15 @@ pft.violin <- ggplot(growth.50yr.QC.increment.final, aes(x = PFT, y = INCREMENT)
   theme(axis.text.x = element_text(size=12)) +
   stat_summary(fun.data = give.n, geom= "text", aes(y= 10)) + 
   stat_summary(fun.y="median", geom="point") +
-  ylab(expression(paste("Mean Ring Width mm yr"^"-1"))) + xlab("Plant Functional Type") +
-  annotate("text", x = 1:5, y = c(110, 95, 165, 185, 135), 
-           label = c("e","a","b","c","d"))
+  ylab(expression(paste("Mean Ring Width mm yr"^"-1"))) + xlab("Plant Functional Type") #+
+ # annotate("text", x = 1:5, y = c(110, 95, 165, 185, 135), 
+  #         label = c("e","a","b","c","d"))
 
 
 ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/TotalNSC.AllCommonPFT.png", plot = pft.violin, dpi = 600, width = 7.5, height = 3.5, units = "in")
 
 
 ################ANOVAs for full 50yr cores###############
-
 #year
 lm.year <- lm(INCREMENT ~ YEAR, data = growth.50yr.QC.increment.final)
 summary(lm.year)
@@ -1608,7 +1610,7 @@ summary(lm.space.simp)
 lm.wood.simp <- lm(INCREMENT ~ WOOD, data = growth.50yr.QC.increment.final)
 summary(lm.wood.simp)
 
-wood.growth.violin <- ggplot(growth.50yr.QC.increment.final, aes(x = WOOD, y = INCREMENT, fill = WOOD)) +
+wood.growth.violin <- ggplot(growth.50yr.QC.increment.final, aes(x = WOOD, y = INCREMENT, fill = WOOD))+
   geom_violin() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
   theme(axis.text.y = element_text(size=12)) +
   theme(axis.title.x = element_text(size=14)) +
