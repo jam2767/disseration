@@ -1515,8 +1515,33 @@ mean.growth.fig.data.50yr.QC$PFT <- factor(mean.growth.fig.data.50yr.QC$PFT,
                                                "Mid.Hardwood","Late.Hardwood"
                                                ), ordered = TRUE)
 
+#Relevel Factors, Wood Anatomy
+mean.growth.fig.data.50yr.QC$WOOD <- factor(mean.growth.fig.data.50yr.QC$WOOD, 
+                                     levels = c("Early.Conifer","Late.Conifer",
+                                                "Early.Hardwood","Mid.Hardwood",
+                                                "Late.Hardwood"), ordered = TRUE)
+
+#relevel species to match phylogenetic tree
 #tree: http://itol.embl.de/tree/21316591127300121492568435
 mean.growth.fig.data.50yr.QC$GenusSpecies <- factor(mean.growth.fig.data.50yr.QC$GenusSpecies, 
+                  levels = c("Thuja occidentalis", "Juniperus virginiana", "Tsuga canadensis", "Abies balsamea", "Picea rubens", "Picea mariana", "Pinus strobus", "Pinus taeda", "Pinus palustris", "Liriodendron tulipifera", "Oxydendrum arboreum", "Fraxinus nigra", "Fraxinus americana", "Acer saccharum", "Acer rubrum", "Prunus serotina", "Ulmus americana", "Populus tremuloides", "Populus grandidentata", "Carya glabra", "Carya tomentosa", "Betula papyrifera", "Betula lenta", "Betula alleghaniensis", "Fagus grandifolia", "Quercus muehlenbergii", "Quercus rubra", "Quercus velutina", "Quercus laevis", "Quercus montana", "Quercus alba"), ordered = TRUE)
+
+####ordering factors for increment data, not just average####
+#Relevel Factors, PFT
+growth.50yr.QC.increment.final$PFT <- factor(growth.50yr.QC.increment.final$PFT, 
+                                    levels = c("Early.Conifer","Late.Conifer","Early.Hardwood",
+                                               "Mid.Hardwood","Late.Hardwood"
+                                               ), ordered = TRUE)
+
+#Relevel Factors, Wood Anatomy
+growth.50yr.QC.increment.final$WOOD <- factor(growth.50yr.QC.increment.final$WOOD, 
+                                     levels = c("Early.Conifer","Late.Conifer",
+                                                "Early.Hardwood","Mid.Hardwood",
+                                                "Late.Hardwood"), ordered = TRUE)
+
+#relevel species to match phylogenetic tree
+#tree: http://itol.embl.de/tree/21316591127300121492568435
+growth.50yr.QC.increment.final$GenusSpecies <- factor(growth.50yr.QC.increment.final$GenusSpecies, 
                   levels = c("Thuja occidentalis", "Juniperus virginiana", "Tsuga canadensis", "Abies balsamea", "Picea rubens", "Picea mariana", "Pinus strobus", "Pinus taeda", "Pinus palustris", "Liriodendron tulipifera", "Oxydendrum arboreum", "Fraxinus nigra", "Fraxinus americana", "Acer saccharum", "Acer rubrum", "Prunus serotina", "Ulmus americana", "Populus tremuloides", "Populus grandidentata", "Carya glabra", "Carya tomentosa", "Betula papyrifera", "Betula lenta", "Betula alleghaniensis", "Fagus grandifolia", "Quercus muehlenbergii", "Quercus rubra", "Quercus velutina", "Quercus laevis", "Quercus montana", "Quercus alba"), ordered = TRUE)
 
 #boxplot
@@ -1562,6 +1587,19 @@ ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/To
 lm.year <- lm(INCREMENT ~ YEAR, data = growth.50yr.QC.increment.final)
 summary(lm.year)
 
+boxplot(INCREMENT ~ YEAR, data = growth.50yr.QC.increment.final)
+
+##growth by year - mean with sd
+year.growth.sd <- ggplot(growth.50yr.QC.increment.final, aes(x = as.factor(YEAR), y = INCREMENT)) +
+  stat_summary(fun.y = "mean", 
+               fun.ymin = function(x) mean(x) - sd(x),
+               fun.ymax = function(x) mean(x) + sd(x),
+               geom = "pointrange", colour = "black") +
+  theme(axis.text.x = element_text(angle=90,hjust=1,size=10)) +
+  ylab(expression(paste("Ring Width mm yr"^"-1"))) + xlab("Year")
+  
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings//Figures/annual.growth.sd.png", plot = year.growth.sd, dpi = 600, width = 5, height = 3.5, units = "in")
+  
 #space
 lm.space.simp <- lm(INCREMENT ~ SITE/PLOT/SUB/TAG, data = growth.50yr.QC.increment.final)
 summary(lm.space.simp)
@@ -1569,6 +1607,24 @@ summary(lm.space.simp)
 #wood
 lm.wood.simp <- lm(INCREMENT ~ WOOD, data = growth.50yr.QC.increment.final)
 summary(lm.wood.simp)
+
+wood.growth.violin <- ggplot(growth.50yr.QC.increment.final, aes(x = WOOD, y = INCREMENT, fill = WOOD)) +
+  geom_violin() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
+  theme(axis.text.y = element_text(size=12)) +
+  theme(axis.title.x = element_text(size=14)) +
+  theme(axis.title.y = element_text(size=14)) +
+  theme(axis.text.x = element_text(size = 12)) +
+  theme(legend.text = element_blank()) +
+  theme(legend.position = "none") +
+  stat_summary(fun.data = give.n, geom= "text", size = 3.5, aes(y= 13)) + 
+  stat_summary(fun.y="median", geom="point") +
+  ylab(expression(paste("Ring Width mm yr"^"-1"))) + xlab("Wood Anatomy") + #ggtitle("All Wood Types") +
+  scale_x_discrete(labels = c("Large Resin", "Small Resin", "No Resin", "Ring Porous", "Semi-ring Porous", "Diffuse Porous")) +
+  scale_fill_manual(values=rev(cbPalette)) +
+  annotate("text", x = 1:6, y = c(110, 95, 72, 165, 185, 135), label = c("b","ab","a","c","c","d"))
+  #geom_text(data = wood.plot.labels)
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/TotalNSC.AllCommonWoodAnat.png", plot = wood.anatomy.nsc, dpi = 600, width = 7.5, height = 3.5, units = "in")
 
 #canopy
 lm.canopy.simp <- lm(INCREMENT ~ CANOPY15, data = growth.50yr.QC.increment.final)
@@ -1582,11 +1638,37 @@ summary(lm.pft.simp)
 lm.size.simp <- lm(INCREMENT ~ DBH14, data = growth.50yr.QC.increment.final)
 summary(lm.size.simp)
 
+dbh.growth.plot <- ggplot(growth.50yr.QC.increment.final, aes(x = DBH14, y = INCREMENT)) +
+  geom_point(alpha = .1) +
+  #geom_smooth(method = "gam", formula = y ~ s(x), size = 1, aes(color = "blue")) + # GAM model with smooth
+  geom_smooth(method = "lm", aes(color = "yellow")) +
+  theme(axis.title.y = element_text(size = 14)) +
+  theme(axis.title.x = element_text(size = 14)) +
+  scale_color_manual(name = "Fit", values = "yellow", labels = "linear") + 
+  theme(legend.position = "none") +
+  ylab(expression(paste("Ring Width mm yr"^"-1"))) + xlab("DBH (cm)")
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings//Figures/DBH.growth.png", plot = dbh.growth.plot, dpi = 600, width = 5, height = 3.5, units = "in")
+
 #avg growth and DBH
 lm.size.avg <- lm(mean.growth.50yr.QC ~ DBH14, data = mean.growth.fig.data.50yr.QC)
 summary(lm.size.avg)
+
 plot(mean.growth.50yr.QC ~ DBH14, data = mean.growth.fig.data.50yr.QC)
 abline(lm.size.avg)
+
+dbh.growth.plot.avg <- ggplot(mean.growth.fig.data.50yr.QC, aes(x = DBH14, y = mean.growth.50yr.QC)) +
+  geom_point(alpha = .3) +
+  #geom_smooth(method = "gam", formula = y ~ s(x), size = 1, aes(color = "blue")) + # GAM model with smooth
+  geom_smooth(method = "lm", aes(color = "yellow")) +
+  theme(axis.title.y = element_text(size = 14)) +
+  theme(axis.title.x = element_text(size = 14)) +
+  scale_color_manual(name = "Fit", values = "yellow", labels = "linear") + 
+  theme(legend.position = "none") +
+  ylab(expression(paste("Mean Ring Width mm yr"^"-1"))) + xlab("DBH (cm)")
+
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings//Figures/DBH.growth.avg.png", plot = dbh.growth.plot.avg, dpi = 600, width = 5, height = 3.5, units = "in")
 
 #species
 lm.spp.simp <- lm(INCREMENT ~ GenusSpecies, data = growth.50yr.QC.increment.final)
@@ -1605,6 +1687,10 @@ summary(lm.genus.simp)
 # lm.phylo.simp <- lm(INCREMENT ~ subclass/order/family/genus/GenusSpecies, data = growth.50yr.QC.increment.final)
 # summary(lm.phylo.simp)
 
+#site
+lm.site.simp <- lm(INCREMENT ~ SITE, data = growth.50yr.QC.increment.final)
+summary(lm.site.simp)
+
 #temperature
 lm.temp.simp <- lm(INCREMENT ~ TEMP_C, data = growth.50yr.QC.increment.final)
 summary(lm.temp.simp)
@@ -1621,6 +1707,17 @@ summary(lmer.space)
 #Phylogeny only
 lmer.phylo <- lmer(INCREMENT ~ YEAR + (1|subclass/order/family/genus/GenusSpecies), data = growth.50yr.QC.increment.final)
 summary(lmer.phylo)
+
+#size random effect
+lmer.size <- lmer(INCREMENT ~ YEAR + (1|DBH14), data = growth.50yr.QC.increment.final)
+summary(lmer.size)
+
+lmer.size.space <- lmer(INCREMENT ~ YEAR + (1|DBH14) + (1|SITE/PLOT/SUB/TAG), data = growth.50yr.QC.increment.final)
+summary(lmer.size.space)
+
+#year random effect
+lmer.year <- lmer(INCREMENT ~ DBH14 + (1|YEAR) + (1|SITE:YEAR) + (1|SITE/PLOT/SUB/TAG), data = growth.50yr.QC.increment.final)
+summary(lmer.year)
 
 #quadratic size
 lm.pft.size <- lm(INCREMENT ~ PFT + DBH14 +I(DBH14^2), data = growth.50yr.QC.increment.final)
@@ -1668,6 +1765,7 @@ summary(lm.clim.trait.spp)
 #space, climte, traits, DBH and phylogeny
 lm.kitchen <- lmer(INCREMENT ~ YEAR + (1|SITE/PLOT/SUB/TAG) + (1|TEMP_C) +(1|PRECIP) + (1|GenusSpecies) + (1|GenusSpecies:SITE) + (1|PFT) + (1|WOOD) + DBH14, data = growth.50yr.QC.increment.final)
 summary(lm.kitchen)
+
 
 ```
 
