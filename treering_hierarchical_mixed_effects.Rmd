@@ -13,6 +13,7 @@ library(data.table)
 library(mcmcplots)
 library(ggplot2)
 library(plyr)
+library(multcompView)
 
 #Source required PEcAn scripts for reading and matching treerings and plot data
 source("/Users/Josh/Documents/Research/pecan/modules/data.land/R/Read_Tuscon.R")
@@ -1547,6 +1548,25 @@ growth.50yr.QC.increment.final$WOOD <- factor(growth.50yr.QC.increment.final$WOO
 growth.50yr.QC.increment.final$GenusSpecies <- factor(growth.50yr.QC.increment.final$GenusSpecies, 
                   levels = c("Thuja occidentalis", "Juniperus virginiana", "Tsuga canadensis", "Abies balsamea", "Picea rubens", "Picea mariana", "Pinus strobus", "Pinus taeda", "Pinus palustris", "Liriodendron tulipifera", "Oxydendrum arboreum", "Fraxinus nigra", "Fraxinus americana", "Acer saccharum", "Acer rubrum", "Prunus serotina", "Ulmus americana", "Populus tremuloides", "Populus grandidentata", "Carya glabra", "Carya tomentosa", "Betula papyrifera", "Betula lenta", "Betula alleghaniensis", "Fagus grandifolia", "Quercus muehlenbergii", "Quercus rubra", "Quercus velutina", "Quercus laevis", "Quercus montana", "Quercus alba"), ordered = TRUE)
 
+growth.50yr.QC.increment.final$SITE <- factor(growth.50yr.QC.increment.final$SITE, levels = c("W","B","H","V","S","C","M","D","T","F"), ordered = TRUE)
+
+growth.50yr.QC.increment.final$CANOPY15 <- as.character( growth.50yr.QC.increment.final$CANOPY15)
+growth.50yr.QC.increment.final$CANOPY15[ growth.50yr.QC.increment.final$CANOPY15 == "0"] <- "Understory"
+growth.50yr.QC.increment.final$CANOPY15[ growth.50yr.QC.increment.final$CANOPY15 == "Co-Dominant"] <- "CoDominant"
+growth.50yr.QC.increment.final$CANOPY15[ growth.50yr.QC.increment.final$CANOPY15 == "2"] <- "Dominant"
+# growth.50yr.QC.increment.final$CANOPY15[is.na( growth.50yr.QC.increment.final$CANOPY15)] <- "CoDominant"
+
+growth.50yr.QC.increment.final$CANOPY15 <- 
+factor(growth.50yr.QC.increment.final$CANOPY15, levels = c("Understory","CoDominant","Dominant"), ordered = TRUE)
+
+##### Removing One tree from Coweeta #####
+no.coweeta.inc <- which(growth.50yr.QC.increment.final$SITE != "C")
+no.coweeta.mean <- which(mean.growth.fig.data.50yr.QC$SITE != "C")
+
+growth.50yr.QC.increment.final <- growth.50yr.QC.increment.final[no.coweeta.inc,]
+
+mean.growth.fig.data.50yr.QC <- mean.growth.fig.data.50yr.QC[no.coweeta.mean,]
+
 #boxplot
 growth.spp.plot <- ggplot(mean.growth.fig.data.50yr.QC, aes(x = GenusSpecies, y = mean.growth.50yr.QC, fill = PFT)) + 
   geom_boxplot() + theme(axis.text.x = element_text(angle=90,hjust=1,vjust=.5,size=10)) +
@@ -1563,26 +1583,7 @@ growth.spp.plot <- ggplot(mean.growth.fig.data.50yr.QC, aes(x = GenusSpecies, y 
                                                       "Mid.Hardwood","Late.Hardwood"))
 
 #Associated Phylogenetic Tree is phylogeny.png
-
 ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings//Figures/Growth.AllCommonSpp.50yr.png", plot = growth.spp.plot, dpi = 600, width = 10, height = 4.75, units = "in")
-
-
-#PFT
-pft.violin <- ggplot(growth.50yr.QC.increment.final, aes(x = PFT, y = INCREMENT)) + #, fill = PFT
-  geom_violin() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
-  theme(axis.text.y = element_text(size=12)) +
-  theme(axis.title.x = element_text(size=14)) +
-  theme(axis.title.y = element_text(size=14)) +
-  theme(axis.text.x = element_text(size=12)) +
-  stat_summary(fun.data = give.n, geom= "text", aes(y= 10)) + 
-  stat_summary(fun.y="median", geom="point") +
-  ylab(expression(paste("Mean Ring Width mm yr"^"-1"))) + xlab("Plant Functional Type") #+
- # annotate("text", x = 1:5, y = c(110, 95, 165, 185, 135), 
-  #         label = c("e","a","b","c","d"))
-
-
-ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/TotalNSC.AllCommonPFT.png", plot = pft.violin, dpi = 600, width = 7.5, height = 3.5, units = "in")
-
 
 ################ANOVAs for full 50yr cores###############
 #year
@@ -1597,10 +1598,10 @@ year.growth.sd <- ggplot(growth.50yr.QC.increment.final, aes(x = as.factor(YEAR)
                fun.ymin = function(x) mean(x) - sd(x),
                fun.ymax = function(x) mean(x) + sd(x),
                geom = "pointrange", colour = "black") +
-  theme(axis.text.x = element_text(angle=90,hjust=1,size=10)) +
+  theme(axis.text.x = element_text(angle=90,hjust=1,size=8)) +
   ylab(expression(paste("Ring Width mm yr"^"-1"))) + xlab("Year")
   
-ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings//Figures/annual.growth.sd.png", plot = year.growth.sd, dpi = 600, width = 5, height = 3.5, units = "in")
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings//Figures/annual.growth.sd.png", plot = year.growth.sd, dpi = 600, width = 6, height = 3.5, units = "in")
   
 #space
 lm.space.simp <- lm(INCREMENT ~ SITE/PLOT/SUB/TAG, data = growth.50yr.QC.increment.final)
@@ -1610,6 +1611,16 @@ summary(lm.space.simp)
 lm.wood.simp <- lm(INCREMENT ~ WOOD, data = growth.50yr.QC.increment.final)
 summary(lm.wood.simp)
 
+#TukeyHSD WOOD
+summary(aov.wood <- aov(lm.wood.simp))
+tukey.wood.gr <- TukeyHSD(aov.wood, "WOOD", ordered = FALSE)
+plot(tukey.wood.gr)
+wood.levels.gr <- tukey.wood.gr[["WOOD"]][,4]
+wood.labels.gr <- multcompLetters(wood.levels.gr)['Letters']
+wood.plot.labels <- names(wood.labels.gr[['Letters']])
+
+wood.n <- table(growth.50yr.QC.increment.final$WOOD)/50
+
 wood.growth.violin <- ggplot(growth.50yr.QC.increment.final, aes(x = WOOD, y = INCREMENT, fill = WOOD))+
   geom_violin() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
   theme(axis.text.y = element_text(size=12)) +
@@ -1618,23 +1629,89 @@ wood.growth.violin <- ggplot(growth.50yr.QC.increment.final, aes(x = WOOD, y = I
   theme(axis.text.x = element_text(size = 12)) +
   theme(legend.text = element_blank()) +
   theme(legend.position = "none") +
-  stat_summary(fun.data = give.n, geom= "text", size = 3.5, aes(y= 13)) + 
+  annotate("text", x = 1, y = 15.75, label = wood.n[1], size = 3.5) +
+  annotate("text", x = 2, y = 15.75, label = wood.n[2], size = 3.5) +
+  annotate("text", x = 3, y = 15.75, label = wood.n[3], size = 3.5) +
+  annotate("text", x = 4, y = 15.75, label = wood.n[4], size = 3.5) +
+  annotate("text", x = 5, y = 15.75, label = wood.n[5], size = 3.5) +
+  annotate("text", x = 6, y = 15.75, label = wood.n[6], size = 3.5) +
+  # stat_summary_bin(fun.data = function(x){give.n(x)/50}, geom= "text", size = 3.5, aes(y= 15.75)) +
   stat_summary(fun.y="median", geom="point") +
   ylab(expression(paste("Ring Width mm yr"^"-1"))) + xlab("Wood Anatomy") + #ggtitle("All Wood Types") +
   scale_x_discrete(labels = c("Large Resin", "Small Resin", "No Resin", "Ring Porous", "Semi-ring Porous", "Diffuse Porous")) +
   scale_fill_manual(values=rev(cbPalette)) +
-  annotate("text", x = 1:6, y = c(110, 95, 72, 165, 185, 135), label = c("b","ab","a","c","c","d"))
-  #geom_text(data = wood.plot.labels)
+  annotate("text", x = 1:6, y = c(11.1, 6, 8.75, 14.25, 10, 13.25), label = c("e","a","b","b","c","d"))
 
-ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/TotalNSC.AllCommonWoodAnat.png", plot = wood.anatomy.nsc, dpi = 600, width = 7.5, height = 3.5, units = "in")
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings//Figures/growth.wood.anat.png", plot = wood.growth.violin, dpi = 600, width = 5, height = 3.5, units = "in")
 
 #canopy
 lm.canopy.simp <- lm(INCREMENT ~ CANOPY15, data = growth.50yr.QC.increment.final)
 summary(lm.canopy.simp)
 
+#TukeyHSD canopy
+summary(aov.canopy <- aov(lm.canopy.simp))
+tukey.canopy.gr <- TukeyHSD(aov.canopy, "CANOPY15", ordered = FALSE)
+plot(tukey.canopy.gr)
+canopy.levels.gr <- tukey.canopy.gr[["CANOPY15"]][,4]
+canopy.labels.gr <- multcompLetters(canopy.levels.gr)['Letters']
+canopy.plot.labels <- names(canopy.labels.gr[['Letters']])
+
+canopy.n <- table(growth.50yr.QC.increment.final$CANOPY15)/50
+
+canopy.growth.violin <- ggplot(growth.50yr.QC.increment.final, aes(x = as.factor(CANOPY15), y = INCREMENT, fill = CANOPY15))+
+  geom_violin() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
+  theme(axis.text.y = element_text(size=12)) +
+  theme(axis.title.x = element_text(size=14)) +
+  theme(axis.title.y = element_text(size=14)) +
+  theme(axis.text.x = element_text(size = 12)) +
+  theme(legend.text = element_blank()) +
+  theme(legend.position = "none") +
+  annotate("text", x = 1, y = 15.5, label = canopy.n[1], size = 3.5) +
+  annotate("text", x = 2, y = 15.5, label = canopy.n[2], size = 3.5) +
+  annotate("text", x = 3, y = 15.5, label = canopy.n[3], size = 3.5) +
+  #stat_summary(fun.data = give.n, geom= "text", size = 3.5, aes(y= 13)) + 
+  stat_summary(fun.y="median", geom="point") +
+  ylab(expression(paste("Ring Width mm yr"^"-1"))) + xlab("Canopy Status") + #ggtitle("All Wood Types") +
+  scale_x_discrete(labels = c("Understory", "Co-Dominant", "Dominant")) +
+  scale_fill_manual(values=rev(cbPalette)) +
+  annotate("text", x = 1:3, y = c(9.5, 14.2, 11.5), label = c("c","a","b"))
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings/Figures/canopy.growth.violin.png", plot = canopy.growth.violin, dpi = 600, width = 5, height = 3.5, units = "in")
+
 #pft
 lm.pft.simp <- lm(INCREMENT ~ PFT, data = growth.50yr.QC.increment.final)
 summary(lm.pft.simp)
+
+summary(aov.pft <- aov(lm.pft.simp))
+tukey.pft.gr <- TukeyHSD(aov.pft, "PFT", ordered = FALSE)
+plot(tukey.pft.gr)
+pft.levels.gr <- tukey.pft.gr[["PFT"]][,4]
+pft.labels.gr <- multcompLetters(pft.levels.gr)['Letters']
+pft.plot.labels <- names(pft.labels.gr[['Letters']])
+
+pft.n <- table(growth.50yr.QC.increment.final$PFT)/50
+
+pft.growth.violin <- ggplot(growth.50yr.QC.increment.final, aes(x = PFT, y = INCREMENT, fill = PFT))+
+  geom_violin() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
+  theme(axis.text.y = element_text(size=12)) +
+  theme(axis.title.x = element_text(size=14)) +
+  theme(axis.title.y = element_text(size=14)) +
+  theme(axis.text.x = element_text(size = 12)) +
+  theme(legend.text = element_blank()) +
+  theme(legend.position = "none") +
+  annotate("text", x = 1, y = 14.8, label = pft.n[1], size = 3.5) +
+  annotate("text", x = 2, y = 14.8, label = pft.n[2], size = 3.5) +
+  annotate("text", x = 3, y = 14.8, label = pft.n[3], size = 3.5) +
+  annotate("text", x = 4, y = 14.8, label = pft.n[4], size = 3.5) +
+  annotate("text", x = 5, y = 14.8, label = pft.n[5], size = 3.5) +
+  #stat_summary(fun.data = give.n, geom= "text", size = 3.5, aes(y= 13)) + 
+  stat_summary(fun.y="median", geom="point") +
+  ylab(expression(paste("Ring Width mm yr"^"-1"))) + xlab("Plant Functional Type") +
+  scale_x_discrete(labels = c("Early.Conifer","Late.Conifer","Early.Hardwood",                            "Mid.Hardwood","Late.Hardwood")) +
+  scale_fill_manual(values=rev(cbPalette)) +
+  annotate("text", x = 1:5, y = c(10.75, 7.6, 12.8, 13.9, 10.25), label = c("e","a","b","c","d"))
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings/Figures/pft.growth.violin.png", plot = pft.growth.violin, dpi = 600, width = 7, height = 3.5, units = "in")
 
 #DBH
 lm.size.simp <- lm(INCREMENT ~ DBH14, data = growth.50yr.QC.increment.final)
@@ -1669,7 +1746,6 @@ dbh.growth.plot.avg <- ggplot(mean.growth.fig.data.50yr.QC, aes(x = DBH14, y = m
   theme(legend.position = "none") +
   ylab(expression(paste("Mean Ring Width mm yr"^"-1"))) + xlab("DBH (cm)")
 
-
 ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings//Figures/DBH.growth.avg.png", plot = dbh.growth.plot.avg, dpi = 600, width = 5, height = 3.5, units = "in")
 
 #species
@@ -1693,8 +1769,45 @@ summary(lm.genus.simp)
 lm.site.simp <- lm(INCREMENT ~ SITE, data = growth.50yr.QC.increment.final)
 summary(lm.site.simp)
 
+summary(aov.site <- aov(lm.site.simp))
+tukey.site.gr <- TukeyHSD(aov.site, "SITE", ordered = FALSE)
+plot(tukey.site.gr)
+site.levels.gr <- tukey.site.gr[["SITE"]][,4]
+site.labels.gr <- multcompLetters(site.levels.gr)['Letters']
+site.plot.labels <- names(site.labels.gr[['Letters']])
+
+site.n <- table(growth.50yr.QC.increment.final$SITE)/50
+
+#Site plot ordered from low to high temperature
+site.growth.violin <- ggplot(growth.50yr.QC.increment.final, aes(x = SITE, y = INCREMENT))+
+  geom_violin() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
+  theme(axis.text.y = element_text(size=12)) +
+  theme(axis.title.x = element_text(size=14)) +
+  theme(axis.title.y = element_text(size=14)) +
+  theme(axis.text.x = element_text(size = 12)) +
+  theme(legend.text = element_blank()) +
+  theme(legend.position = "none") +
+  annotate("text", x = 1, y = 14.8, label = site.n[1], size = 3.5) +
+  annotate("text", x = 2, y = 14.8, label = site.n[2], size = 3.5) +
+  annotate("text", x = 3, y = 14.8, label = site.n[3], size = 3.5) +
+  annotate("text", x = 4, y = 14.8, label = site.n[4], size = 3.5) +
+  annotate("text", x = 5, y = 14.8, label = site.n[5], size = 3.5) +
+  # annotate("text", x = 6, y = 14.8, label = site.n[6], size = 3.5) +
+  annotate("text", x = 6, y = 14.8, label = site.n[7], size = 3.5) +
+  annotate("text", x = 7, y = 14.8, label = site.n[8], size = 3.5) +
+  annotate("text", x = 8, y = 14.8, label = site.n[9], size = 3.5) +
+  annotate("text", x = 9, y = 14.8, label = site.n[10], size = 3.5) +
+  #stat_summary(fun.data = give.n, geom= "text", size = 3.5, aes(y= 13)) + 
+  stat_summary(fun.y="median", geom="point") +
+  ylab(expression(paste("Ring Width mm yr"^"-1"))) + xlab("Site") +
+  scale_x_discrete(labels = c("W","B","H","V","S","M","D","T","F")) +
+  scale_fill_manual(values=rev(cbPalette)) +
+  annotate("text", x = 1:9, y = c(8, 12.75, 10.6, 13.8, 11.9, 9.5, 7.35, 11.25, 12.25), label = c("a","a","b","c","d","e","bcd","bd","bcd"))
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings/Figures/site.growth.violin.png", plot = site.growth.violin, dpi = 600, width = 7.5, height = 3.5, units = "in")
+
 #temperature
-lm.temp.simp <- lm(INCREMENT ~ TEMP_C, data = growth.50yr.QC.increment.final)
+lm.temp.simp <- lm(INCREMENT ~ as.factor(TEMP_C), data = growth.50yr.QC.increment.final)
 summary(lm.temp.simp)
 
 #precipitation
