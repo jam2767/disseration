@@ -1579,15 +1579,16 @@ growth.spp.plot <- ggplot(mean.growth.fig.data.50yr.QC, aes(x = GenusSpecies, y 
   labs(fill = "PFT") +
   stat_summary(fun.data = give.n, geom= "text", size = 2.5, aes(y= 5)) + 
   ylab(expression(paste("Mean Ring Width mm yr"^"-1"))) + xlab("") + #ggtitle("All Species") +
+  #ylim(0,4) +
   scale_fill_manual(values=rev(cbPalette), labels = c("Early.Conifer","Late.Conifer","Early.Hardwood",
-                                                      "Mid.Hardwood","Late.Hardwood"))
+  "Mid.Hardwood","Late.Hardwood"))
 
 #Associated Phylogenetic Tree is phylogeny.png
 ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings//Figures/Growth.AllCommonSpp.50yr.png", plot = growth.spp.plot, dpi = 600, width = 10, height = 4.75, units = "in")
 
 ################ANOVAs for full 50yr cores###############
 #year
-lm.year <- lm(INCREMENT ~ YEAR, data = growth.50yr.QC.increment.final)
+lm.year <- lm(INCREMENT ~ as.factor(YEAR), data = growth.50yr.QC.increment.final)
 summary(lm.year)
 
 boxplot(INCREMENT ~ YEAR, data = growth.50yr.QC.increment.final)
@@ -1640,7 +1641,8 @@ wood.growth.violin <- ggplot(growth.50yr.QC.increment.final, aes(x = WOOD, y = I
   ylab(expression(paste("Ring Width mm yr"^"-1"))) + xlab("Wood Anatomy") + #ggtitle("All Wood Types") +
   scale_x_discrete(labels = c("Large Resin", "Small Resin", "No Resin", "Ring Porous", "Semi-ring Porous", "Diffuse Porous")) +
   scale_fill_manual(values=rev(cbPalette)) +
-  annotate("text", x = 1:6, y = c(11.1, 6, 8.75, 14.25, 10, 13.25), label = c("e","a","b","b","c","d"))
+  ylim(0,5) +
+  annotate("text", x = 1.1:6.1, y = c(5, 4.7, 5, 5, 5, 5), label = c("e","a","b","b","c","d"))
 
 ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings//Figures/growth.wood.anat.png", plot = wood.growth.violin, dpi = 600, width = 5, height = 3.5, units = "in")
 
@@ -1672,6 +1674,7 @@ canopy.growth.violin <- ggplot(growth.50yr.QC.increment.final, aes(x = as.factor
   #stat_summary(fun.data = give.n, geom= "text", size = 3.5, aes(y= 13)) + 
   stat_summary(fun.y="median", geom="point") +
   ylab(expression(paste("Ring Width mm yr"^"-1"))) + xlab("Canopy Status") + #ggtitle("All Wood Types") +
+  ylim(0,5) +
   scale_x_discrete(labels = c("Understory", "Co-Dominant", "Dominant")) +
   scale_fill_manual(values=rev(cbPalette)) +
   annotate("text", x = 1:3, y = c(9.5, 14.2, 11.5), label = c("c","a","b"))
@@ -1706,6 +1709,7 @@ pft.growth.violin <- ggplot(growth.50yr.QC.increment.final, aes(x = PFT, y = INC
   annotate("text", x = 5, y = 14.8, label = pft.n[5], size = 3.5) +
   #stat_summary(fun.data = give.n, geom= "text", size = 3.5, aes(y= 13)) + 
   stat_summary(fun.y="median", geom="point") +
+  ylim(0,5) +
   ylab(expression(paste("Ring Width mm yr"^"-1"))) + xlab("Plant Functional Type") +
   scale_x_discrete(labels = c("Early.Conifer","Late.Conifer","Early.Hardwood",                            "Mid.Hardwood","Late.Hardwood")) +
   scale_fill_manual(values=rev(cbPalette)) +
@@ -1799,6 +1803,7 @@ site.growth.violin <- ggplot(growth.50yr.QC.increment.final, aes(x = SITE, y = I
   annotate("text", x = 9, y = 14.8, label = site.n[10], size = 3.5) +
   #stat_summary(fun.data = give.n, geom= "text", size = 3.5, aes(y= 13)) + 
   stat_summary(fun.y="median", geom="point") +
+  ylim(0,5) +
   ylab(expression(paste("Ring Width mm yr"^"-1"))) + xlab("Site") +
   scale_x_discrete(labels = c("W","B","H","V","S","M","D","T","F")) +
   scale_fill_manual(values=rev(cbPalette)) +
