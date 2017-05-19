@@ -15,6 +15,18 @@ library(ggplot2)
 library(plyr)
 library(multcompView)
 
+#helper functions
+#function to find last value of vector
+last <- function(x) { return( x[length(x)] ) }
+
+#give sample size on boxplot for ggplot
+give.n <- function(x){
+  return(c(y = mean(x), label = length(x)))
+}
+
+#color-blind-friendly palettes
+cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
 #Source required PEcAn scripts for reading and matching treerings and plot data
 source("/Users/Josh/Documents/Research/pecan/modules/data.land/R/Read_Tuscon.R")
 source("/Users/Josh/Documents/Research/pecan/modules/data.land/R/matchInventoryRings.R")
@@ -25,7 +37,7 @@ Using most up-to-date version of adult census data for treering matching. Includ
 ```{r}
 #read Tucson format ringwidth files
 trees.diss <- read.csv("/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/Adult_Field_Data_JAM_MCD.csv")
-rings.diss <- Read_Tuscon("/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/Windendro_Dissertation")
+rings.diss <- Read_Tucson("/Users/josh/Dropbox/Dissertation/CH1_Treerings/Data/Windendro_Dissertation")
 
 #Match Tucson ringwidth files and adult census data for 50yrs of growth
 combined.diss <- matchInventoryRings(trees=trees.diss,rings.diss,nyears=60)
@@ -91,257 +103,258 @@ Reformat combined census and treering data dataframe to comply with format requi
 ```
 
 ```{r}
-#JAGS Bayesian Hierarchical linear model 
-#Hierarchical terms for JAGS
-ringwidths <- combined.diss.clim[97:136]
-s<-as.numeric(as.factor(as.character(combined.diss.clim$SITE)))
-p<-as.numeric(as.factor(paste0(as.character(combined.diss.clim$SITE),
-                               as.character(combined.diss.clim$PLOT))))
-sp <- as.numeric(as.factor(paste0(as.character(combined.diss.clim$SITE),
-                                  as.character(combined.diss.clim$PLOT),
-                                  as.character(combined.diss.clim$SUB))))
-#creating interaction terms for JAGS
-#Site by Year interaction, n = 400, 8 sites, 50 years each
-#sy <- as.numeric(as.factor(paste0(as.character(combined.diss.clim$SITE),
-                                  #colnames(combined.diss.clim[93:142]))))
-# #Plot by Year interaction, n = 2600, 8 sites, 6-7 plots each
-# spy <- as.numeric(as.factor(paste0(as.character(combined.diss.clim$SITE),
+# #spots with 2 ## were commented out before I stopped using bayes for the chapter
+# #JAGS Bayesian Hierarchical linear model 
+# #Hierarchical terms for JAGS
+# ringwidths <- combined.diss.clim[97:136]
+# s<-as.numeric(as.factor(as.character(combined.diss.clim$SITE)))
+# p<-as.numeric(as.factor(paste0(as.character(combined.diss.clim$SITE),
+#                                as.character(combined.diss.clim$PLOT))))
+# sp <- as.numeric(as.factor(paste0(as.character(combined.diss.clim$SITE),
 #                                   as.character(combined.diss.clim$PLOT),
-#                                   colnames(combined.diss.clim[93:142]))))
-
-#x = 1/var(combined.diss.clim$INCREMENT,na.rm=TRUE) #precision on all years
-#y = mean(combined.diss.clim$INCREMENT,na.rm=TRUE) #mean all years
-x = 1/var(as.vector(as.matrix(ringwidths)),na.rm=TRUE)
-y = mean(as.matrix(ringwidths),na.rm=TRUE) ## overall mean growth rate
-mean40yr = rowMeans(ringwidths,na.rm=TRUE) #means by individual
-column.means = colMeans(ringwidths,na.rm=TRUE) #means by year
-us = tapply(X=mean40yr,INDEX=list(s),FUN=mean,na.rm=TRUE)
-up = tapply(X=mean40yr,INDEX=list(p),FUN=mean,na.rm=TRUE)
-usp = tapply(X=mean40yr,INDEX=list(sp),FUN=mean,na.rm=TRUE)
-#usy = tapply(X=mean50yr,INDEX=list(sy),FUN=mean,na.rm=TRUE)
-usy = apply(ringwidths,2,function(x1){tapply(x1,s,FUN=mean,na.rm=TRUE)})
-usy[is.nan(usy)] = 0
-ty = 1/var(column.means)
-ts = 1/var(us)
-tp= 1/var(up)
-tsp= 1/var(usp)
-tsy= mean(1/var(usy))
-as = us - mean(us)
-ap = up - mean(up) 
-asp= usp - mean(usp)
-ai = mean40yr - mean(y)
-ay = column.means - mean(column.means)
-
-data2 = list(x=as.matrix(combined.diss.clim[,97:136]), nyear=40, 
-             nrep = 1626,s=s,p=p,sp=sp,ns=max(s),np = max(p),nsp=max(sp))
-
-asy = apply(data2$x,2,function(x){tapply(x,s,function(w){mean(w-y,na.rm=TRUE)})})
-asy[is.nan(asy)]  = 0
-
-init = list(mu = y,prec = x,tau.y = ty,tau.s = ts,tau.p = tp,tau.sp = tsp,
-            tau.sy = tsy,tau.ind = x,alpha.site = as,alpha.plot = ap,
-            alpha.sub = asp,alpha.siteyear = asy,alpha.ind = ai,alpha.y = ay)
-
-FitRand.SiteYear = "
-model {
-mu ~ dnorm(0,0.001)
-prec ~ dgamma(0.1,0.1)
-tau.y ~ dgamma(0.1,0.1)  #prior year-effect
-tau.s ~ dgamma(0.1,0.1)  #prior site
-tau.p ~ dgamma(0.1,0.1)  #prior plot
-tau.sp ~ dgamma(0.1,0.1) #prior subplot
-tau.ind ~ dgamma(0.1,0.1) #prior individual
-tau.sy ~ dgamma(0.1,0.1) #prior site x year effect
-#tau.spy ~ dgamma(0.1,0.1) #prior plot x year effect
-
-for(s in 1:ns){
-  alpha.site[s] ~ dnorm(0,tau.s)
-  for(y in 1:nyear){
-    alpha.siteyear[s,y] ~ dnorm(0,tau.sy)
-  }
-}
-for(p in 1:np){
-alpha.plot[p] ~ dnorm(0,tau.p)
-}
-for(sp in 1:nsp){
-alpha.sub[sp] ~ dnorm(0,tau.sp)
-}
-for(i in 1:nrep){
-alpha.ind[i] ~ dnorm(0,tau.ind)
-}
-
-for(y in 1:nyear){
-alpha.y[y] ~dnorm(0,tau.y)
-for(i in 1:nrep){
-Ex[i,y] <- mu + alpha.y[y]  + alpha.site[s[i]] + alpha.plot[p[i]] + alpha.sub[sp[i]] + alpha.ind[i] + alpha.siteyear[s[i],y]
-
-x[i,y] ~dnorm(Ex[i,y],prec)
-}
-}
-}"
-
-## compile JAGS model
-j.model   <- jags.model (file = textConnection(FitRand.SiteYear),
-                         data = data2,
-                         inits = init,
-                         n.chains = 3)
-## burn-in
-b   <- coda.samples (model = j.model,
-                      variable.names = c("mu","prec","tau.y","tau.s","tau.p","tau.sp","tau.ind","tau.sy"),
-                      n.iter = 1000,
-                      thin = 2)
-
-# bt   <- coda.samples (model = j.model,
-#                      variable.names = c("mu","prec","tau.y","tau.s","tau.p","tau.sp","tau.ind"),
-#                      n.iter = 5000)
-
-update.jags<-function(model,previous.coda,variable.names,iter){
-  samp <- coda.samples (model = model,
-                        variable.names = variable.names,
-                        n.iter = iter,
-                        thin=2)
-  new.list <- list()
-  for(i in 1:length(samp)){
-    new.list[[i]] = as.mcmc(rbind(previous.coda[[i]],samp[[i]]))
-  }
-  bmcmc <<- mcmc.list(new.list)
-  #return(bmcmc)
-}
-
-update.jags(j.model,b,c("mu","prec","tau.y","tau.s","tau.p","tau.sp","tau.ind","tau.sy"),500)
-b.out<-b
-bmcmc1<-bmcmc
-
-update.jags(j.model,bmcmc1,c("mu","prec","tau.y","tau.s","tau.p","tau.sp","tau.ind","tau.sy"),1000)
-bmcmc2<-bmcmc
-
-update.jags(j.model,bmcmc2,c("mu","prec","tau.y","tau.s","tau.p","tau.sp","tau.ind","tau.sy"),2000)
-bmcmc3<-bmcmc
-
-update.jags(j.model,bmcmc3,c("mu","prec","tau.y","tau.s","tau.p","tau.sp","tau.ind","tau.sy"),2000)
-bmcmc4<-bmcmc
-
-update.jags(j.model,bmcmc4,c("mu","prec","tau.y","tau.s","tau.p","tau.sp","tau.ind","tau.sy"),5000)
-bmcmc5<-bmcmc
-
-update.jags(j.model,bmcmc5,c("mu","prec","tau.y","tau.s","tau.p","tau.sp","tau.ind","tau.sy"),5000)
-bmcmc6<-bmcmc
-
-# update.jags(j.model,bmcmc6,c("mu","prec","tau.y","tau.s","tau.p","tau.sp","tau.ind"),20000)
-# bmcmc7<-bmcmc
-# update.jags(j.model,bmcmc7,c("mu","prec","tau.y","tau.s","tau.p","tau.sp","tau.ind"),10000)
-# bmcmc8<-bmcmc
-# update.jags(j.model,bmcmc8,c("mu","prec","tau.y","tau.s","tau.p","tau.sp","tau.ind"),20000)
-# bmcmc9<-bmcmc
-
-#transform posteriors to standard deviations
-test.sd2 <- list()
-test.sd2 <- for(i in 1:3){
-  test.sd2[[i]]<-as.mcmc(sqrt(1/bmcmc1[[i]]))
-
-  test.SD <- mcmc.list(test.sd2)
-}
-
-for(i in 1:8){
-  plot(test.SD[,i],cex.lab=1.8,xlim=c(0,1.25))
-}
-
-
-str(summary(bmcmc1))
-#for(i in 1:7){
-  summary(bmcmc1)#[,i])    ## summary table
-#}
-
-for(i in 1:8){
-  plot(b.out[,i])
-  #plot(sqrt(1/(bmcmc9[,i]))) ## mcmc trace and density plots
-}
-
-# for(i in 1:7){
-#   plot(bmcmc7[,i]) ## mcmc trace and density plots
+#                                   as.character(combined.diss.clim$SUB))))
+# #creating interaction terms for JAGS
+# #Site by Year interaction, n = 400, 8 sites, 50 years each
+# #sy <- as.numeric(as.factor(paste0(as.character(combined.diss.clim$SITE),
+#                                   #colnames(combined.diss.clim[93:142]))))
+# # #Plot by Year interaction, n = 2600, 8 sites, 6-7 plots each
+# # spy <- as.numeric(as.factor(paste0(as.character(combined.diss.clim$SITE),
+# #                                   as.character(combined.diss.clim$PLOT),
+# #                                   colnames(combined.diss.clim[93:142]))))
+# 
+# #x = 1/var(combined.diss.clim$INCREMENT,na.rm=TRUE) #precision on all years
+# #y = mean(combined.diss.clim$INCREMENT,na.rm=TRUE) #mean all years
+# x = 1/var(as.vector(as.matrix(ringwidths)),na.rm=TRUE)
+# y = mean(as.matrix(ringwidths),na.rm=TRUE) ## overall mean growth rate
+# mean40yr = rowMeans(ringwidths,na.rm=TRUE) #means by individual
+# column.means = colMeans(ringwidths,na.rm=TRUE) #means by year
+# us = tapply(X=mean40yr,INDEX=list(s),FUN=mean,na.rm=TRUE)
+# up = tapply(X=mean40yr,INDEX=list(p),FUN=mean,na.rm=TRUE)
+# usp = tapply(X=mean40yr,INDEX=list(sp),FUN=mean,na.rm=TRUE)
+# #usy = tapply(X=mean50yr,INDEX=list(sy),FUN=mean,na.rm=TRUE)
+# usy = apply(ringwidths,2,function(x1){tapply(x1,s,FUN=mean,na.rm=TRUE)})
+# usy[is.nan(usy)] = 0
+# ty = 1/var(column.means)
+# ts = 1/var(us)
+# tp= 1/var(up)
+# tsp= 1/var(usp)
+# tsy= mean(1/var(usy))
+# as = us - mean(us)
+# ap = up - mean(up) 
+# asp= usp - mean(usp)
+# ai = mean40yr - mean(y)
+# ay = column.means - mean(column.means)
+# 
+# data2 = list(x=as.matrix(combined.diss.clim[,97:136]), nyear=40, 
+#              nrep = 1626,s=s,p=p,sp=sp,ns=max(s),np = max(p),nsp=max(sp))
+# 
+# asy = apply(data2$x,2,function(x){tapply(x,s,function(w){mean(w-y,na.rm=TRUE)})})
+# asy[is.nan(asy)]  = 0
+# 
+# init = list(mu = y,prec = x,tau.y = ty,tau.s = ts,tau.p = tp,tau.sp = tsp,
+#             tau.sy = tsy,tau.ind = x,alpha.site = as,alpha.plot = ap,
+#             alpha.sub = asp,alpha.siteyear = asy,alpha.ind = ai,alpha.y = ay)
+# 
+# FitRand.SiteYear = "
+# model {
+# mu ~ dnorm(0,0.001)
+# prec ~ dgamma(0.1,0.1)
+# tau.y ~ dgamma(0.1,0.1)  #prior year-effect
+# tau.s ~ dgamma(0.1,0.1)  #prior site
+# tau.p ~ dgamma(0.1,0.1)  #prior plot
+# tau.sp ~ dgamma(0.1,0.1) #prior subplot
+# tau.ind ~ dgamma(0.1,0.1) #prior individual
+# tau.sy ~ dgamma(0.1,0.1) #prior site x year effect
+# #tau.spy ~ dgamma(0.1,0.1) #prior plot x year effect
+# 
+# for(s in 1:ns){
+#   alpha.site[s] ~ dnorm(0,tau.s)
+#   for(y in 1:nyear){
+#     alpha.siteyear[s,y] ~ dnorm(0,tau.sy)
+#   }
+# }
+# for(p in 1:np){
+# alpha.plot[p] ~ dnorm(0,tau.p)
+# }
+# for(sp in 1:nsp){
+# alpha.sub[sp] ~ dnorm(0,tau.sp)
+# }
+# for(i in 1:nrep){
+# alpha.ind[i] ~ dnorm(0,tau.ind)
 # }
 # 
-# for(i in 1:7){
-#   plot(bmcmc6[,i]) ## mcmc trace and density plots
+# for(y in 1:nyear){
+# alpha.y[y] ~dnorm(0,tau.y)
+# for(i in 1:nrep){
+# Ex[i,y] <- mu + alpha.y[y]  + alpha.site[s[i]] + alpha.plot[p[i]] + alpha.sub[sp[i]] + alpha.ind[i] + alpha.siteyear[s[i],y]
+# 
+# x[i,y] ~dnorm(Ex[i,y],prec)
+# }
+# }
+# }"
+# 
+# ## compile JAGS model
+# j.model   <- jags.model (file = textConnection(FitRand.SiteYear),
+#                          data = data2,
+#                          inits = init,
+#                          n.chains = 3)
+# ## burn-in
+# b   <- coda.samples (model = j.model,
+#                       variable.names = c("mu","prec","tau.y","tau.s","tau.p","tau.sp","tau.ind","tau.sy"),
+#                       n.iter = 1000,
+#                       thin = 2)
+# 
+# # bt   <- coda.samples (model = j.model,
+# #                      variable.names = c("mu","prec","tau.y","tau.s","tau.p","tau.sp","tau.ind"),
+# #                      n.iter = 5000)
+# 
+# update.jags<-function(model,previous.coda,variable.names,iter){
+#   samp <- coda.samples (model = model,
+#                         variable.names = variable.names,
+#                         n.iter = iter,
+#                         thin=2)
+#   new.list <- list()
+#   for(i in 1:length(samp)){
+#     new.list[[i]] = as.mcmc(rbind(previous.coda[[i]],samp[[i]]))
+#   }
+#   bmcmc <<- mcmc.list(new.list)
+#   #return(bmcmc)
 # }
 # 
-# for(i in 1:7){
-#   plot(bmcmc5[,i]) ## mcmc trace and density plots
+# update.jags(j.model,b,c("mu","prec","tau.y","tau.s","tau.p","tau.sp","tau.ind","tau.sy"),500)
+# b.out<-b
+# bmcmc1<-bmcmc
+# 
+# update.jags(j.model,bmcmc1,c("mu","prec","tau.y","tau.s","tau.p","tau.sp","tau.ind","tau.sy"),1000)
+# bmcmc2<-bmcmc
+# 
+# update.jags(j.model,bmcmc2,c("mu","prec","tau.y","tau.s","tau.p","tau.sp","tau.ind","tau.sy"),2000)
+# bmcmc3<-bmcmc
+# 
+# update.jags(j.model,bmcmc3,c("mu","prec","tau.y","tau.s","tau.p","tau.sp","tau.ind","tau.sy"),2000)
+# bmcmc4<-bmcmc
+# 
+# update.jags(j.model,bmcmc4,c("mu","prec","tau.y","tau.s","tau.p","tau.sp","tau.ind","tau.sy"),5000)
+# bmcmc5<-bmcmc
+# 
+# update.jags(j.model,bmcmc5,c("mu","prec","tau.y","tau.s","tau.p","tau.sp","tau.ind","tau.sy"),5000)
+# bmcmc6<-bmcmc
+# 
+# # update.jags(j.model,bmcmc6,c("mu","prec","tau.y","tau.s","tau.p","tau.sp","tau.ind"),20000)
+# # bmcmc7<-bmcmc
+# # update.jags(j.model,bmcmc7,c("mu","prec","tau.y","tau.s","tau.p","tau.sp","tau.ind"),10000)
+# # bmcmc8<-bmcmc
+# # update.jags(j.model,bmcmc8,c("mu","prec","tau.y","tau.s","tau.p","tau.sp","tau.ind"),20000)
+# # bmcmc9<-bmcmc
+# 
+# #transform posteriors to standard deviations
+# test.sd2 <- list()
+# test.sd2 <- for(i in 1:3){
+#   test.sd2[[i]]<-as.mcmc(sqrt(1/bmcmc1[[i]]))
+# 
+#   test.SD <- mcmc.list(test.sd2)
 # }
-# for(i in 1:7){
-#   plot(bmcmc3[,i]) ## mcmc trace and density plots
+# 
+# for(i in 1:8){
+#   plot(test.SD[,i],cex.lab=1.8,xlim=c(0,1.25))
 # }
-# #bmcmc is new output
-# for(i in 1:7){
-#   plot(bmcmc2[,i]) ## mcmc trace and density plots
+# 
+# 
+# str(summary(bmcmc1))
+# #for(i in 1:7){
+#   summary(bmcmc1)#[,i])    ## summary table
+# #}
+# 
+# for(i in 1:8){
+#   plot(b.out[,i])
+#   #plot(sqrt(1/(bmcmc9[,i]))) ## mcmc trace and density plots
 # }
-# for(i in 1:7){
-#   plot(b.out[,i]) ## mcmc trace and density plots
+# 
+# # for(i in 1:7){
+# #   plot(bmcmc7[,i]) ## mcmc trace and density plots
+# # }
+# # 
+# # for(i in 1:7){
+# #   plot(bmcmc6[,i]) ## mcmc trace and density plots
+# # }
+# # 
+# # for(i in 1:7){
+# #   plot(bmcmc5[,i]) ## mcmc trace and density plots
+# # }
+# # for(i in 1:7){
+# #   plot(bmcmc3[,i]) ## mcmc trace and density plots
+# # }
+# # #bmcmc is new output
+# # for(i in 1:7){
+# #   plot(bmcmc2[,i]) ## mcmc trace and density plots
+# # }
+# # for(i in 1:7){
+# #   plot(b.out[,i]) ## mcmc trace and density plots
+# # }
+# for(i in 1:8){
+# autocorr.plot(b.out[,i]) ## autocorrelation
 # }
-for(i in 1:8){
-autocorr.plot(b.out[,i]) ## autocorrelation
-}
-for(i in 1:8){
-cumuplot(b.out[,i]) ## quantile plot
-}
-for(i in 1:8){
-gelman.plot(b.out[,i])      ## GRB statistic
-}
-for(i in 1:8){
-summary(b.out[,i])    ## summary table
-}
-
-  ####plot of all individuals####
-denplot(test.SD[,2:7],collapse=TRUE,xlim=c(0,1.25),main=c("Residual",
-                                                          "Individual",
-                                                          "Landscape",
-                                                          "Region",
-                                                          "Microsite",
-                                                          "Year"))
-
-##summary stats for making barplot of median variance explained
-summary.all <- summary(test.SD) 
-var.all<-summary.all$quantiles[2:8,3]
-#proportion of variance explained
-proportion.var.all<- var.all/sum(var.all)
-
-##### done visualizing outputs #####
-
-update.jags<-function(model,previous.coda,variable.names,iter){
-  samp <- coda.samples (model = model,
-                variable.names = variable.names,
-                n.iter = iter)
-  bmcmc <<- mcmc(do.call(rbind,c(previous.coda,samp)))
-  #return(bmcmc)
-}
-
-update.jags(j.model,b,c("mu","prec","tau.y","tau.s","tau.p","tau.sp","tau.ind"),100)
-# b3 <- coda.samples (model = j.model,
-#                     variable.names = c("mu","prec"),#,"alpha.y","alpha.site","alpha.plot","alpha.sub"),#,"alpha.ind"),
-#                     n.iter = 500)#,
-# update.jags(model=j.model,previous.coda=b3,variable.names=c("mu","prec"),iter=500)
-
-# bmcmc3 = b3
-# plot(bmcmc3)
-
-
-
-mu2 = as.data.frame(as.matrix(bmcmc2))$mu
-quantile(mu2,c(0.025,0.5,0.975))
-
-
-
-
-
-
-
-# #just look at AGU code for example of how to make unique IDs
-# #Example creating interaction term
-# Y = seq(1,10)
-# L = as.vector(x=c("A","B","C"))
-# YL = expand.grid(Y,L) #creates matrix of all combinations as characters
-# YL.vector = as.vector(paste0(YL$Var1,YL$Var2)) #vector of all combinations as characters
-# #Can now use this to create interaction term for years x plot and years x site
+# for(i in 1:8){
+# cumuplot(b.out[,i]) ## quantile plot
+# }
+# for(i in 1:8){
+# gelman.plot(b.out[,i])      ## GRB statistic
+# }
+# for(i in 1:8){
+# summary(b.out[,i])    ## summary table
+# }
+# 
+#   ####plot of all individuals####
+# denplot(test.SD[,2:7],collapse=TRUE,xlim=c(0,1.25),main=c("Residual",
+#                                                           "Individual",
+#                                                           "Landscape",
+#                                                           "Region",
+#                                                           "Microsite",
+#                                                           "Year"))
+# 
+# ##summary stats for making barplot of median variance explained
+# summary.all <- summary(test.SD) 
+# var.all<-summary.all$quantiles[2:8,3]
+# #proportion of variance explained
+# proportion.var.all<- var.all/sum(var.all)
+# 
+# ##### done visualizing outputs #####
+# 
+# update.jags<-function(model,previous.coda,variable.names,iter){
+#   samp <- coda.samples (model = model,
+#                 variable.names = variable.names,
+#                 n.iter = iter)
+#   bmcmc <<- mcmc(do.call(rbind,c(previous.coda,samp)))
+#   #return(bmcmc)
+# }
+# 
+# update.jags(j.model,b,c("mu","prec","tau.y","tau.s","tau.p","tau.sp","tau.ind"),100)
+# # b3 <- coda.samples (model = j.model,
+# #                     variable.names = c("mu","prec"),#,"alpha.y","alpha.site","alpha.plot","alpha.sub"),#,"alpha.ind"),
+# #                     n.iter = 500)#,
+# # update.jags(model=j.model,previous.coda=b3,variable.names=c("mu","prec"),iter=500)
+# 
+# # bmcmc3 = b3
+# # plot(bmcmc3)
+# 
+# 
+# 
+# mu2 = as.data.frame(as.matrix(bmcmc2))$mu
+# quantile(mu2,c(0.025,0.5,0.975))
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# # #just look at AGU code for example of how to make unique IDs
+# # #Example creating interaction term
+# # Y = seq(1,10)
+# # L = as.vector(x=c("A","B","C"))
+# # YL = expand.grid(Y,L) #creates matrix of all combinations as characters
+# # YL.vector = as.vector(paste0(YL$Var1,YL$Var2)) #vector of all combinations as characters
+# # #Can now use this to create interaction term for years x plot and years x site
 
 ```
 
@@ -1552,7 +1565,7 @@ growth.50yr.QC.increment.final$SITE <- factor(growth.50yr.QC.increment.final$SIT
 
 growth.50yr.QC.increment.final$CANOPY15 <- as.character( growth.50yr.QC.increment.final$CANOPY15)
 growth.50yr.QC.increment.final$CANOPY15[ growth.50yr.QC.increment.final$CANOPY15 == "0"] <- "Understory"
-growth.50yr.QC.increment.final$CANOPY15[ growth.50yr.QC.increment.final$CANOPY15 == "Co-Dominant"] <- "CoDominant"
+growth.50yr.QC.increment.final$CANOPY15[ growth.50yr.QC.increment.final$CANOPY15 == "1"] <- "CoDominant"
 growth.50yr.QC.increment.final$CANOPY15[ growth.50yr.QC.increment.final$CANOPY15 == "2"] <- "Dominant"
 # growth.50yr.QC.increment.final$CANOPY15[is.na( growth.50yr.QC.increment.final$CANOPY15)] <- "CoDominant"
 
@@ -1566,6 +1579,12 @@ no.coweeta.mean <- which(mean.growth.fig.data.50yr.QC$SITE != "C")
 growth.50yr.QC.increment.final <- growth.50yr.QC.increment.final[no.coweeta.inc,]
 
 mean.growth.fig.data.50yr.QC <- mean.growth.fig.data.50yr.QC[no.coweeta.mean,]
+
+mean.growth.fig.data.50yr.QC$PLOT <- factor(mean.growth.fig.data.50yr.QC$PLOT, ordered = FALSE)
+
+growth.50yr.QC.increment.final$PLOT <- factor(growth.50yr.QC.increment.final$PLOT, ordered = FALSE)
+
+growth.50yr.QC.increment.final$SUB <- factor(growth.50yr.QC.increment.final$SUB, ordered = FALSE)
 
 #boxplot
 growth.spp.plot <- ggplot(mean.growth.fig.data.50yr.QC, aes(x = GenusSpecies, y = mean.growth.50yr.QC, fill = PFT)) + 
@@ -1586,10 +1605,45 @@ growth.spp.plot <- ggplot(mean.growth.fig.data.50yr.QC, aes(x = GenusSpecies, y 
 #Associated Phylogenetic Tree is phylogeny.png
 ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings//Figures/Growth.AllCommonSpp.50yr.png", plot = growth.spp.plot, dpi = 600, width = 10, height = 4.75, units = "in")
 
+
+
 ################ANOVAs for full 50yr cores###############
+
+#not reliable estimates of variance explained
+#estimated effects are unbalanced and many effects not estimable
+mean.space.aov <- aov(mean.growth.50yr.QC ~ SITE/PLOT/SUB, 
+                 data = mean.growth.fig.data.50yr.QC)
+var.space.50 <- anova(mean.space.aov)[,2]
+var.space.50.prop <- var.space.50/sum(var.space.50)
+
+#not reliable estimates of variance explained
+#estimated effects are unbalanced and many effects not estimable
+space.aov <- aov(INCREMENT ~ SITE/PLOT/SUB/TAG, data = growth.50yr.QC.increment.final)
+var.space.50.inc <- anova(space.aov)[,2]
+var.space.50.inc.prop <- var.space.50.inc/sum(var.space.50.inc)
+
+lm.space.inc <- lm(INCREMENT ~ SITE/PLOT/SUB, data = growth.50yr.QC.increment.final)
+anova(lm.space.inc)
+summary(lm.space.inc)
+
+lm.space.avg <- lm(mean.growth.50yr.QC ~ SITE/PLOT/SUB, data = mean.growth.fig.data.50yr.QC)
+anova(lm.space.avg)
+summary(lm.space.avg)
+
+growth.50yr.QC.increment.final$YEAR <- factor(growth.50yr.QC.increment.final$YEAR, ordered = FALSE)
 #year
-lm.year <- lm(INCREMENT ~ as.factor(YEAR), data = growth.50yr.QC.increment.final)
+lm.year <- lm(INCREMENT ~ YEAR, data = growth.50yr.QC.increment.final)
+anova(lm.year)
 summary(lm.year)
+
+#Tukey's HSD year
+summary(aov.year <- aov(lm.year))
+tukey.year.gr <- TukeyHSD(aov.year, "YEAR", ordered = FALSE)
+plot(tukey.year.gr)
+year.levels.gr <- tukey.year.gr[["YEAR"]][,4]
+year.labels.gr <- multcompLetters(year.levels.gr)['Letters']
+year.plot.labels <- names(year.labels.gr[['Letters']])
+
 
 boxplot(INCREMENT ~ YEAR, data = growth.50yr.QC.increment.final)
 
@@ -1603,7 +1657,23 @@ year.growth.sd <- ggplot(growth.50yr.QC.increment.final, aes(x = as.factor(YEAR)
   ylab(expression(paste("Ring Width mm yr"^"-1"))) + xlab("Year")
   
 ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings//Figures/annual.growth.sd.png", plot = year.growth.sd, dpi = 600, width = 6, height = 3.5, units = "in")
-  
+
+###take year into account first
+###then do mixed effect model with a fixed year effect
+lmer.space <- lmer(INCREMENT ~ YEAR + (1|SITE/PLOT/SUB/TAG), data = growth.50yr.QC.increment.final)
+summary(lmer.space)
+
+space.vars <- as.data.frame(VarCorr(lmer.space, order = "cov.last"))
+#calculating partial variances for random effects
+var.space.vars = space.vars$vcov/sum(space.vars$vcov)
+space.part.vars <- cbind(space.vars$grp,var.space.vars)
+#test
+sum(as.numeric(space.part.vars[,2]))
+#now have proportions of variance explained by each effect
+#Environment
+#1,2,7
+site.partvar <- sum(as.numeric(part.vars[1,2]),as.numeric(part.vars[2,2]),as.numeric(part.vars[7,2])) #sub, plot, site 11.88 %
+
 #space
 lm.space.simp <- lm(INCREMENT ~ SITE/PLOT/SUB/TAG, data = growth.50yr.QC.increment.final)
 summary(lm.space.simp)
@@ -1622,7 +1692,7 @@ wood.plot.labels <- names(wood.labels.gr[['Letters']])
 
 wood.n <- table(growth.50yr.QC.increment.final$WOOD)/50
 
-wood.growth.violin <- ggplot(growth.50yr.QC.increment.final, aes(x = WOOD, y = INCREMENT, fill = WOOD))+
+wood.growth.violin <- ggplot(growth.50yr.QC.increment.final, aes(x = WOOD, y = INCREMENT, fill = NULL))+
   geom_violin() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
   theme(axis.text.y = element_text(size=12)) +
   theme(axis.title.x = element_text(size=14)) +
@@ -1630,19 +1700,19 @@ wood.growth.violin <- ggplot(growth.50yr.QC.increment.final, aes(x = WOOD, y = I
   theme(axis.text.x = element_text(size = 12)) +
   theme(legend.text = element_blank()) +
   theme(legend.position = "none") +
-  annotate("text", x = 1, y = 15.75, label = wood.n[1], size = 3.5) +
-  annotate("text", x = 2, y = 15.75, label = wood.n[2], size = 3.5) +
-  annotate("text", x = 3, y = 15.75, label = wood.n[3], size = 3.5) +
-  annotate("text", x = 4, y = 15.75, label = wood.n[4], size = 3.5) +
-  annotate("text", x = 5, y = 15.75, label = wood.n[5], size = 3.5) +
-  annotate("text", x = 6, y = 15.75, label = wood.n[6], size = 3.5) +
+  annotate("text", x = .8, y = 5.2, label = wood.n[1], size = 3.5) +
+  annotate("text", x = 1.8, y = 5.2, label = wood.n[2], size = 3.5) +
+  annotate("text", x = 2.8, y = 5.2, label = wood.n[3], size = 3.5) +
+  annotate("text", x = 3.8, y = 5.2, label = wood.n[4], size = 3.5) +
+  annotate("text", x = 4.8, y = 5.2, label = wood.n[5], size = 3.5) +
+  annotate("text", x = 5.8, y = 5.2, label = wood.n[6], size = 3.5) +
   # stat_summary_bin(fun.data = function(x){give.n(x)/50}, geom= "text", size = 3.5, aes(y= 15.75)) +
   stat_summary(fun.y="median", geom="point") +
   ylab(expression(paste("Ring Width mm yr"^"-1"))) + xlab("Wood Anatomy") + #ggtitle("All Wood Types") +
   scale_x_discrete(labels = c("Large Resin", "Small Resin", "No Resin", "Ring Porous", "Semi-ring Porous", "Diffuse Porous")) +
   scale_fill_manual(values=rev(cbPalette)) +
-  ylim(0,5) +
-  annotate("text", x = 1.1:6.1, y = c(5, 4.7, 5, 5, 5, 5), label = c("e","a","b","b","c","d"))
+  ylim(0,5.2) +
+  annotate("text", x = 1.1:6.1, y = c(5, 4.7, 5, 5, 5, 5), label = c("e","a","c","c","b","d"))
 
 ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings//Figures/growth.wood.anat.png", plot = wood.growth.violin, dpi = 600, width = 5, height = 3.5, units = "in")
 
@@ -1660,7 +1730,7 @@ canopy.plot.labels <- names(canopy.labels.gr[['Letters']])
 
 canopy.n <- table(growth.50yr.QC.increment.final$CANOPY15)/50
 
-canopy.growth.violin <- ggplot(growth.50yr.QC.increment.final, aes(x = as.factor(CANOPY15), y = INCREMENT, fill = CANOPY15))+
+canopy.growth.violin <- ggplot(growth.50yr.QC.increment.final, aes(x = as.factor(CANOPY15), y = INCREMENT, fill = NULL))+
   geom_violin() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
   theme(axis.text.y = element_text(size=12)) +
   theme(axis.title.x = element_text(size=14)) +
@@ -1668,21 +1738,21 @@ canopy.growth.violin <- ggplot(growth.50yr.QC.increment.final, aes(x = as.factor
   theme(axis.text.x = element_text(size = 12)) +
   theme(legend.text = element_blank()) +
   theme(legend.position = "none") +
-  annotate("text", x = 1, y = 15.5, label = canopy.n[1], size = 3.5) +
-  annotate("text", x = 2, y = 15.5, label = canopy.n[2], size = 3.5) +
-  annotate("text", x = 3, y = 15.5, label = canopy.n[3], size = 3.5) +
+  annotate("text", x = .85, y = 5.2, label = canopy.n[1], size = 3.5) +
+  annotate("text", x = 1.85, y = 5.2, label = canopy.n[2], size = 3.5) +
+  annotate("text", x = 2.85, y = 5.2, label = canopy.n[3], size = 3.5) +
   #stat_summary(fun.data = give.n, geom= "text", size = 3.5, aes(y= 13)) + 
   stat_summary(fun.y="median", geom="point") +
   ylab(expression(paste("Ring Width mm yr"^"-1"))) + xlab("Canopy Status") + #ggtitle("All Wood Types") +
-  ylim(0,5) +
+  ylim(0,5.2) +
   scale_x_discrete(labels = c("Understory", "Co-Dominant", "Dominant")) +
   scale_fill_manual(values=rev(cbPalette)) +
-  annotate("text", x = 1:3, y = c(9.5, 14.2, 11.5), label = c("c","a","b"))
+  annotate("text", x = 1.1:3.1, y = c(5, 5, 5), label = c("a","b","c"))
 
 ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings/Figures/canopy.growth.violin.png", plot = canopy.growth.violin, dpi = 600, width = 5, height = 3.5, units = "in")
 
 #pft
-lm.pft.simp <- lm(INCREMENT ~ PFT, data = growth.50yr.QC.increment.final)
+lm.pft.simp <- lm(INCREMENT ~ as.character(PFT), data = growth.50yr.QC.increment.final)
 summary(lm.pft.simp)
 
 summary(aov.pft <- aov(lm.pft.simp))
@@ -1694,7 +1764,7 @@ pft.plot.labels <- names(pft.labels.gr[['Letters']])
 
 pft.n <- table(growth.50yr.QC.increment.final$PFT)/50
 
-pft.growth.violin <- ggplot(growth.50yr.QC.increment.final, aes(x = PFT, y = INCREMENT, fill = PFT))+
+pft.growth.violin <- ggplot(growth.50yr.QC.increment.final, aes(x = PFT, y = INCREMENT, fill = PFT)) +
   geom_violin() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
   theme(axis.text.y = element_text(size=12)) +
   theme(axis.title.x = element_text(size=14)) +
@@ -1702,63 +1772,87 @@ pft.growth.violin <- ggplot(growth.50yr.QC.increment.final, aes(x = PFT, y = INC
   theme(axis.text.x = element_text(size = 12)) +
   theme(legend.text = element_blank()) +
   theme(legend.position = "none") +
-  annotate("text", x = 1, y = 14.8, label = pft.n[1], size = 3.5) +
-  annotate("text", x = 2, y = 14.8, label = pft.n[2], size = 3.5) +
-  annotate("text", x = 3, y = 14.8, label = pft.n[3], size = 3.5) +
-  annotate("text", x = 4, y = 14.8, label = pft.n[4], size = 3.5) +
-  annotate("text", x = 5, y = 14.8, label = pft.n[5], size = 3.5) +
+  annotate("text", x = .8, y = 5.2, label = pft.n[1], size = 3.5) +
+  annotate("text", x = 1.8, y = 5.2, label = pft.n[2], size = 3.5) +
+  annotate("text", x = 2.8, y = 5.2, label = pft.n[3], size = 3.5) +
+  annotate("text", x = 3.8, y = 5.2, label = pft.n[4], size = 3.5) +
+  annotate("text", x = 4.8, y = 5.2, label = pft.n[5], size = 3.5) +
   #stat_summary(fun.data = give.n, geom= "text", size = 3.5, aes(y= 13)) + 
-  stat_summary(fun.y="median", geom="point") +
-  ylim(0,5) +
+  stat_summary(fun.y="mean", geom="point") +
+  ylim(0,5.2) +
   ylab(expression(paste("Ring Width mm yr"^"-1"))) + xlab("Plant Functional Type") +
   scale_x_discrete(labels = c("Early.Conifer","Late.Conifer","Early.Hardwood",                            "Mid.Hardwood","Late.Hardwood")) +
   scale_fill_manual(values=rev(cbPalette)) +
-  annotate("text", x = 1:5, y = c(10.75, 7.6, 12.8, 13.9, 10.25), label = c("e","a","b","c","d"))
+  annotate("text", x = 1.1:5.1, y = c(5, 5, 5, 5, 5), label = c("e","a","d","c","b"))
 
 ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings/Figures/pft.growth.violin.png", plot = pft.growth.violin, dpi = 600, width = 7, height = 3.5, units = "in")
 
 #DBH
-lm.size.simp <- lm(INCREMENT ~ DBH14, data = growth.50yr.QC.increment.final)
-summary(lm.size.simp)
+lm.size.simp15 <- lm(INCREMENT ~ DBH15, data = growth.50yr.QC.increment.final)
+summary(lm.size.simp15)
 
-dbh.growth.plot <- ggplot(growth.50yr.QC.increment.final, aes(x = DBH14, y = INCREMENT)) +
+####Test with all years dbh to report R2####
+lm.size.simp14 <- lm(INCREMENT ~ DBH14, data = growth.50yr.QC.increment.final)
+summary(lm.size.simp14)
+
+lm.size.simp13 <- lm(INCREMENT ~ DBH13, data = growth.50yr.QC.increment.final)
+summary(lm.size.simp13)
+
+lm.size.simp12 <- lm(INCREMENT ~ DBH12, data = growth.50yr.QC.increment.final)
+summary(lm.size.simp12)
+
+lm.size.simp11 <- lm(INCREMENT ~ DBH11, data = growth.50yr.QC.increment.final)
+summary(lm.size.simp11)
+
+dbh.growth.plot <- ggplot(growth.50yr.QC.increment.final, aes(x = DBH15, y = INCREMENT)) +
   geom_point(alpha = .1) +
   #geom_smooth(method = "gam", formula = y ~ s(x), size = 1, aes(color = "blue")) + # GAM model with smooth
   geom_smooth(method = "lm", aes(color = "yellow")) +
   theme(axis.title.y = element_text(size = 14)) +
   theme(axis.title.x = element_text(size = 14)) +
+  annotate("text",x=1,y=13.5,label = "a") +
   scale_color_manual(name = "Fit", values = "yellow", labels = "linear") + 
   theme(legend.position = "none") +
   ylab(expression(paste("Ring Width mm yr"^"-1"))) + xlab("DBH (cm)")
 
-ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings//Figures/DBH.growth.png", plot = dbh.growth.plot, dpi = 600, width = 5, height = 3.5, units = "in")
+# ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings//Figures/DBH.growth.png", plot = dbh.growth.plot, dpi = 600, width = 5, height = 3.5, units = "in")
 
 #avg growth and DBH
-lm.size.avg <- lm(mean.growth.50yr.QC ~ DBH14, data = mean.growth.fig.data.50yr.QC)
+lm.size.avg <- lm(mean.growth.50yr.QC ~ DBH15, data = mean.growth.fig.data.50yr.QC)
 summary(lm.size.avg)
 
-plot(mean.growth.50yr.QC ~ DBH14, data = mean.growth.fig.data.50yr.QC)
+plot(mean.growth.50yr.QC ~ DBH15, data = mean.growth.fig.data.50yr.QC)
 abline(lm.size.avg)
 
-dbh.growth.plot.avg <- ggplot(mean.growth.fig.data.50yr.QC, aes(x = DBH14, y = mean.growth.50yr.QC)) +
+dbh.growth.plot.avg <- ggplot(mean.growth.fig.data.50yr.QC, aes(x = DBH15, y = mean.growth.50yr.QC)) +
   geom_point(alpha = .3) +
   #geom_smooth(method = "gam", formula = y ~ s(x), size = 1, aes(color = "blue")) + # GAM model with smooth
   geom_smooth(method = "lm", aes(color = "yellow")) +
   theme(axis.title.y = element_text(size = 14)) +
   theme(axis.title.x = element_text(size = 14)) +
+  annotate("text",x=1,y=4.5,label = "b") +
   scale_color_manual(name = "Fit", values = "yellow", labels = "linear") + 
   theme(legend.position = "none") +
   ylab(expression(paste("Mean Ring Width mm yr"^"-1"))) + xlab("DBH (cm)")
 
-ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings//Figures/DBH.growth.avg.png", plot = dbh.growth.plot.avg, dpi = 600, width = 5, height = 3.5, units = "in")
+dbh.components <- grid.arrange(dbh.growth.plot, dbh.growth.plot.avg, ncol = 1)
+
+# ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings//Figures/DBH.growth.avg.png", plot = dbh.growth.plot.avg, dpi = 600, width = 5, height = 3.5, units = "in")
+
+#used for chapter
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings//Figures/DBH.growth.avg.v2.png", plot = dbh.components, dpi = 600, width = 5, height = 7, units = "in")
 
 #species
 lm.spp.simp <- lm(INCREMENT ~ GenusSpecies, data = growth.50yr.QC.increment.final)
 summary(lm.spp.simp)
 
-#genus/species
-lm.genus.simp <- lm(INCREMENT ~ genus/GenusSpecies, data = growth.50yr.QC.increment.final)
+#genus
+lm.genus.simp <- lm(INCREMENT ~ genus, data = growth.50yr.QC.increment.final)
 summary(lm.genus.simp)
+
+#genus/species
+lm.genus.spp.simp <- lm(INCREMENT ~ genus/GenusSpecies, data = growth.50yr.QC.increment.final)
+summary(lm.genus.spp.simp)
 
 #taxonomy
 #crashes R don't use
@@ -1770,7 +1864,7 @@ summary(lm.genus.simp)
 # summary(lm.phylo.simp)
 
 #site
-lm.site.simp <- lm(INCREMENT ~ SITE, data = growth.50yr.QC.increment.final)
+lm.site.simp <- lm(INCREMENT ~ as.character(SITE), data = growth.50yr.QC.increment.final)
 summary(lm.site.simp)
 
 summary(aov.site <- aov(lm.site.simp))
@@ -1791,23 +1885,23 @@ site.growth.violin <- ggplot(growth.50yr.QC.increment.final, aes(x = SITE, y = I
   theme(axis.text.x = element_text(size = 12)) +
   theme(legend.text = element_blank()) +
   theme(legend.position = "none") +
-  annotate("text", x = 1, y = 14.8, label = site.n[1], size = 3.5) +
-  annotate("text", x = 2, y = 14.8, label = site.n[2], size = 3.5) +
-  annotate("text", x = 3, y = 14.8, label = site.n[3], size = 3.5) +
-  annotate("text", x = 4, y = 14.8, label = site.n[4], size = 3.5) +
-  annotate("text", x = 5, y = 14.8, label = site.n[5], size = 3.5) +
+  annotate("text", x = .75, y = 5.2, label = site.n[1], size = 3.5) +
+  annotate("text", x = 1.75, y = 5.2, label = site.n[2], size = 3.5) +
+  annotate("text", x = 2.75, y = 5.2, label = site.n[3], size = 3.5) +
+  annotate("text", x = 3.75, y = 5.2, label = site.n[4], size = 3.5) +
+  annotate("text", x = 4.75, y = 5.2, label = site.n[5], size = 3.5) +
   # annotate("text", x = 6, y = 14.8, label = site.n[6], size = 3.5) +
-  annotate("text", x = 6, y = 14.8, label = site.n[7], size = 3.5) +
-  annotate("text", x = 7, y = 14.8, label = site.n[8], size = 3.5) +
-  annotate("text", x = 8, y = 14.8, label = site.n[9], size = 3.5) +
-  annotate("text", x = 9, y = 14.8, label = site.n[10], size = 3.5) +
+  annotate("text", x = 5.75, y = 5.2, label = site.n[7], size = 3.5) +
+  annotate("text", x = 6.75, y = 5.2, label = site.n[8], size = 3.5) +
+  annotate("text", x = 7.75, y = 5.2, label = site.n[9], size = 3.5) +
+  annotate("text", x = 8.75, y = 5.2, label = site.n[10], size = 3.5) +
   #stat_summary(fun.data = give.n, geom= "text", size = 3.5, aes(y= 13)) + 
   stat_summary(fun.y="median", geom="point") +
-  ylim(0,5) +
+  ylim(0,5.2) +
   ylab(expression(paste("Ring Width mm yr"^"-1"))) + xlab("Site") +
   scale_x_discrete(labels = c("W","B","H","V","S","M","D","T","F")) +
   scale_fill_manual(values=rev(cbPalette)) +
-  annotate("text", x = 1:9, y = c(8, 12.75, 10.6, 13.8, 11.9, 9.5, 7.35, 11.25, 12.25), label = c("a","a","b","c","d","e","bcd","bd","bcd"))
+  annotate("text", x = c(1.1,2.1,3.1,4.1,5.1,6.1,7.25,8.2,9.25), y = c(5, 5, 5, 5, 5, 5, 5, 5, 5), label = c("a","a","e","d","c","b","cde","ce","cde"))
 
 ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings/Figures/site.growth.violin.png", plot = site.growth.violin, dpi = 600, width = 7.5, height = 3.5, units = "in")
 
@@ -1815,14 +1909,34 @@ ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings/Figures/site.g
 lm.temp.simp <- lm(INCREMENT ~ as.factor(TEMP_C), data = growth.50yr.QC.increment.final)
 summary(lm.temp.simp)
 
+lm.temp.num <- lm(INCREMENT ~ TEMP_C, data = growth.50yr.QC.increment.final)
+summary(lm.temp.num)
+
 #precipitation
-lm.precip.simp <- lm(INCREMENT ~ PRECIP, data = growth.50yr.QC.increment.final)
+lm.precip.simp <- lm(INCREMENT ~ as.factor(PRECIP), data = growth.50yr.QC.increment.final)
 summary(lm.precip.simp)
+
+lm.precip.num <- lm(INCREMENT ~ PRECIP, data = growth.50yr.QC.increment.final)
+summary(lm.precip.num)
+
+#PFT * temp interaction
+lm.pft.tmp.interact <- lm(INCREMENT ~ PFT*TEMP_C, data = growth.50yr.QC.increment.final)
+summary(lm.pft.tmp.interact)
+
+lm.spp.tmp.interact <- lm(INCREMENT ~ SPP*TEMP_C, data = growth.50yr.QC.increment.final)
+summary(lm.spp.tmp.interact)
+
+lm.dbh.tmp.interact <- lm(INCREMENT ~ DBH15*TEMP_C,data = growth.50yr.QC.increment.final)
+summary(lm.dbh.tmp.interact)
 
 #Multi-variable linear models
 #space only, fixed effect for year
 lmer.space <- lmer(INCREMENT ~ YEAR + (1|SITE/PLOT/SUB/TAG), data = growth.50yr.QC.increment.final)
 summary(lmer.space)
+
+#DBH15 fixed, year and space random
+lmer.space.year <- lmer(INCREMENT ~ DBH15 + (1|YEAR) + (1|SITE/PLOT/SUB/TAG), data = growth.50yr.QC.increment.final)
+summary(lmer.space.year)
 
 #Phylogeny only
 lmer.phylo <- lmer(INCREMENT ~ YEAR + (1|subclass/order/family/genus/GenusSpecies), data = growth.50yr.QC.increment.final)
@@ -1866,6 +1980,44 @@ summary(lm.space.year.sy)
 lmer.clim <- lmer(INCREMENT ~ YEAR + (1|SITE:YEAR) + (1|SITE/PLOT/SUB/TAG) + (1|TEMP_C) + (1|PRECIP) , data = growth.50yr.QC.increment.final)
 summary(lmer.clim)
 
+space.clim.vars <- as.data.frame(VarCorr(lmer.clim, order = "cov.last"))
+#calculating partial variances for random effects
+var.space.clim.vars = space.clim.vars$vcov/sum(space.clim.vars$vcov)
+space.clim.part.vars <- cbind(space.clim.vars$grp,var.space.clim.vars)
+#test
+sum(as.numeric(space.clim.part.vars[,2]))
+#now have proportions of variance explained by each effect
+#Environment
+#1,2,7
+site.clim.partvar <- sum(as.numeric(space.clim.part.vars[1,2]),as.numeric(space.clim.part.vars[2,2]),as.numeric(space.clim.part.vars[7,2])) #sub, plot, site 11.88 %
+
+#space, climate, species, pft, wood, size, canopy position
+lmer.all.nointeract <- lmer(INCREMENT ~ YEAR + (1|SITE:YEAR) + (1|SITE/PLOT/SUB/TAG) + (1|TEMP_C) + (1|PRECIP) + (1|GenusSpecies) + (1|PFT) + (1|WOOD) + (1|DBH15) + (1|CANOPY15) , data = growth.50yr.QC.increment.final)
+summary(lmer.all.nointeract)
+
+#space, size and canopy
+lmer.space.clim.size <- lmer(INCREMENT ~ YEAR + (1|SITE:YEAR) + (1|SITE/PLOT/SUB/TAG) + (1|DBH15) + (1|CANOPY15) , data = growth.50yr.QC.increment.final)
+summary(lmer.space.clim.size)
+
+#space, phylogeny, anatomy
+lmer.space.anat <- lmer(INCREMENT ~ YEAR + (1|SITE:YEAR) + (1|SITE/PLOT/SUB/TAG) + (1|GenusSpecies) + (1|PFT) + (1|WOOD) , data = growth.50yr.QC.increment.final)
+summary(lmer.space.anat)
+
+#space, size, canopy, phylogeny, anatomy
+lmer.all.noclim <- lmer(INCREMENT ~ YEAR + (1|SITE:YEAR) + (1|SITE/PLOT/SUB/TAG) + (1|GenusSpecies) + (1|PFT) + (1|WOOD) + (1|DBH15) + (1|CANOPY15) , data = growth.50yr.QC.increment.final)
+summary(lmer.all.noclim)
+
+all.noclim.vars <- as.data.frame(VarCorr(lmer.all.noclim, order = "cov.last"))
+#calculating partial variances for random effects
+var.all.noclim.vars = all.noclim.vars$vcov/sum(all.noclim.vars$vcov)
+all.noclim.part.vars <- cbind(all.noclim.vars$grp,var.all.noclim.vars)
+#test
+sum(as.numeric(all.noclim.part.vars[,2]))
+#now have proportions of variance explained by each effect
+#Environment
+#1,2,7
+site.clim.partvar <- sum(as.numeric(space.clim.part.vars[1,2]),as.numeric(space.clim.part.vars[2,2]),as.numeric(space.clim.part.vars[7,2])) #sub, plot, site 11.88 %
+
 #space, climate, and species
 lm.clim.spp <- lmer(INCREMENT ~ YEAR + (1|SITE/PLOT/SUB/TAG) + (1|TEMP_C) + (1|PRECIP) + (1|GenusSpecies), data = growth.50yr.QC.increment.final)
 summary(lm.clim.spp)
@@ -1885,8 +2037,106 @@ summary(lm.clim.trait.spp)
 #space, climte, traits, DBH and phylogeny
 lm.kitchen <- lmer(INCREMENT ~ YEAR + (1|SITE/PLOT/SUB/TAG) + (1|TEMP_C) +(1|PRECIP) + (1|GenusSpecies) + (1|GenusSpecies:SITE) + (1|PFT) + (1|WOOD) + DBH14, data = growth.50yr.QC.increment.final)
 summary(lm.kitchen)
+#################### last hypothesis ##########################
+#Use - shows that the interactions matter
+lmer.spp.int <- lmer(INCREMENT ~ YEAR + (1|SITE:YEAR) + (1|SITE/PLOT/SUB/TAG) + (1|GenusSpecies) + (1|GenusSpecies:SITE) + (1|PFT) + (1|PFT:SITE) + (1|DBH15) + (1|CANOPY15) , data = growth.50yr.QC.increment.final)
+summary(lmer.spp.int)
+
+spp.int.vars <- as.data.frame(VarCorr(lmer.spp.int, order = "cov.last"))
+#calculating partial variances for random effects
+var.spp.int.vars = spp.int.vars$vcov/sum(spp.int.vars$vcov)
+spp.int.part.vars <- cbind(spp.int.vars$grp,var.spp.int.vars)
+#test
+sum(as.numeric(spp.int.part.vars[,2]))
+
+#Use first, justification for breaking into temp and precip
+lm.pft.site.interact <- lm(INCREMENT ~ PFT*SITE,data = growth.50yr.QC.increment.final)
+summary(lm.pft.site.interact)
+
+lm.pft.tmp.interact <- lm(INCREMENT ~ PFT*TEMP_C,data = growth.50yr.QC.increment.final)
+summary(lm.pft.tmp.interact)
+
+### regressions that match the plots now ###
+early.con <- which(growth.50yr.QC.increment.final$PFT == "Early.Conifer")
+late.con <- which(growth.50yr.QC.increment.final$PFT == "Late.Conifer")
+early.hard <- which(growth.50yr.QC.increment.final$PFT == "Early.Hardwood")
+mid.hard <- which(growth.50yr.QC.increment.final$PFT == "Mid.Hardwood")
+late.hard <- which(growth.50yr.QC.increment.final$PFT == "Late.Hardwood")
+
+### Temperature ###
+lm.pft.tmp.early.con <- lm(INCREMENT[early.con] ~ TEMP_C[early.con], data = growth.50yr.QC.increment.final)
+summary(lm.pft.tmp.early.con)
+
+lm.pft.tmp.late.con <- lm(INCREMENT[late.con] ~ TEMP_C[late.con], data = growth.50yr.QC.increment.final)
+summary(lm.pft.tmp.late.con)
+
+lm.pft.tmp.early.hard <- lm(INCREMENT[early.hard] ~ TEMP_C[early.hard], data = growth.50yr.QC.increment.final)
+summary(lm.pft.tmp.early.hard)
+
+lm.pft.tmp.mid.hard <- lm(INCREMENT[mid.hard] ~ TEMP_C[mid.hard], data = growth.50yr.QC.increment.final)
+summary(lm.pft.tmp.mid.hard)
+
+lm.pft.tmp.late.hard <- lm(INCREMENT[late.hard] ~ TEMP_C[late.hard], data = growth.50yr.QC.increment.final)
+summary(lm.pft.tmp.late.hard)
+
+### Precipitation ###
+lm.pft.precip.early.con <- lm(INCREMENT[early.con] ~ PRECIP[early.con], data = growth.50yr.QC.increment.final)
+summary(lm.pft.precip.early.con)
+
+lm.pft.precip.late.con <- lm(INCREMENT[late.con] ~ PRECIP[late.con], data = growth.50yr.QC.increment.final)
+summary(lm.pft.precip.late.con)
+
+lm.pft.precip.early.hard <- lm(INCREMENT[early.hard] ~ PRECIP[early.hard], data = growth.50yr.QC.increment.final)
+summary(lm.pft.precip.early.hard)
+
+lm.pft.precip.mid.hard <- lm(INCREMENT[mid.hard] ~ PRECIP[mid.hard], data = growth.50yr.QC.increment.final)
+summary(lm.pft.precip.mid.hard)
+
+lm.pft.precip.late.hard <- lm(INCREMENT[late.hard] ~ PRECIP[late.hard], data = growth.50yr.QC.increment.final)
+summary(lm.pft.precip.late.hard)
+
+###ggplot graph of each pft
+growth.temp.plot <- ggplot(growth.50yr.QC.increment.final, aes(x = TEMP_C, y = INCREMENT)) +
+  geom_point(alpha = .1) +
+  ylim(0,5.2) +
+  ylab(expression(paste("Ring Width mm yr"^"-1"))) + xlab("Temperature (C)") +
+  geom_smooth(method = "lm") + facet_wrap(~ PFT)
+  theme(axis.title.y = element_text(size = 14)) +
+  theme(axis.title.x = element_text(size = 14)) 
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings//Figures/growth.temp.plot.png", plot = growth.temp.plot, dpi = 600, width = 5, height = 3.5, units = "in")
+
+lm.pft.precip.interact <- lm(INCREMENT ~ PFT*PRECIP,data = growth.50yr.QC.increment.final)
+summary(lm.pft.precip.interact)
+
+###ggplot graph of each pft and precipitation
+growth.precip.plot <- ggplot(growth.50yr.QC.increment.final, aes(x = PRECIP, y = INCREMENT)) +
+  ylim(0,5.2) +
+  ylab(expression(paste("Ring Width mm yr"^"-1"))) + xlab(expression(paste("Precipitation mm yr"^"-1"))) +
+  geom_point(alpha = .1) +
+  geom_smooth(method = "lm") + facet_wrap(~ PFT) +
+  theme(axis.title.y = element_text(size = 14)) +
+  theme(axis.title.x = element_text(size = 14))
+  
+#temp.precip.components <- grid.arrange(growth.temp.plot, growth.precip.plot, ncol = 1)
+
+#used for chapter
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings//Figures/growth.precip.plot.png", plot = growth.precip.plot, dpi = 600, width = 5, height = 3.5, units = "in")
 
 
+###Interactions not signifant for any
+lm.spp.site.interact <- lm(INCREMENT ~ GenusSpecies*SITE,data = growth.50yr.QC.increment.final)
+summary(lm.spp.site.interact)
+
+lm.spp.temp.interact <- lm(INCREMENT ~ GenusSpecies*TEMP_C,data = growth.50yr.QC.increment.final)
+summary(lm.spp.temp.interact)
+
+lm.spp.precip.interact <- lm(INCREMENT ~ GenusSpecies*PRECIP,data = growth.50yr.QC.increment.final)
+summary(lm.spp.precip.interact)
+
+#don't use, DBH x site not meaningful
+lmer.spp.size.int <- lmer(INCREMENT ~ YEAR + (1|SITE:YEAR) + (1|SITE/PLOT/SUB/TAG) + (1|GenusSpecies) + (1|GenusSpecies:SITE) + (1|PFT) + (1|PFT:SITE) + (1|DBH15) + (1|DBH15:SITE) + (1|CANOPY15) , data = growth.50yr.QC.increment.final)
+summary(lmer.spp.size.int)
 ```
 
 

@@ -1,0 +1,93 @@
+---
+title: "growth-nsc"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+library(ggplot2)
+library(zoo)
+
+####make datatable with combined growth-NSC data####
+#read NSC data
+NSC_data <- read.csv(file = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Data/nsc.adult.total.mass.alive.common.csv")
+
+Treering_data <- read.csv("/Users/josh/Dropbox/Dissertation/CH3_Growth_NSC/treering_growth_forgrowthnsc_qc.csv")
+
+colnames(Treering_data)[70] <- "Core_ID14"
+
+#dataset of trees cored for NSC and analyzed for growth with tree rings
+growth_nsc_data <- merge(NSC_data, Treering_data, by = "Core_ID14")
+```
+
+```{r}
+move.avg.growth <- rollapply(growth_nsc_data[,267:287], width = 10, by.column = TRUE, FUN = mean, align = "left")
+
+#include mean growth windows
+growth.2014.2010 <- growth_nsc_data[,283:287]
+mean.2014.2010 <- rowMeans(growth.2014.2010)
+growth_nsc_data.1 <- cbind(growth_nsc_data, mean.2014.2010)
+#2014-2010
+plot(mean.2014.2010, growth_nsc_data$total.nsc)
+summary(lm(mean.2014.2010 ~ growth_nsc_data$total.nsc))
+
+growth.2013.2009 <- growth_nsc_data[,282:286]
+mean.2013.2009 <- rowMeans(growth.2013.2009)
+growth_nsc_data.2 <- cbind(growth_nsc_data, mean.2013.2009)
+#2013-2009
+plot(mean.2013.2009, growth_nsc_data$total.nsc)
+summary(lm(mean.2013.2009 ~ growth_nsc_data$total.nsc))
+
+growth.2012.2008 <- growth_nsc_data[,281:285]
+mean.2012.2008 <- rowMeans(growth.2012.2008)
+growth_nsc_data.3 <- cbind(growth_nsc_data, mean.2012.2008)
+#2013-2009
+plot(mean.2012.2008, growth_nsc_data$total.nsc)
+summary(lm(mean.2012.2008 ~ growth_nsc_data$total.nsc))
+
+growth.2010.2001 <- growth_nsc_data[,274:283]
+mean.2010.2001 <- rowMeans(growth.2010.2001)
+growth_nsc_data.10yr <- cbind(growth_nsc_data, mean.2010.2001)
+#2010-2001
+plot(growth_nsc_data.10yr$mean.2010.2001, growth_nsc_data.10yr$total.nsc)
+summary(lm(growth_nsc_data.10yr$total.nsc ~ growth_nsc_data.10yr$mean.2010.2001))
+
+growth.nsc.pft.plot <- ggplot(growth_nsc_data.10yr, aes(x = mean.2010.2001, y = total.nsc)) +
+  geom_point(alpha = .1) +
+  ylim(0,125) +
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab(expression(paste("2010-2001 Mean Ring Width mm yr"^"-1"))) +
+  geom_smooth(method = "lm") + facet_wrap(~ PFT.y)
+  theme(axis.title.y = element_text(size = 14)) +
+  theme(axis.title.x = element_text(size = 14))
+  
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH3_Growth_NSC/Growth_NSC_PFT.png", plot = growth.nsc.pft.plot, dpi = 200, width = 5, height = 3.5, units = "in")
+  
+  growth.nsc.spp.plot <- ggplot(growth_nsc_data.10yr, aes(x = mean.2010.2001, y = total.nsc)) +
+  geom_point(alpha = .1) +
+  ylim(0,125) +
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab(expression(paste("2010-2001 Mean Ring Width mm yr"^"-1"))) +
+  geom_smooth(method = "lm") + facet_wrap(~ GenusSpecies.x)
+  theme(axis.title.y = element_text(size = 8)) +
+  theme(axis.title.x = element_text(size = 8))
+  
+  ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH3_Growth_NSC/Growth_NSC_Spp.png", plot = growth.nsc.spp.plot, dpi = 200, width = 5, height = 10, units = "in")
+
+```
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
