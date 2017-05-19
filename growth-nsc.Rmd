@@ -16,6 +16,7 @@ When you click the **Knit** button a document will be generated that includes bo
 ```{r}
 library(ggplot2)
 library(zoo)
+library(scatterplot3d)
 
 ####make datatable with combined growth-NSC data####
 #read NSC data
@@ -80,6 +81,19 @@ ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH3_Growth_NSC/Growth_NSC_PF
   theme(axis.title.x = element_text(size = 8))
   
   ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH3_Growth_NSC/Growth_NSC_Spp.png", plot = growth.nsc.spp.plot, dpi = 200, width = 5, height = 10, units = "in")
+  
+  growth.nsc.canopy.plot <- ggplot(growth_nsc_data.10yr, aes(x = mean.2010.2001, y = total.nsc)) +
+  geom_point(alpha = .1) +
+  ylim(0,125) +
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab(expression(paste("2010-2001 Mean Ring Width mm yr"^"-1"))) +
+  geom_smooth(method = "lm") + facet_wrap(~ CANOPY15)
+  theme(axis.title.y = element_text(size = 12)) +
+  theme(axis.title.x = element_text(size = 12))
+  
+  ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH3_Growth_NSC/Growth_NSC_Canopy.png", plot = growth.nsc.canopy.plot, dpi = 200, width = 5, height = 10, units = "in")
+  
+  #3d scatterplot
+  scatterplot3d(x = growth_nsc_data.10yr$mean.2010.2001, y = growth_nsc_data.10yr$total.nsc, z = growth_nsc_data.10yr$DBH14.x, pch = ".")
 
 ```
 ## Including Plots
