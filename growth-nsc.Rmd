@@ -348,7 +348,7 @@ thresh
   
   co.dom.full.lm <- lm(total.nsc ~ mean.2010.2001 + succession + woodgroup + woodgroup*succession + mean.2010.2001*woodgroup + mean.2010.2001*succession + mean.2010.2001*woodgroup*succession + DBH14.x, data = co.dom.dat)
 anova(co.dom.full.lm)
-summary(co.dom.full.lm)
+summary(co.dom.full.lm) ##All of the same terms as the full data set are significant
 
   
   #Site Differences
