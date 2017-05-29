@@ -18,6 +18,7 @@ library(ggplot2)
 library(zoo)
 library(scatterplot3d)
 library(multcompView)
+library(pwr)
 
 
 #helper functions
@@ -76,15 +77,20 @@ growth_nsc_data.10yr <- cbind(growth_nsc_data, mean.2010.2001)
 plot(growth_nsc_data.10yr$mean.2010.2001, growth_nsc_data.10yr$total.nsc)
 summary(lm(growth_nsc_data.10yr$total.nsc ~ growth_nsc_data.10yr$mean.2010.2001))
 
+#create dataframe from labeling the outlier on mid hardwood
+ann.txt <- data.frame(mean.2010.2001 = 5.9, total.nsc = 72, lab = "*",
+                      PFT.y = factor("Mid.Hardwood", levels = c("Early.Conifer","Early.Hardwood","Late.Conifer","Late.Hardwood","Mid.Hardwood")))
+
 #PFT differences
 growth.nsc.pft.plot <- ggplot(growth_nsc_data.10yr, aes(x = mean.2010.2001, y = total.nsc)) +
   geom_point(alpha = .1) +
-  ylim(0,125) +
-  #xlim(0,6) +
+  ylim(0,150) +
+  xlim(0,6.1) +
   ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab(expression(paste("2010-2001 Mean Ring Width mm yr"^"-1"))) +
   geom_smooth(method = "lm") + facet_wrap(~ PFT.y,scales = "free") +
-  theme(axis.title.y = element_text(size = 14)) +
-  theme(axis.title.x = element_text(size = 14))
+  theme(axis.title.y = element_text(size = 10)) +
+  geom_text(data = ann.txt, label = "*") +
+  theme(axis.title.x = element_text(size = 10))
   
 ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH3_Growth_NSC/Growth_NSC_PFT.png", plot = growth.nsc.pft.plot, dpi = 600, width = 5, height = 3.5, units = "in")
 
@@ -143,14 +149,16 @@ growth.nsc.spp.plot <- ggplot(growth_nsc_data.10yr, aes(x = mean.2010.2001, y = 
   geom_point(alpha = .1) +
   ylim(0,125) +
   ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab(expression(paste("2010-2001 Mean Ring Width mm yr"^"-1"))) +
-  geom_smooth(method = "lm") + facet_wrap(~ GenusSpecies.x) #,scales = "free"
-  theme(axis.title.y = element_text(size = 8)) +
-  theme(axis.title.x = element_text(size = 8))
+  geom_smooth(method = "lm") + facet_wrap(~ GenusSpecies.x) + #,scales = "free"
+  theme(axis.title.y = element_text(size = 10)) +
+  theme(axis.title.x = element_text(size = 10)) +
+  theme(strip.text.x = element_text(size=7))
   
-  ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH3_Growth_NSC/Growth_NSC_Spp.png", plot = growth.nsc.spp.plot, dpi = 600, width = 5, height = 10, units = "in")
+  ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH3_Growth_NSC/Growth_NSC_Spp.png", plot = growth.nsc.spp.plot, dpi = 600, width = 7, height = 9, units = "in")
   
   #nsc-growth relationship with species
   growth.nsc.spp.lm <- lm(total.nsc ~ mean.2010.2001*GenusSpecies.x, data = growth_nsc_data.10yr)
+  anova(growth.nsc.spp.lm)
   summary(growth.nsc.spp.lm)
   
   #### nsc-growth relationships by species
@@ -321,7 +329,7 @@ pow = rep(NA,length(n))
 for(i in n){
   pow[i-2] <- pwr.f2.test(1,i-2,(.10/.9),0.05)$power
 }
-plot(n,pow)
+plot(n,pow,type = "l", lty = 2,col=2)
 abline(h=0.9)
 thresh=n[which(pow>0.9)[1]]
 abline(v=thresh)
@@ -342,33 +350,42 @@ thresh
 
  growth.nsc.sig.spp.plot <- ggplot(sig.spp.dat, aes(x = mean.2010.2001, y = total.nsc)) +
   geom_point(alpha = .1) +
-  ylim(0,125) +
+  ylim(0,150) +
+  xlim(0,5) +
   ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab(expression(paste("2010-2001 Mean Ring Width mm yr"^"-1"))) +
   geom_smooth(method = "lm") + facet_wrap(~ GenusSpecies.x) #,scales = "free"
   theme(axis.title.y = element_text(size = 8)) +
   theme(axis.title.x = element_text(size = 8))
   
-  ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH3_Growth_NSC/Growth_NSC_Spp.png", plot = growth.nsc.sig.spp.plot, dpi = 600, width = 5, height = 5, units = "in")
+  ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH3_Growth_NSC/Growth_NSC_Spp.Sig.png", plot = growth.nsc.sig.spp.plot, dpi = 600, width = 5, height = 5, units = "in")
   
   #Canopy lm
   canopy.lm <- lm(total.nsc ~ mean.2010.2001 + as.factor(CANOPY15) + as.factor(CANOPY15)*mean.2010.2001, data = growth_nsc_data.10yr)
+  anova(canopy.lm)
   summary(canopy.lm)
-  
+
+  #rename and relevel canopy factors  
+growth_nsc_data.10yr$CANOPY15[growth_nsc_data.10yr$CANOPY15 == "0"] <- "Understory"
+growth_nsc_data.10yr$CANOPY15[growth_nsc_data.10yr$CANOPY15 == "1"] <- "Co-Dominant"
+growth_nsc_data.10yr$CANOPY15[growth_nsc_data.10yr$CANOPY15 == "2"] <- "Dominant"
+
+  growth_nsc_data.10yr$CANOPY15 <- factor(growth_nsc_data.10yr$CANOPY15, levels = c("Understory","Co-Dominant","Dominant"), ordered = TRUE)
+
   #Canopy Plot
   growth.nsc.canopy.plot <- ggplot(growth_nsc_data.10yr, aes(x = mean.2010.2001, y = total.nsc)) +
   geom_point(alpha = .1) +
-  ylim(0,125) +
+  #ylim(0,150) +
   xlim(0,6) +
   ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab(expression(paste("2010-2001 Mean Ring Width mm yr"^"-1"))) +
-  geom_smooth(method = "lm") + facet_wrap(~ CANOPY15, scales = "free")
+  geom_smooth(method = "lm") + facet_wrap(~ CANOPY15)#, scales = "free")
   theme(axis.title.y = element_text(size = 12)) +
   theme(axis.title.x = element_text(size = 12))
   
-  ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH3_Growth_NSC/Growth_NSC_Canopy.png", plot = growth.nsc.canopy.plot, dpi = 600, width = 6, height = 3.5, units = "in")
+  ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH3_Growth_NSC/Growth_NSC_Canopy.png", plot = growth.nsc.canopy.plot, dpi = 600, width = 6, height = 3, units = "in")
   
   ###Subset data for only co-dominant canopy position trees
   ###to tease out effects
-  co.dom <- which(growth_nsc_data.10yr$CANOPY15 == "1")
+  co.dom <- which(growth_nsc_data.10yr$CANOPY15 == "Co-Dominant")
   co.dom.dat <- growth_nsc_data.10yr[co.dom,]
   
   co.dom.full.lm <- lm(total.nsc ~ mean.2010.2001 + succession + woodgroup + woodgroup*succession + mean.2010.2001*woodgroup + mean.2010.2001*succession + mean.2010.2001*woodgroup*succession + DBH14.x, data = co.dom.dat)
@@ -431,6 +448,7 @@ summary(site.lm)
       geom_abline(intercept = 49.48, slope = 3.632, col = "#E69F00") +
       geom_abline(intercept = 40.893, slope = 3.632, col = "#56B4E9") +
       ylab(expression(paste("Total NSC mg g"^"-1"))) +
+       annotate("text", x = 6, y = 72, label = "*") +
       xlab(expression(paste("2010-2001 Mean Ring Width mm yr"^"-1"))) +
       labs(color = "DBH")
  
@@ -468,22 +486,21 @@ mort.labels <- multcompLetters(mort.levels)['Letters']
 mort.plot.labels <- names(mort.labels[['Letters']])
 
 mortality.plot <- ggplot(mort.dat.fin, aes(x = Mortality14, y = total.nsc)) +
-  geom_violin() + theme(axis.text.x = element_text(angle=0,hjust=.5,size=16)) +
-  theme(axis.text.y = element_text(size=12)) +
-  theme(axis.title.x = element_text(size=16)) +
-  theme(axis.title.y = element_text(size=16)) +
-  theme(legend.text = element_text(size=12)) +
+   geom_violin() + 
+  #theme(axis.text.x = element_text(angle=0,hjust=.5,size=16)) +
+  theme(axis.text.y = element_text(size=10)) +
+  theme(axis.title.x = element_text(size=12)) +
+  theme(axis.title.y = element_text(size=12)) +
+  theme(legend.text = element_text(size=10)) +
   ylim(0,150) +
   stat_summary(fun.data = give.n, geom= "text", aes(y= 150)) +
   stat_summary(fun.y="median", geom="point") +
   ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Mortality Status") +
   scale_x_discrete(labels = c("Alive", "Stressed", "Dead")) +
-  annotate("text", x = 1.05:3.05, y = c(140, 122, 70), label = c("a","b","c")) +
-  scale_fill_manual(values=rev(cbPalette))
+  annotate("text", x = 1.05:3.05, y = c(140, 122, 70), label = c("a","b","c"))
+
 
 ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH3_Growth_NSC/nsc.mort.png", plot = mortality.plot, dpi = 600, width = 5, height = 3.5, units = "in")
-
-
 
 ```
 You can also embed plots, for example:
