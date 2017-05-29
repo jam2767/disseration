@@ -17,6 +17,8 @@ When you click the **Knit** button a document will be generated that includes bo
 library(ggplot2)
 library(zoo)
 library(scatterplot3d)
+library(multcompView)
+
 
 #helper functions
 #function to find last value of vector
@@ -84,7 +86,7 @@ growth.nsc.pft.plot <- ggplot(growth_nsc_data.10yr, aes(x = mean.2010.2001, y = 
   theme(axis.title.y = element_text(size = 14)) +
   theme(axis.title.x = element_text(size = 14))
   
-ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH3_Growth_NSC/Growth_NSC_PFT.png", plot = growth.nsc.pft.plot, dpi = 200, width = 5, height = 3.5, units = "in")
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH3_Growth_NSC/Growth_NSC_PFT.png", plot = growth.nsc.pft.plot, dpi = 600, width = 5, height = 3.5, units = "in")
 
 #PFT lm
 pft.int.lm <- lm(total.nsc ~ mean.2010.2001 + PFT.y + mean.2010.2001*PFT.y, data = growth_nsc_data.10yr)
@@ -145,7 +147,7 @@ growth.nsc.spp.plot <- ggplot(growth_nsc_data.10yr, aes(x = mean.2010.2001, y = 
   theme(axis.title.y = element_text(size = 8)) +
   theme(axis.title.x = element_text(size = 8))
   
-  ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH3_Growth_NSC/Growth_NSC_Spp.png", plot = growth.nsc.spp.plot, dpi = 200, width = 5, height = 10, units = "in")
+  ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH3_Growth_NSC/Growth_NSC_Spp.png", plot = growth.nsc.spp.plot, dpi = 600, width = 5, height = 10, units = "in")
   
   #nsc-growth relationship with species
   growth.nsc.spp.lm <- lm(total.nsc ~ mean.2010.2001*GenusSpecies.x, data = growth_nsc_data.10yr)
@@ -417,21 +419,46 @@ summary(site.lm)
 
 ```{r}
 ###Mortality Analysis
+mort.dat <- read.csv(file = "/Users/josh/Dropbox/Dissertation/CH3_Growth_NSC/nsc.mortality.data.csv")
+
 ###These cores are only Alive or Stressed, need to use
 ###NSC_Analysis.Rmd for Mortality analysis
-lm.mortality <- lm(total.nsc ~ Mortality14, data = growth_nsc_data.10yr)
+mort.dat$Mortality14 <- factor(mort.dat$Mortality14, 
+                                    levels = c("A","IBS","D"),
+                                    ordered = TRUE)
+
+#remove NAs
+  mort.not.na <- which(mort.dat$Mortality14 != "NA")
+  mort.dat.fin <- mort.dat[mort.not.na,]
+
+#mortality lm
+lm.mortality <- lm(total.nsc ~ Mortality14, data = mort.dat.fin)
 anova(lm.mortality)
 summary(lm.mortality)
 
-mortality.boxplot <- ggplot(growth_nsc_data.10yr, aes(x = Mortality14, y = total.nsc)) +
-  geom_boxplot() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
-  theme(axis.text.y = element_text(size=16)) +
-  theme(axis.title.x = element_text(size=20)) +
-  theme(axis.title.y = element_text(size=20)) +
-  theme(legend.text = element_text(size=16)) +
-  stat_summary(fun.data = give.n, geom= "text", aes(y= 160)) + 
-  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Mortality Status") + ggtitle("All Mortality Statuses") +
+#Mortality Tukey HSD
+summary(aov.mort <- aov(lm.mortality))
+tukey.mort <- TukeyHSD(aov.mort, "Mortality14", ordered = FALSE)
+plot(tukey.mort)
+mort.levels <- tukey.mort[["Mortality14"]][,4]
+mort.labels <- multcompLetters(mort.levels)['Letters']
+mort.plot.labels <- names(mort.labels[['Letters']])
+
+mortality.plot <- ggplot(mort.dat.fin, aes(x = Mortality14, y = total.nsc)) +
+  geom_violin() + theme(axis.text.x = element_text(angle=0,hjust=.5,size=16)) +
+  theme(axis.text.y = element_text(size=12)) +
+  theme(axis.title.x = element_text(size=16)) +
+  theme(axis.title.y = element_text(size=16)) +
+  theme(legend.text = element_text(size=12)) +
+  ylim(0,150) +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 150)) +
+  stat_summary(fun.y="median", geom="point") +
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Mortality Status") +
+  scale_x_discrete(labels = c("Alive", "Stressed", "Dead")) +
+  annotate("text", x = 1.05:3.05, y = c(140, 122, 70), label = c("a","b","c")) +
   scale_fill_manual(values=rev(cbPalette))
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH3_Growth_NSC/nsc.mort.png", plot = mortality.plot, dpi = 600, width = 5, height = 3.5, units = "in")
 
 
 
