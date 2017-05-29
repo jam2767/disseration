@@ -196,7 +196,7 @@ growth.nsc.spp.plot <- ggplot(growth_nsc_data.10yr, aes(x = mean.2010.2001, y = 
   lm.cato <- lm(total.nsc ~ mean.2010.2001, data = growth_nsc_data.10yr[cato,])
   summary(lm.cato)
   
-    fagr <- which(growth_nsc_data.10yr$GenusSpecies.x == "Fagus grandifolia")
+  fagr <- which(growth_nsc_data.10yr$GenusSpecies.x == "Fagus grandifolia")
   lm.fagr <- lm(total.nsc ~ mean.2010.2001, data = growth_nsc_data.10yr[fagr,])
   summary(lm.fagr)   #significant
   
@@ -326,6 +326,29 @@ abline(h=0.9)
 thresh=n[which(pow>0.9)[1]]
 abline(v=thresh)
 thresh
+
+####Spp plot for only significant species - to be included in Chapter. Larger Figure in Appendix
+  #spp to include
+  sig.spp.dat <- rbind(growth_nsc_data.10yr[acru,],
+                       growth_nsc_data.10yr[bele,],
+                       growth_nsc_data.10yr[fagr,],
+                       growth_nsc_data.10yr[fram,],
+                       growth_nsc_data.10yr[pist,],
+                       growth_nsc_data.10yr[potr,],
+                       growth_nsc_data.10yr[potr,],
+                       growth_nsc_data.10yr[qual,],
+                       growth_nsc_data.10yr[quru,],
+                       growth_nsc_data.10yr[tsca,])
+
+ growth.nsc.sig.spp.plot <- ggplot(sig.spp.dat, aes(x = mean.2010.2001, y = total.nsc)) +
+  geom_point(alpha = .1) +
+  ylim(0,125) +
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab(expression(paste("2010-2001 Mean Ring Width mm yr"^"-1"))) +
+  geom_smooth(method = "lm") + facet_wrap(~ GenusSpecies.x) #,scales = "free"
+  theme(axis.title.y = element_text(size = 8)) +
+  theme(axis.title.x = element_text(size = 8))
+  
+  ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH3_Growth_NSC/Growth_NSC_Spp.png", plot = growth.nsc.sig.spp.plot, dpi = 600, width = 5, height = 5, units = "in")
   
   #Canopy lm
   canopy.lm <- lm(total.nsc ~ mean.2010.2001 + as.factor(CANOPY15) + as.factor(CANOPY15)*mean.2010.2001, data = growth_nsc_data.10yr)
