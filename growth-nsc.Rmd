@@ -19,6 +19,7 @@ library(zoo)
 library(scatterplot3d)
 library(multcompView)
 library(pwr)
+library(plyr)
 
 
 #helper functions
@@ -95,7 +96,9 @@ growth.nsc.pft.plot <- ggplot(growth_nsc_data.10yr, aes(x = mean.2010.2001, y = 
 ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH3_Growth_NSC/Growth_NSC_PFT.png", plot = growth.nsc.pft.plot, dpi = 600, width = 5, height = 3.5, units = "in")
 
 #PFT lm
-pft.int.lm <- lm(total.nsc ~ mean.2010.2001 + PFT.y + mean.2010.2001*PFT.y, data = growth_nsc_data.10yr)
+pft.int.lm <- lm(total.nsc ~ mean.2010.2001 + mean.2010.2001*PFT.y, data = growth_nsc_data.10yr)
+plot(pft.int.lm)
+anova(pft.int.lm)
 summary(pft.int.lm) #significant, very predictive R^2 = .45
 
 #Wood type categories: Hardwood, Conifer
@@ -118,7 +121,7 @@ growth_nsc_data.10yr$PFT.y <- as.character(growth_nsc_data.10yr$PFT.y)
     #Hardwood as reference
 growth_nsc_data.10yr$woodgroup <- factor(growth_nsc_data.10yr$woodgroup, 
                                     levels = c("Hardwood","Conifer"),
-                                    ordered = TRUE)
+                                    ordered = FALSE)
 
   #Set succession
   growth_nsc_data.10yr$succession <- NA
@@ -131,17 +134,26 @@ growth_nsc_data.10yr$woodgroup <- factor(growth_nsc_data.10yr$woodgroup,
   #Early as reference
 growth_nsc_data.10yr$succession <- factor(growth_nsc_data.10yr$succession, 
                             levels = c("Early","Mid","Late"),
-                            ordered = TRUE)
+                            ordered = FALSE)
 
 #Full model with three-way interaction
 pft.full.lm <- lm(total.nsc ~ mean.2010.2001 + succession + woodgroup + woodgroup*succession + mean.2010.2001*woodgroup + mean.2010.2001*succession + mean.2010.2001*woodgroup*succession, data = growth_nsc_data.10yr)
+plot(pft.full.lm)
 anova(pft.full.lm)
 summary(pft.full.lm)
 #None of the 3-way interactions were significant
 
-#Full model iwth three-way interaction and controlling for
+#Full model with three-way interaction controlling for
 #canopy position and DBH
-pft.full.cont.lm <- lm(total.nsc ~ mean.2010.2001 + succession + woodgroup + woodgroup*succession + mean.2010.2001*woodgroup + mean.2010.2001*succession + mean.2010.2001*woodgroup*succession + DBH14.x + CANOPY15, data = growth_nsc_data.10yr)
+pft.full.part.cont.lm <- lm(total.nsc ~ mean.2010.2001 + succession + woodgroup + woodgroup*succession + mean.2010.2001*woodgroup + mean.2010.2001*succession + mean.2010.2001*woodgroup*succession + DBH14.x + Canopy15, data = growth_nsc_data.10yr)
+plot(pft.full.part.cont.lm)
+anova(pft.full.part.cont.lm)
+summary(pft.full.part.cont.lm)
+
+#Full model with three-way interaction and controlling for
+#canopy position, DBH, and site
+pft.full.cont.lm <- lm(total.nsc ~ mean.2010.2001 + succession + woodgroup + woodgroup*succession + mean.2010.2001*woodgroup + mean.2010.2001*succession + mean.2010.2001*woodgroup*succession + DBH14.x + CANOPY15 + Site + mean.2010.2001*Site + PFT.y*Site, data = growth_nsc_data.10yr)
+plot(pft.full.cont.lm)
 anova(pft.full.cont.lm)
 summary(pft.full.cont.lm)
   
@@ -158,6 +170,7 @@ growth.nsc.spp.plot <- ggplot(growth_nsc_data.10yr, aes(x = mean.2010.2001, y = 
   
   #nsc-growth relationship with species
   growth.nsc.spp.lm <- lm(total.nsc ~ mean.2010.2001*GenusSpecies.x, data = growth_nsc_data.10yr)
+  plot(growth.nsc.spp.lm)
   anova(growth.nsc.spp.lm)
   summary(growth.nsc.spp.lm)
   
@@ -305,6 +318,10 @@ growth.nsc.spp.plot <- ggplot(growth_nsc_data.10yr, aes(x = mean.2010.2001, y = 
   lm.saal <- lm(total.nsc ~ mean.2010.2001, data = growth_nsc_data.10yr[saal,])
   summary(lm.saal) 
   
+  thoc <- which(growth_nsc_data.10yr$GenusSpecies.x == "Thuja occidentalis")
+  lm.thoc <- lm(total.nsc ~ mean.2010.2001, data = growth_nsc_data.10yr[thoc,])
+  summary(lm.thoc) #significant
+  
   tsca <- which(growth_nsc_data.10yr$GenusSpecies.x == "Tsuga canadensis")
   lm.tsca <- lm(total.nsc ~ mean.2010.2001, data = growth_nsc_data.10yr[tsca,])
   summary(lm.tsca) #significant
@@ -329,11 +346,14 @@ pow = rep(NA,length(n))
 for(i in n){
   pow[i-2] <- pwr.f2.test(1,i-2,(.10/.9),0.05)$power
 }
-plot(n,pow,type = "l", lty = 2,col=2)
+thres.fig <- plot(n,pow,type = "l", lty = 2,col=2, ylab = "Power", xlab = "sample size", las = 1)
 abline(h=0.9)
 thresh=n[which(pow>0.9)[1]]
 abline(v=thresh)
 thresh
+
+dev.copy(png,'/Users/josh/Dropbox/Dissertation/CH3_Growth_NSC/threshold.png')
+dev.off()
 
 ####Spp plot for only significant species - to be included in Chapter. Larger Figure in Appendix
   #spp to include
@@ -346,6 +366,7 @@ thresh
                        growth_nsc_data.10yr[potr,],
                        growth_nsc_data.10yr[qual,],
                        growth_nsc_data.10yr[quru,],
+                       growth_nsc_data.10yr[thoc,],
                        growth_nsc_data.10yr[tsca,])
 
  growth.nsc.sig.spp.plot <- ggplot(sig.spp.dat, aes(x = mean.2010.2001, y = total.nsc)) +
@@ -353,24 +374,42 @@ thresh
   ylim(0,150) +
   xlim(0,5) +
   ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab(expression(paste("2010-2001 Mean Ring Width mm yr"^"-1"))) +
-  geom_smooth(method = "lm") + facet_wrap(~ GenusSpecies.x) #,scales = "free"
-  theme(axis.title.y = element_text(size = 8)) +
-  theme(axis.title.x = element_text(size = 8))
+  geom_smooth(method = "lm") + facet_wrap(~ GenusSpecies.x) +#,scales = "free"
+  theme(axis.title.y = element_text(size = 10)) +
+  theme(axis.title.x = element_text(size = 10)) +
+  theme(strip.text.x = element_text(size=8))
   
   ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH3_Growth_NSC/Growth_NSC_Spp.Sig.png", plot = growth.nsc.sig.spp.plot, dpi = 600, width = 5, height = 5, units = "in")
   
-  #Canopy lm
-  canopy.lm <- lm(total.nsc ~ mean.2010.2001 + as.factor(CANOPY15) + as.factor(CANOPY15)*mean.2010.2001, data = growth_nsc_data.10yr)
-  anova(canopy.lm)
-  summary(canopy.lm)
 
   #rename and relevel canopy factors  
 growth_nsc_data.10yr$CANOPY15[growth_nsc_data.10yr$CANOPY15 == "0"] <- "Understory"
-growth_nsc_data.10yr$CANOPY15[growth_nsc_data.10yr$CANOPY15 == "1"] <- "Co-Dominant"
+growth_nsc_data.10yr$CANOPY15[growth_nsc_data.10yr$CANOPY15 == "1"] <- "CoDominant"
 growth_nsc_data.10yr$CANOPY15[growth_nsc_data.10yr$CANOPY15 == "2"] <- "Dominant"
 
-  growth_nsc_data.10yr$CANOPY15 <- factor(growth_nsc_data.10yr$CANOPY15, levels = c("Understory","Co-Dominant","Dominant"), ordered = TRUE)
+  growth_nsc_data.10yr$CANOPY15 <- factor(growth_nsc_data.10yr$CANOPY15, levels = c("Understory","CoDominant","Dominant"), ordered = TRUE)
 
+  #Canopy lm
+  canopy.lm <- lm(total.nsc ~ mean.2010.2001 + mean.2010.2001*CANOPY15, data = growth_nsc_data.10yr)
+  anova(canopy.lm)
+  summary(canopy.lm)
+  
+  #lm for each canopy position
+  under <- which(growth_nsc_data.10yr$CANOPY15 == "Understory")
+  lm.under <- lm(total.nsc ~ mean.2010.2001, 
+                data = growth_nsc_data.10yr[under,])
+  summary(lm.under)   #not significant
+  
+  codominant <- which(growth_nsc_data.10yr$CANOPY15 == "CoDominant")
+  lm.codominant <- lm(total.nsc ~ mean.2010.2001, 
+                data = growth_nsc_data.10yr[codominant,])
+  summary(lm.codominant)   #significant
+  
+  dom <- which(growth_nsc_data.10yr$CANOPY15 == "Dominant")
+  lm.dom <- lm(total.nsc ~ mean.2010.2001, 
+                data = growth_nsc_data.10yr[dom,])
+  summary(lm.dom) #not significant
+  
   #Canopy Plot
   growth.nsc.canopy.plot <- ggplot(growth_nsc_data.10yr, aes(x = mean.2010.2001, y = total.nsc)) +
   geom_point(alpha = .1) +
@@ -388,18 +427,75 @@ growth_nsc_data.10yr$CANOPY15[growth_nsc_data.10yr$CANOPY15 == "2"] <- "Dominant
   co.dom <- which(growth_nsc_data.10yr$CANOPY15 == "Co-Dominant")
   co.dom.dat <- growth_nsc_data.10yr[co.dom,]
   
+  #controlling for DBH
   co.dom.full.lm <- lm(total.nsc ~ mean.2010.2001 + succession + woodgroup + woodgroup*succession + mean.2010.2001*woodgroup + mean.2010.2001*succession + mean.2010.2001*woodgroup*succession + DBH14.x, data = co.dom.dat)
 anova(co.dom.full.lm)
-summary(co.dom.full.lm) ##All of the same terms as the full data set are significant
+summary(co.dom.full.lm)
 
+  #still controlling for DBH and Site
+  co.dom.full.lm2 <- lm(total.nsc ~ mean.2010.2001 + succession + woodgroup + woodgroup*succession + mean.2010.2001*woodgroup + mean.2010.2001*succession + mean.2010.2001*woodgroup*succession + DBH14.x + Site + mean.2010.2001*Site, data = co.dom.dat)
+anova(co.dom.full.lm2)
+summary(co.dom.full.lm2) ##All of the same terms as the full data set are significant
   
   #Site Differences
   #organizing by temperature as with other chapters
   growth_nsc_data.10yr$SITE <- factor(growth_nsc_data.10yr$SITE, levels = c("W","B","H","V","S","M","D","T","F"), ordered = TRUE)
   
-  #Site lm
-  site.lm <- lm(total.nsc ~ mean.2010.2001 + SITE + SITE*mean.2010.2001, data = growth_nsc_data.10yr)
-summary(site.lm)
+  #Remove Duke because only 2 growth-nsc relationships
+  w <- which(growth_nsc_data.10yr$Site == "W")
+  b <- which(growth_nsc_data.10yr$Site == "B")
+  h <- which(growth_nsc_data.10yr$Site == "H")
+  v <- which(growth_nsc_data.10yr$Site == "V")
+  s <- which(growth_nsc_data.10yr$Site == "S")
+  m <- which(growth_nsc_data.10yr$Site == "M")
+  t <- which(growth_nsc_data.10yr$Site == "T")
+  f <- which(growth_nsc_data.10yr$Site == "F")
+  
+  #new dataframe for use with site analysis and full model
+  full.site.dat <-rbind(growth_nsc_data.10yr[w,],
+                       growth_nsc_data.10yr[b,],
+                       growth_nsc_data.10yr[h,],
+                       growth_nsc_data.10yr[v,],
+                       growth_nsc_data.10yr[s,],
+                       growth_nsc_data.10yr[m,],
+                       growth_nsc_data.10yr[t,],
+                       growth_nsc_data.10yr[f,])
+  
+  
+  #site lm
+  site.lm <- lm(total.nsc ~ mean.2010.2001 + Site*mean.2010.2001, data = full.site.dat)
+  anova(site.lm)
+  summary(site.lm)
+  
+  #MO Site lm
+  mo.dat <- growth_nsc_data.10yr[m,]
+  site.mo.lm <- lm(total.nsc ~ mean.2010.2001, data = mo.dat)
+  plot(site.mo.lm)
+  anova(site.mo.lm)
+  summary(site.mo.lm)
+  
+  #Harvard Site lm
+  h.dat <- growth_nsc_data.10yr[h,]
+  site.h.lm <- lm(total.nsc ~ mean.2010.2001, data = h.dat)
+  plot(site.h.lm)
+  anova(site.h.lm)
+  summary(site.h.lm)
+  
+  #Site & Site x PFT lm
+  site.pft.lm <- lm(total.nsc ~ mean.2010.2001 + Site*mean.2010.2001 + PFT.y*Site, data = full.site.dat)
+  anova(site.pft.lm)
+  summary(site.pft.lm)
+  
+  growth.nsc.site.plot <- ggplot(full.site.dat, aes(x = mean.2010.2001, y = total.nsc)) +
+  geom_point(alpha = .1) +
+  #ylim(0,150) +
+  xlim(0,6) +
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab(expression(paste("2010-2001 Mean Ring Width mm yr"^"-1"))) +
+  geom_smooth(method = "lm") + facet_wrap(~ Site)#, scales = "free")
+  theme(axis.title.y = element_text(size = 12)) +
+  theme(axis.title.x = element_text(size = 12))
+  
+  ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH3_Growth_NSC/Growth_NSC_Site_plot.png", plot = growth.nsc.site.plot, dpi = 600, width = 5, height = 5, units = "in")
   
   #3d scatterplot with DBH
   scatterplot3d(x = growth_nsc_data.10yr$mean.2010.2001, y = growth_nsc_data.10yr$total.nsc, z = growth_nsc_data.10yr$DBH14.x, pch = ".")
@@ -429,13 +525,16 @@ summary(site.lm)
     ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH3_Growth_NSC/Growth_NSC_DBH.png", plot = growth.nsc.dbh.group.plot, dpi = 600, width = 6, height = 3.5, units = "in")
     
     #DBH lm
-    dbh.lm <- lm(total.nsc ~ mean.2010.2001 + DBH14.y + mean.2010.2001*DBH14.y, data = growth_nsc_data.10yr)
+    dbh.lm <- lm(total.nsc ~ mean.2010.2001 + mean.2010.2001*DBH14.y, data = growth_nsc_data.10yr)
+    plot(dbh.lm)
+    anova(dbh.lm)
     summary(dbh.lm)
     
     #DBH binned lm with interaction included
     dbh.bin.int.lm <- lm(total.nsc ~ mean.2010.2001 + dbh.group + mean.2010.2001*dbh.group, data = growth_nsc_data.10yr)
+    anova(dbh.bin.int.lm)
     summary(dbh.bin.int.lm)
-    predict(dbh.bin.int.lm)
+    #predict(dbh.bin.int.lm)
     
     #plot of different intercepts for DBH categories
     #doesn't include 1 point with ring width around 8
@@ -474,6 +573,7 @@ mort.dat$Mortality14 <- factor(mort.dat$Mortality14,
 
 #mortality lm
 lm.mortality <- lm(total.nsc ~ Mortality14, data = mort.dat.fin)
+plot(lm.mortality)
 anova(lm.mortality)
 summary(lm.mortality)
 
@@ -499,8 +599,17 @@ mortality.plot <- ggplot(mort.dat.fin, aes(x = Mortality14, y = total.nsc)) +
   scale_x_discrete(labels = c("Alive", "Stressed", "Dead")) +
   annotate("text", x = 1.05:3.05, y = c(140, 122, 70), label = c("a","b","c"))
 
-
 ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH3_Growth_NSC/nsc.mort.png", plot = mortality.plot, dpi = 600, width = 5, height = 3.5, units = "in")
+
+# Spp distribution of dead for appendix
+#sort dead
+mort.total.sort<-which(mort.dat.fin$Mortality14 == "D")
+count.mort.spp <- count(mort.dat.fin$Spp[mort.total.sort])
+barplot(count.mort.spp[,2],names.arg=count.mort.spp[,1],las=2, ylab = "Number of Dead Trees", main = "Number of Dead Trees by Species")
+
+dev.copy(png,'/Users/josh/Dropbox/Dissertation/CH3_Growth_NSC/species_dead.png')
+dev.off()
+
 
 ```
 You can also embed plots, for example:
