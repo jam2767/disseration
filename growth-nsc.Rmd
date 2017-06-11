@@ -71,29 +71,22 @@ growth_nsc_data.3 <- cbind(growth_nsc_data, mean.2012.2008)
 plot(mean.2012.2008, growth_nsc_data$total.nsc)
 summary(lm(mean.2012.2008 ~ growth_nsc_data$total.nsc))
 
+####data window used for growth of rest of analysis####
 growth.2010.2001 <- growth_nsc_data[,274:283]
 mean.2010.2001 <- rowMeans(growth.2010.2001)
 growth_nsc_data.10yr <- cbind(growth_nsc_data, mean.2010.2001)
 #2010-2001
 plot(growth_nsc_data.10yr$mean.2010.2001, growth_nsc_data.10yr$total.nsc)
-summary(lm(growth_nsc_data.10yr$total.nsc ~ growth_nsc_data.10yr$mean.2010.2001))
 
-#create dataframe from labeling the outlier on mid hardwood
-ann.txt <- data.frame(mean.2010.2001 = 5.9, total.nsc = 72, lab = "*",
-                      PFT.y = factor("Mid.Hardwood", levels = c("Early.Conifer","Early.Hardwood","Late.Conifer","Late.Hardwood","Mid.Hardwood")))
+#growth NSC relationship alone
+lm.growth.nsc <- lm(total.nsc ~ mean.2010.2001, data = growth_nsc_data.10yr)
+anova(lm.growth.nsc)
+summary(lm.growth.nsc) #significant but very weak alone
 
-#PFT differences
-growth.nsc.pft.plot <- ggplot(growth_nsc_data.10yr, aes(x = mean.2010.2001, y = total.nsc)) +
-  geom_point(alpha = .1) +
-  ylim(0,150) +
-  xlim(0,6.1) +
-  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab(expression(paste("2010-2001 Mean Ring Width mm yr"^"-1"))) +
-  geom_smooth(method = "lm") + facet_wrap(~ PFT.y,scales = "free") +
-  theme(axis.title.y = element_text(size = 10)) +
-  geom_text(data = ann.txt, label = "*") +
-  theme(axis.title.x = element_text(size = 10))
-  
-ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH3_Growth_NSC/Growth_NSC_PFT.png", plot = growth.nsc.pft.plot, dpi = 600, width = 5, height = 3.5, units = "in")
+#set factor levels for PFT
+growth_nsc_data.10yr$PFT.y <- factor(growth_nsc_data.10yr$PFT.y, 
+                              levels = c("Early.Hardwood","Early.Conifer","Mid.Hardwood","Late.Hardwood","Late.Conifer"), ordered = FALSE)
+
 
 #PFT lm
 pft.int.lm <- lm(total.nsc ~ mean.2010.2001 + mean.2010.2001*PFT.y, data = growth_nsc_data.10yr)
@@ -136,6 +129,26 @@ growth_nsc_data.10yr$succession <- factor(growth_nsc_data.10yr$succession,
                             levels = c("Early","Mid","Late"),
                             ordered = FALSE)
 
+#create dataframe from labeling the outlier on mid hardwood
+ann.txt <- data.frame(mean.2010.2001 = 5.9, total.nsc = 72, lab = "*",
+                      succession = factor("Mid", levels = c("Early","Mid","Late")))
+
+
+#PFT differences
+growth.nsc.pft.plot <- ggplot(growth_nsc_data.10yr, aes(x = mean.2010.2001, y = total.nsc)) +
+  geom_point(alpha = .1) +
+  coord_cartesian(ylim = c(0,150), xlim = c(0,6.1)) +
+  #ylim(0,150) +
+  #xlim(0,6.1) +
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab(expression(paste("2010-2001 Mean Ring Width mm yr"^"-1"))) +
+  geom_smooth(method = "lm") + facet_grid(woodgroup ~ succession) +
+  theme(axis.title.y = element_text(size = 10)) +
+  geom_text(data = ann.txt, label = "*") +
+  theme(axis.title.x = element_text(size = 10))
+  
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH3_Growth_NSC/Growth_NSC_PFT.png", plot = growth.nsc.pft.plot, dpi = 600, width = 5, height = 3.5, units = "in")
+
+
 #Full model with three-way interaction
 pft.full.lm <- lm(total.nsc ~ mean.2010.2001 + succession + woodgroup + woodgroup*succession + mean.2010.2001*woodgroup + mean.2010.2001*succession + mean.2010.2001*woodgroup*succession, data = growth_nsc_data.10yr)
 plot(pft.full.lm)
@@ -145,10 +158,14 @@ summary(pft.full.lm)
 
 #Full model with three-way interaction controlling for
 #canopy position and DBH
-pft.full.part.cont.lm <- lm(total.nsc ~ mean.2010.2001 + succession + woodgroup + woodgroup*succession + mean.2010.2001*woodgroup + mean.2010.2001*succession + mean.2010.2001*woodgroup*succession + DBH14.x + Canopy15, data = growth_nsc_data.10yr)
+pft.full.part.cont.lm <- lm(total.nsc ~ mean.2010.2001 + succession + woodgroup +   woodgroup*succession + mean.2010.2001*woodgroup + mean.2010.2001*succession + mean.2010.2001*woodgroup*succession + DBH14.x + CANOPY15, data = growth_nsc_data.10yr)
 plot(pft.full.part.cont.lm)
-anova(pft.full.part.cont.lm)
+anov.full <- anova(pft.full.part.cont.lm)
 summary(pft.full.part.cont.lm)
+
+#variances
+full.ss <- anov.full$`Sum Sq`/sum(anov.full$`Sum Sq`)
+part.vars <- cbind(rownames(anov.full), anov.full$Df, anov.full$`F value`, anov.full$`Pr(>F)`, full.ss)
 
 #Full model with three-way interaction and controlling for
 #canopy position, DBH, and site
@@ -358,6 +375,7 @@ dev.off()
 ####Spp plot for only significant species - to be included in Chapter. Larger Figure in Appendix
   #spp to include
   sig.spp.dat <- rbind(growth_nsc_data.10yr[acru,],
+                       growth_nsc_data.10yr[acsa,],
                        growth_nsc_data.10yr[bele,],
                        growth_nsc_data.10yr[fagr,],
                        growth_nsc_data.10yr[fram,],
@@ -368,15 +386,37 @@ dev.off()
                        growth_nsc_data.10yr[quru,],
                        growth_nsc_data.10yr[thoc,],
                        growth_nsc_data.10yr[tsca,])
+  
+  sig.spp.dat.ordered <- sig.spp.dat
+  sig.spp.dat.ordered$GenusSpecies.x <- factor(sig.spp.dat.ordered$GenusSpecies.x, levels = c("Thuja occidentalis", "Quercus alba","Quercus rubra", "Betula lenta", "Populus tremuloides","Pinus strobus","Acer saccharum", "Acer rubrum", "Tsuga canadensis", "Fraxinus americana", "Fagus grandifolia"))
+  
+  #make data frame to denote acsa is not significant
+  ann.spp.txt <- data.frame(mean.2010.2001 = 4.5, total.nsc = 125, lab = "ns",
+                      GenusSpecies.x = factor("Acer saccharum", levels = c("Thuja occidentalis", "Quercus alba","Quercus rubra", "Betula lenta", "Populus tremuloides","Pinus strobus","Acer saccharum", "Acer rubrum", "Tsuga canadensis", "Fraxinus americana", "Fagus grandifolia")))
 
- growth.nsc.sig.spp.plot <- ggplot(sig.spp.dat, aes(x = mean.2010.2001, y = total.nsc)) +
+#not working  
+ library("nlme")
+coef(lmList(total.nsc ~ mean.2010.2001|GenusSpecies.x , data = sig.spp.dat.ordered)) 
+  
+#trying to figure out why graph doesn't match lm
+  fagr2 <- which(sig.spp.dat.ordered$GenusSpecies.x == "Fagus grandifolia")
+  lm.fagr2 <- lm(total.nsc ~ mean.2010.2001, data = sig.spp.dat.ordered[fagr2,])
+  summary(lm.fagr2)   #significant
+  
+  fram2 <- which(sig.spp.dat.ordered$GenusSpecies.x == "Fraxinus americana")
+  lm.fram2 <- lm(total.nsc ~ mean.2010.2001, data = sig.spp.dat.ordered[fram2,])
+  summary(lm.fram2)   #significant
+  
+ growth.nsc.sig.spp.plot <- ggplot(sig.spp.dat.ordered, aes(x = mean.2010.2001, y = total.nsc)) +
   geom_point(alpha = .1) +
-  ylim(0,150) +
-  xlim(0,5) +
+  coord_cartesian(ylim = c(0,150), xlim = c(0,5)) +
+  # ylim(0,150) +
+  # xlim(0,5.3) +
   ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab(expression(paste("2010-2001 Mean Ring Width mm yr"^"-1"))) +
-  geom_smooth(method = "lm") + facet_wrap(~ GenusSpecies.x) +#,scales = "free"
+  geom_smooth(method = "lm", na.rm = FALSE) + facet_wrap(~ GenusSpecies.x) +#,scales = "free"
   theme(axis.title.y = element_text(size = 10)) +
   theme(axis.title.x = element_text(size = 10)) +
+  geom_text(data = ann.spp.txt, label = "ns") +
   theme(strip.text.x = element_text(size=8))
   
   ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH3_Growth_NSC/Growth_NSC_Spp.Sig.png", plot = growth.nsc.sig.spp.plot, dpi = 600, width = 5, height = 5, units = "in")
@@ -386,13 +426,18 @@ dev.off()
 growth_nsc_data.10yr$CANOPY15[growth_nsc_data.10yr$CANOPY15 == "0"] <- "Understory"
 growth_nsc_data.10yr$CANOPY15[growth_nsc_data.10yr$CANOPY15 == "1"] <- "CoDominant"
 growth_nsc_data.10yr$CANOPY15[growth_nsc_data.10yr$CANOPY15 == "2"] <- "Dominant"
+#growth_nsc_data.10yr$CANOPY15[is.na(growth_nsc_data.10yr$CANOPY15)] <- "CoDominant"
 
   growth_nsc_data.10yr$CANOPY15 <- factor(growth_nsc_data.10yr$CANOPY15, levels = c("Understory","CoDominant","Dominant"), ordered = TRUE)
 
   #Canopy lm
   canopy.lm <- lm(total.nsc ~ mean.2010.2001 + mean.2010.2001*CANOPY15, data = growth_nsc_data.10yr)
-  anova(canopy.lm)
+ anova.can <- anova(canopy.lm)
   summary(canopy.lm)
+  
+  # Canopy variances
+can.ss <- anova.can$`Sum Sq`/sum(anova.can$`Sum Sq`)
+can.part.vars <- cbind(rownames(anova.can), anova.can$Df, anova.can$`F value`, anova.can$`Pr(>F)`, can.ss)
   
   #lm for each canopy position
   under <- which(growth_nsc_data.10yr$CANOPY15 == "Understory")
@@ -413,10 +458,11 @@ growth_nsc_data.10yr$CANOPY15[growth_nsc_data.10yr$CANOPY15 == "2"] <- "Dominant
   #Canopy Plot
   growth.nsc.canopy.plot <- ggplot(growth_nsc_data.10yr, aes(x = mean.2010.2001, y = total.nsc)) +
   geom_point(alpha = .1) +
-  #ylim(0,150) +
-  xlim(0,6) +
-  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab(expression(paste("2010-2001 Mean Ring Width mm yr"^"-1"))) +
-  geom_smooth(method = "lm") + facet_wrap(~ CANOPY15)#, scales = "free")
+  coord_cartesian(xlim = c(0,6)) +
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + 
+  xlab(expression(paste("2010-2001 Mean Ring Width mm yr"^"-1"))) +
+  geom_smooth(method = "lm") + 
+  facet_wrap(~ CANOPY15) +
   theme(axis.title.y = element_text(size = 12)) +
   theme(axis.title.x = element_text(size = 12))
   
@@ -463,9 +509,22 @@ summary(co.dom.full.lm2) ##All of the same terms as the full data set are signif
   
   
   #site lm
+  #smithsonian as reference group
+      full.site.dat$Site <- factor(full.site.dat$SITE, levels = c("S","W","B","V","S","M","F","H"), ordered = FALSE)
   site.lm <- lm(total.nsc ~ mean.2010.2001 + Site*mean.2010.2001, data = full.site.dat)
   anova(site.lm)
   summary(site.lm)
+  
+  #Site lm with temp and precip explicit
+  site.t.p.lm <- lm(total.nsc ~ mean.2010.2001 + TEMP_C*mean.2010.2001 + PRECIP*mean.2010.2001 + Site*mean.2010.2001, data = full.site.dat) #Site*mean.2010.2001 +
+  anova(site.t.p.lm)
+  summary(site.t.p.lm)
+  
+  #Bartlett Site lm
+  b.dat <- growth_nsc_data.10yr[b,]
+  b.lm <- lm(total.nsc ~ mean.2010.2001, data = b.dat)
+  anova(b.lm)
+  summary(b.lm)
   
   #MO Site lm
   mo.dat <- growth_nsc_data.10yr[m,]
@@ -481,19 +540,31 @@ summary(co.dom.full.lm2) ##All of the same terms as the full data set are signif
   anova(site.h.lm)
   summary(site.h.lm)
   
+  #W site lm
+  w.dat <- growth_nsc_data.10yr[w,]
+  w.lm <- lm(total.nsc ~ mean.2010.2001, data = w.dat)
+  anova(w.lm)
+  summary(w.lm)
+  
   #Site & Site x PFT lm
   site.pft.lm <- lm(total.nsc ~ mean.2010.2001 + Site*mean.2010.2001 + PFT.y*Site, data = full.site.dat)
   anova(site.pft.lm)
   summary(site.pft.lm)
   
+  #ordering Site by temperature
+    full.site.dat$Site <- factor(full.site.dat$SITE, levels = c("W","B","H","V","S","M","T","F"), ordered = FALSE)
+    
+  #ordering Site by precipitation
+      full.site.dat$Site <- factor(full.site.dat$SITE, levels = c("W","M","H","S","B","V","F","T"), ordered = FALSE)
+    
   growth.nsc.site.plot <- ggplot(full.site.dat, aes(x = mean.2010.2001, y = total.nsc)) +
-  geom_point(alpha = .1) +
-  #ylim(0,150) +
-  xlim(0,6) +
-  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab(expression(paste("2010-2001 Mean Ring Width mm yr"^"-1"))) +
-  geom_smooth(method = "lm") + facet_wrap(~ Site)#, scales = "free")
-  theme(axis.title.y = element_text(size = 12)) +
-  theme(axis.title.x = element_text(size = 12))
+    geom_point(alpha = .1) +
+    coord_cartesian(xlim = c(0,6), ylim = c(0,150)) +
+    ylab(expression(paste("Total NSC mg g"^"-1"))) + 
+    xlab(expression(paste("2010-2001 Mean Ring Width mm yr"^"-1"))) +
+    geom_smooth(method = "lm") + facet_wrap(~ Site) +
+    theme(axis.title.y = element_text(size = 12)) +
+    theme(axis.title.x = element_text(size = 12))
   
   ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH3_Growth_NSC/Growth_NSC_Site_plot.png", plot = growth.nsc.site.plot, dpi = 600, width = 5, height = 5, units = "in")
   
@@ -507,6 +578,9 @@ summary(co.dom.full.lm2) ##All of the same terms as the full data set are signif
   small.dbh <- which(growth_nsc_data.10yr$DBH15.x <= 20)
   med.dbh <- which(growth_nsc_data.10yr$DBH15.x > 20 & growth_nsc_data.10yr$DBH15.x <= 30)
   large.dbh <- which(growth_nsc_data.10yr$DBH15.x > 30)
+  DBH.s <- mean(growth_nsc_data.10yr$DBH15.x[small.dbh],na.rm = TRUE)
+  DBH.m <- mean(growth_nsc_data.10yr$DBH15.x[med.dbh],na.rm = TRUE)
+  DBH.l <- mean(growth_nsc_data.10yr$DBH15.x[large.dbh],na.rm = TRUE)
   
   growth_nsc_data.10yr$dbh.group <- NA
   growth_nsc_data.10yr$dbh.group[small.dbh] <- "small"
@@ -527,13 +601,39 @@ summary(co.dom.full.lm2) ##All of the same terms as the full data set are signif
     #DBH lm
     dbh.lm <- lm(total.nsc ~ mean.2010.2001 + mean.2010.2001*DBH14.y, data = growth_nsc_data.10yr)
     plot(dbh.lm)
-    anova(dbh.lm)
+    anova.dbh <- anova(dbh.lm)
     summary(dbh.lm)
     
+    # DBH variances
+dbh.ss <- anova.dbh$`Sum Sq`/sum(anova.dbh$`Sum Sq`)
+dbh.part.vars <- cbind(rownames(anova.dbh), anova.dbh$Df, anova.dbh$`F value`, anova.dbh$`Pr(>F)`, dbh.ss)
+    
+    pred.lo.dbh <- data.frame(mean.2010.2001 = seq(0,6,length=30),DBH14.y = DBH.s)
+    p.lo <- predict(dbh.lm,newdata=pred.lo.dbh)
+    pred.med.dbh <- data.frame(mean.2010.2001 = seq(0,6,length=30),DBH14.y = DBH.m)
+    p.med <- predict(dbh.lm,newdata=pred.med.dbh)
+    pred.hi.dbh <- data.frame(mean.2010.2001 = seq(0,6,length=30),DBH14.y = DBH.l)
+    p.hi <- predict(dbh.lm,newdata=pred.hi.dbh)
+    plot(total.nsc ~ mean.2010.2001 , data = growth_nsc_data.10yr)
+    lines(pred.lo.dbh$mean.2010.2001,p.lo,col=2)
+    lines(pred.med.dbh$mean.2010.2001,p.med,col=3)          
+    lines(pred.hi.dbh$mean.2010.2001,p.hi,col=4)
+    
+    #dataframe for geom_line() small, med, large DBH
+    pred.lo.dat <- cbind(pred.lo.dbh, p.lo)
+    names(pred.lo.dat)[names(pred.lo.dat) == "p.lo"] <- "total.nsc" 
+    
+    pred.med.dat <- cbind(pred.med.dbh, p.med)
+    names(pred.med.dat)[names(pred.med.dat) == "p.med"] <- "total.nsc"
+    
+    pred.hi.dat <- cbind(pred.hi.dbh, p.hi)
+    names(pred.hi.dat)[names(pred.hi.dat) == "p.hi"] <- "total.nsc"
+    
     #DBH binned lm with interaction included
-    dbh.bin.int.lm <- lm(total.nsc ~ mean.2010.2001 + dbh.group + mean.2010.2001*dbh.group, data = growth_nsc_data.10yr)
-    anova(dbh.bin.int.lm)
-    summary(dbh.bin.int.lm)
+    #not correct, not binning for analysis, only visualization
+    # dbh.bin.int.lm <- lm(total.nsc ~ mean.2010.2001 + dbh.group + mean.2010.2001*dbh.group, data = growth_nsc_data.10yr)
+    # anova(dbh.bin.int.lm)
+    # summary(dbh.bin.int.lm)
     #predict(dbh.bin.int.lm)
     
     #plot of different intercepts for DBH categories
@@ -543,9 +643,9 @@ summary(co.dom.full.lm2) ##All of the same terms as the full data set are signif
       geom_point() + 
       xlim(0,6) + 
       scale_color_manual(values=cbPalette) + 
-      geom_abline(intercept = 56.381, slope = 3.632, col = "#999999") +
-      geom_abline(intercept = 49.48, slope = 3.632, col = "#E69F00") +
-      geom_abline(intercept = 40.893, slope = 3.632, col = "#56B4E9") +
+      geom_line(data = pred.lo.dat, col = "#56B4E9") +
+      geom_line(data = pred.med.dat, col = "#E69F00") +
+      geom_line(data = pred.hi.dat, col = "#999999") +
       ylab(expression(paste("Total NSC mg g"^"-1"))) +
        annotate("text", x = 6, y = 72, label = "*") +
       xlab(expression(paste("2010-2001 Mean Ring Width mm yr"^"-1"))) +
