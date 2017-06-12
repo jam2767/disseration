@@ -188,8 +188,12 @@ growth.nsc.spp.plot <- ggplot(growth_nsc_data.10yr, aes(x = mean.2010.2001, y = 
   #nsc-growth relationship with species
   growth.nsc.spp.lm <- lm(total.nsc ~ mean.2010.2001*GenusSpecies.x, data = growth_nsc_data.10yr)
   plot(growth.nsc.spp.lm)
-  anova(growth.nsc.spp.lm)
+  anova.spp <- anova(growth.nsc.spp.lm)
   summary(growth.nsc.spp.lm)
+  
+  #species variances
+  spp.ss <- anova.spp$`Sum Sq`/sum(anova.spp$`Sum Sq`)
+spp.part.vars <- cbind(rownames(anova.spp), anova.spp$Df, anova.spp$`F value`, anova.spp$`Pr(>F)`, spp.ss)
   
   #### nsc-growth relationships by species
   #### noting significant +, -, 0 because meaningful, 0 because low power
@@ -512,7 +516,7 @@ summary(co.dom.full.lm2) ##All of the same terms as the full data set are signif
   #smithsonian as reference group
       full.site.dat$Site <- factor(full.site.dat$SITE, levels = c("S","W","B","V","S","M","F","H"), ordered = FALSE)
   site.lm <- lm(total.nsc ~ mean.2010.2001 + Site*mean.2010.2001, data = full.site.dat)
-  anova(site.lm)
+  anova.site <- anova(site.lm)
   summary(site.lm)
   
   #Site lm with temp and precip explicit
@@ -520,18 +524,21 @@ summary(co.dom.full.lm2) ##All of the same terms as the full data set are signif
   anova(site.t.p.lm)
   summary(site.t.p.lm)
   
+  #site variances
+site.ss <- anova.site$`Sum Sq`/sum(anova.site$`Sum Sq`)
+site.part.vars <- cbind(rownames(anova.site), anova.site$Df, anova.site$`F value`, anova.site$`Pr(>F)`, site.ss)
+
+  #W site lm
+  w.dat <- growth_nsc_data.10yr[w,]
+  w.lm <- lm(total.nsc ~ mean.2010.2001, data = w.dat)
+  anova(w.lm)
+  summary(w.lm)
+  
   #Bartlett Site lm
   b.dat <- growth_nsc_data.10yr[b,]
   b.lm <- lm(total.nsc ~ mean.2010.2001, data = b.dat)
   anova(b.lm)
   summary(b.lm)
-  
-  #MO Site lm
-  mo.dat <- growth_nsc_data.10yr[m,]
-  site.mo.lm <- lm(total.nsc ~ mean.2010.2001, data = mo.dat)
-  plot(site.mo.lm)
-  anova(site.mo.lm)
-  summary(site.mo.lm)
   
   #Harvard Site lm
   h.dat <- growth_nsc_data.10yr[h,]
@@ -540,12 +547,41 @@ summary(co.dom.full.lm2) ##All of the same terms as the full data set are signif
   anova(site.h.lm)
   summary(site.h.lm)
   
-  #W site lm
-  w.dat <- growth_nsc_data.10yr[w,]
-  w.lm <- lm(total.nsc ~ mean.2010.2001, data = w.dat)
-  anova(w.lm)
-  summary(w.lm)
+  #vro site lm
+  v.dat <- growth_nsc_data.10yr[v,]
+  site.v.lm <- lm(total.nsc ~ mean.2010.2001, data = v.dat)
+  #plot(site.v.lm)
+  anova(site.v.lm)
+  summary(site.v.lm)
   
+  #smithsonian site lm
+  s.dat <- growth_nsc_data.10yr[s,]
+  site.s.lm <- lm(total.nsc ~ mean.2010.2001, data = s.dat)
+  #plot(site.s.lm)
+  anova(site.s.lm)
+  summary(site.s.lm)
+  
+  #MO Site lm
+  mo.dat <- growth_nsc_data.10yr[m,]
+  site.mo.lm <- lm(total.nsc ~ mean.2010.2001, data = mo.dat)
+  #plot(site.mo.lm)
+  anova(site.mo.lm)
+  summary(site.mo.lm)
+  
+  #Walker branch Site lm
+  t.dat <- growth_nsc_data.10yr[t,]
+  site.t.lm <- lm(total.nsc ~ mean.2010.2001, data = t.dat)
+  #plot(site.t.lm)
+  anova(site.t.lm)
+  summary(site.t.lm)
+  
+  #Ordway Site lm
+  f.dat <- growth_nsc_data.10yr[f,]
+  site.f.lm <- lm(total.nsc ~ mean.2010.2001, data = f.dat)
+  #plot(site.f.lm)
+  anova(site.f.lm)
+  summary(site.f.lm)
+
   #Site & Site x PFT lm
   site.pft.lm <- lm(total.nsc ~ mean.2010.2001 + Site*mean.2010.2001 + PFT.y*Site, data = full.site.dat)
   anova(site.pft.lm)
