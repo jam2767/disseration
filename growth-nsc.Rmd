@@ -432,11 +432,11 @@ growth_nsc_data.10yr$CANOPY15[growth_nsc_data.10yr$CANOPY15 == "1"] <- "CoDomina
 growth_nsc_data.10yr$CANOPY15[growth_nsc_data.10yr$CANOPY15 == "2"] <- "Dominant"
 #growth_nsc_data.10yr$CANOPY15[is.na(growth_nsc_data.10yr$CANOPY15)] <- "CoDominant"
 
-  growth_nsc_data.10yr$CANOPY15 <- factor(growth_nsc_data.10yr$CANOPY15, levels = c("Understory","CoDominant","Dominant"), ordered = TRUE)
+  growth_nsc_data.10yr$CANOPY15 <- factor(growth_nsc_data.10yr$CANOPY15, levels = c("Understory","CoDominant","Dominant"), ordered = FALSE)
 
   #Canopy lm
   canopy.lm <- lm(total.nsc ~ mean.2010.2001 + mean.2010.2001*CANOPY15, data = growth_nsc_data.10yr)
- anova.can <- anova(canopy.lm)
+  anova.can <- anova(canopy.lm)
   summary(canopy.lm)
   
   # Canopy variances
@@ -474,13 +474,17 @@ can.part.vars <- cbind(rownames(anova.can), anova.can$Df, anova.can$`F value`, a
   
   ###Subset data for only co-dominant canopy position trees
   ###to tease out effects
-  co.dom <- which(growth_nsc_data.10yr$CANOPY15 == "Co-Dominant")
-  co.dom.dat <- growth_nsc_data.10yr[co.dom,]
+  #co.dom <- which(growth_nsc_data.10yr$CANOPY15 == "Co-Dominant")
+  co.dom.dat <- growth_nsc_data.10yr[codominant,]
   
-  #controlling for DBH
+  #controlling for DBH, only looking within codominant trees
   co.dom.full.lm <- lm(total.nsc ~ mean.2010.2001 + succession + woodgroup + woodgroup*succession + mean.2010.2001*woodgroup + mean.2010.2001*succession + mean.2010.2001*woodgroup*succession + DBH14.x, data = co.dom.dat)
-anova(co.dom.full.lm)
+co.dom.anova <- anova(co.dom.full.lm)
 summary(co.dom.full.lm)
+
+  #codominant variances
+co.dom.ss <- co.dom.anova$`Sum Sq`/sum(co.dom.anova$`Sum Sq`)
+co.dom.part.vars <- cbind(rownames(co.dom.anova), co.dom.anova$Df, co.dom.anova$`F value`, co.dom.anova$`Pr(>F)`, co.dom.ss)
 
   #still controlling for DBH and Site
   co.dom.full.lm2 <- lm(total.nsc ~ mean.2010.2001 + succession + woodgroup + woodgroup*succession + mean.2010.2001*woodgroup + mean.2010.2001*succession + mean.2010.2001*woodgroup*succession + DBH14.x + Site + mean.2010.2001*Site, data = co.dom.dat)
@@ -737,14 +741,303 @@ mortality.plot <- ggplot(mort.dat.fin, aes(x = Mortality14, y = total.nsc)) +
 
 ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH3_Growth_NSC/nsc.mort.png", plot = mortality.plot, dpi = 600, width = 5, height = 3.5, units = "in")
 
+
 # Spp distribution of dead for appendix
 #sort dead
 mort.total.sort<-which(mort.dat.fin$Mortality14 == "D")
-count.mort.spp <- count(mort.dat.fin$Spp[mort.total.sort])
-barplot(count.mort.spp[,2],names.arg=count.mort.spp[,1],las=2, ylab = "Number of Dead Trees", main = "Number of Dead Trees by Species")
+count.mort <- count(mort.dat.fin$Spp[mort.total.sort])
 
-dev.copy(png,'/Users/josh/Dropbox/Dissertation/CH3_Growth_NSC/species_dead.png')
-dev.off()
+    #assigning species
+
+    balsamea <- which(count.mort$x == "ABBA")
+    pensylvanicum <- which(count.mort$x == "ACPE")
+    rubrum <- which(count.mort$x == "ACRU")
+    saccharum <- which(count.mort$x == "ACSA3")
+    alleghaniensis <- which(count.mort$x == "BEAL2")
+    lenta <- which(count.mort$x == "BELE")
+    papyrifera <- which(count.mort$x == "BEPA")
+    cordiformis <- which(count.mort$x == "CACO15")
+    glabra <- which(count.mort$x == "CAGL8")
+    laciniosa <- which(count.mort$x == "CALA21")
+    tomentosa <- which(count.mort$x == "CATO6")
+    grandifolia <- which(count.mort$x == "FAGR")
+    virginiana <- c(which(count.mort$x == "QUVI"),
+                    which(count.mort$x == "JUVI"),
+		                which(count.mort$x == "PIVI"))
+    tulipifera <- which(count.mort$x == "LITU")
+    mariana <- which(count.mort$x == "PIMA")
+    rigida <- which(count.mort$x == "PIRI")
+    rubens <- which(count.mort$x == "PIRU")
+    strobus <- which(count.mort$x == "PIST")
+    tremuloides <- which(count.mort$x == "POTR5")
+    serotina <- which(count.mort$x == "PRSE2")
+    alba <- which(count.mort$x == "QUAL")
+    coccinea <- which(count.mort$x == "QUCO2")
+    laevis <- which(count.mort$x == "QULA2")
+    laurifolia <- which(count.mort$x == "QULA3")
+    nigra <- which(count.mort$x == "QUNI")
+    rubra <- which(count.mort$x == "QURU")
+    velutina <- which(count.mort$x == "QUVE")
+    albidum <- which(count.mort$x == "SAAL5")
+    canadensis <- which(count.mort$x == "TSCA")
+    americana <- which(count.mort$x == "ULAM")
+
+    #Set total data frame for species
+    count.mort$species <- NA
+    count.mort$species[balsamea] <- "balsamea"
+    count.mort$species[pensylvanicum] <- "pensylvanicum"
+    count.mort$species[rubrum] <- "rubrum"
+    count.mort$species[saccharum] <- "saccharum"
+    count.mort$species[alleghaniensis] <- "alleghaniensis"
+    count.mort$species[lenta] <- "lenta"
+    count.mort$species[papyrifera] <- "papyrifera"
+    count.mort$species[cordiformis] <- "cordiformis"
+    count.mort$species[glabra] <- "glabra"
+    count.mort$species[laciniosa] <- "laciniosa"
+    count.mort$species[tomentosa] <- "tomentosa"
+    count.mort$species[grandifolia] <- "grandifolia"
+    count.mort$species[virginiana] <- "virginiana"
+    count.mort$species[tulipifera] <- "tulipifera"
+    count.mort$species[mariana] <- "mariana"
+    count.mort$species[rubens] <- "rubens"
+    count.mort$species[rigida] <- "rigida"
+    count.mort$species[strobus] <- "strobus"
+    count.mort$species[tremuloides] <- "tremuloides"
+    count.mort$species[serotina] <- "serotina"
+    count.mort$species[alba] <- "alba"
+    count.mort$species[coccinea] <- "coccinea"
+    count.mort$species[laevis] <- "laevis"
+    count.mort$species[laurifolia] <- "laurifolia"
+    count.mort$species[nigra] <- "nigra"
+    count.mort$species[rubra] <- "rubra"
+    count.mort$species[velutina] <- "velutina"
+    count.mort$species[albidum] <- "albidum"
+    count.mort$species[canadensis] <- "canadensis"
+    count.mort$species[americana] <- "americana"
+
+
+    #Adding genus. contains extra genera but that doesn’t matter
+Quercus <- c(                
+                which(count.mort$x == "QUAL"),
+                which(count.mort$x == "QUCO2"),
+                which(count.mort$x == "QUERC"),
+                which(count.mort$x == "QUIM"),
+                which(count.mort$x == "QULA2"),
+                which(count.mort$x == "QULA3"),
+                which(count.mort$x == "QUMO4"),
+                which(count.mort$x == "QUMU"),
+                which(count.mort$x == "QUNI"),
+                which(count.mort$x == "QUPH"),
+                which(count.mort$x == "QURU"),
+                which(count.mort$x == "QUST"),
+                which(count.mort$x == "QUVE"),
+                which(count.mort$x == "QUVI")
+                )
+    
+   Fraxinus <- c(
+                which(count.mort$x == "FRAM2"),
+                which(count.mort$x == "FRNI"),
+                which(count.mort$x == "FRQU")
+                )
+   
+  Ailanthus <- c(
+                which(count.mort$x == "AIAL")
+                )
+   
+    Robinia <- c(
+                which(count.mort$x == "ROPS")
+                )
+    
+  Sassafras <- c(
+                which(count.mort$x == "SAAL5")
+                )
+  
+      Acer <- c(
+                which(count.mort$x == "ACNE2"),
+                which(count.mort$x == "ACPE"),
+                which(count.mort$x == "ACRU"),
+                which(count.mort$x == "ACSA3")
+                )
+      
+  Aesculus <- c(
+                which(count.mort$x == "AEGL")
+                )
+  
+    Betula <- c(
+                which(count.mort$x == "BEAL2"),
+                which(count.mort$x == "BELE"),
+                which(count.mort$x == "BEPA"),
+                which(count.mort$x == "BETUL")
+                )
+    
+  Carpinus <- c(
+                which(count.mort$x == "CACA18")
+                )
+    
+    Cornus <- c(
+                which(count.mort$x == "COFL2")
+                )
+    
+Liquidambar <- c(
+                which(count.mort$x == "LIST2")
+                )
+
+Liriodendron <- c(
+                which(count.mort$x == "LITU")
+                )
+
+    Magnolia <- c(
+                which(count.mort$x == "MAAC"),
+                which(count.mort$x == "MAFR"),
+                which(count.mort$x == "MAVI2"),
+                which(count.mort$x == "MAGR4")
+                )
+    
+    Platanus <- c(
+                which(count.mort$x == "PLOC")
+                )
+    
+       Fagus <- c(
+                which(count.mort$x == "FAGR")
+                )
+       
+       Nyssa <- c(
+                which(count.mort$x == "NYSY")
+                )
+       
+       Oxydendrum <- c(
+                which(count.mort$x == "OXAR")
+                )
+       
+       Tilia <- c(
+                which(count.mort$x == "TIAM")
+                )
+    
+     Populus <- c(
+                which(count.mort$x == "POGR4"),
+                which(count.mort$x == "POTR5")
+                )
+       
+     Prunus <- c(
+                which(count.mort$x == "PRSE2")
+                )
+
+       Carya <- c(
+                which(count.mort$x == "CACO15"),
+                which(count.mort$x == "CAGL8"),
+                which(count.mort$x == "CALA21"),
+                which(count.mort$x == "CAOV2"),
+                which(count.mort$x == "CATO6")
+                )
+       
+     Cercis <- c(
+                which(count.mort$x == "CECA4")
+                )
+     
+  Diospyros <- c(
+                which(count.mort$x == "DIVI5")
+                )
+  
+    Juglans <- c(
+                which(count.mort$x == "JUCI"),
+                which(count.mort$x == "JUNI")
+                )
+    
+      Ulmus <- c(
+                which(count.mort$x == "ULAM")
+                )
+
+  ### Conifers
+      Pinus <- c(
+                which(count.mort$x == "PIPA2"),
+                which(count.mort$x == "PIST"),
+                which(count.mort$x == "PIVI"),
+                which(count.mort$x == "PIRE"),
+                which(count.mort$x == "PIRI"),
+                which(count.mort$x == "PITA")
+                )
+      
+      Larix <- c(
+                which(count.mort$x == "LALA")
+                )
+      
+      Picea <- c(
+                which(count.mort$x == "PIGL"),
+                which(count.mort$x == "PIMA"),
+                which(count.mort$x == "PIRU")
+                )
+
+      Abies <- c(
+              which(count.mort$x == "ABBA")
+              )
+      
+Juniperus <- c(
+              which(count.mort$x == "JUVI")
+              )
+
+    Thuja <- c(
+              which(count.mort$x == "THOC2")
+              )
+    
+    Tsuga <- c(
+              which(count.mort$x == "TSCA")
+              )
+    
+    
+    
+    ### Set total dataframe for Genus
+    
+    count.mort$genus <- NA
+    count.mort$genus[Pinus] <- "Pinus"
+    count.mort$genus[Larix] <- "Larix"
+    count.mort$genus[Picea] <- "Picea"
+    count.mort$genus[Abies] <- "Abies"
+    count.mort$genus[Thuja] <- "Thuja"
+    count.mort$genus[Tsuga] <- "Tsuga"
+    count.mort$genus[Juniperus] <- "Juniperus"
+    count.mort$genus[Quercus] <- "Quercus"
+    count.mort$genus[Fraxinus] <- "Fraxinus"
+    count.mort$genus[Ailanthus] <- "Ailanthus"
+    count.mort$genus[Robinia] <- "Robinia"
+    count.mort$genus[Sassafras] <- "Sassafras"
+    count.mort$genus[Acer] <- "Acer"
+    count.mort$genus[Aesculus] <- "Aesculus"
+    count.mort$genus[Betula] <- "Betula"
+    count.mort$genus[Carpinus] <- "Carpinus"
+    count.mort$genus[Cornus] <- "Cornus"
+    count.mort$genus[Liquidambar] <- "Liquidambar"
+    count.mort$genus[Liriodendron] <- "Liriodendron"
+    count.mort$genus[Magnolia] <- "Magnolia"
+    count.mort$genus[Platanus] <- "Platanus"
+    count.mort$genus[Fagus] <- "Fagus"
+    count.mort$genus[Nyssa] <- "Nyssa"
+    count.mort$genus[Oxydendrum] <- "Oxydendrum"
+    count.mort$genus[Tilia] <- "Tilia"
+    count.mort$genus[Populus] <- "Populus"
+    count.mort$genus[Prunus] <- "Prunus"
+    count.mort$genus[Carya] <- "Carya"
+    count.mort$genus[Cercis] <- "Cercis"
+    count.mort$genus[Diospyros] <- "Diospyros"
+    count.mort$genus[Juglans] <- "Juglans"
+    count.mort$genus[Ulmus] <- "Ulmus"
+
+
+ #Make single genus-species column
+    count.mort$GenusSpecies <- NA
+    count.mort$GenusSpecies <- with(count.mort, paste(genus, species))
+    count.mort$GenusSpecies <- as.character(count.mort$GenusSpecies)
+    
+# barplot(count.mort[,2],names.arg=count.mort[,5],las=2, ylab = "Number of Dead Trees", main = "Number of Dead Trees by Species")
+# 
+# dev.copy(png,'/Users/josh/Dropbox/Dissertation/CH3_Growth_NSC/species_dead.png')
+# dev.off()
+
+mort.barplot <- ggplot(data = count.mort, aes(x = GenusSpecies, y = freq)) +
+  geom_bar(stat = "identity") +
+  theme(axis.text.x = element_text(angle=60,hjust=1,vjust=1,size=10)) +
+  ylab("Number of Trees") + xlab("Species")
+
+  ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH3_Growth_NSC/Figures/mort.barplot.png", plot = mort.barplot, dpi = 600, width = 6, height = 5, units = "in")
 
 
 ```
