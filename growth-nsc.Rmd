@@ -42,6 +42,8 @@ Treering_data <- read.csv("/Users/josh/Dropbox/Dissertation/CH3_Growth_NSC/treer
 
 colnames(Treering_data)[70] <- "Core_ID14"
 
+
+
 #dataset of trees cored for NSC and analyzed for growth with tree rings
 growth_nsc_data <- merge(NSC_data, Treering_data, by = "Core_ID14")
 ```
@@ -493,7 +495,7 @@ summary(co.dom.full.lm2) ##All of the same terms as the full data set are signif
   
   #Site Differences
   #organizing by temperature as with other chapters
-  growth_nsc_data.10yr$SITE <- factor(growth_nsc_data.10yr$SITE, levels = c("W","B","H","V","S","M","D","T","F"), ordered = TRUE)
+  growth_nsc_data.10yr$SITE <- factor(growth_nsc_data.10yr$SITE, levels = c("W","B","H","V","S","M","T","D","F"), ordered = TRUE)
   
   #Remove Duke because only 2 growth-nsc relationships
   w <- which(growth_nsc_data.10yr$Site == "W")
@@ -504,6 +506,26 @@ summary(co.dom.full.lm2) ##All of the same terms as the full data set are signif
   m <- which(growth_nsc_data.10yr$Site == "M")
   t <- which(growth_nsc_data.10yr$Site == "T")
   f <- which(growth_nsc_data.10yr$Site == "F")
+  
+  #########Correct temperature and precip data for sites used############
+  growth_nsc_data.10yr$TEMP_C[w] <- 4.08
+  growth_nsc_data.10yr$TEMP_C[b] <- 4.85
+  growth_nsc_data.10yr$TEMP_C[h] <- 7.05
+  growth_nsc_data.10yr$TEMP_C[v] <- 10.99
+  growth_nsc_data.10yr$TEMP_C[s] <- 12.25
+  growth_nsc_data.10yr$TEMP_C[m] <- 12.62
+  growth_nsc_data.10yr$TEMP_C[t] <- 14.11
+  growth_nsc_data.10yr$TEMP_C[f] <- 20.81
+  
+  growth_nsc_data.10yr$PRECIP[w] <- 804
+  growth_nsc_data.10yr$PRECIP[b] <- 1378
+  growth_nsc_data.10yr$PRECIP[h] <- 1135
+  growth_nsc_data.10yr$PRECIP[v] <- 985
+  growth_nsc_data.10yr$PRECIP[s] <- 970
+  growth_nsc_data.10yr$PRECIP[m] <- 1037
+  growth_nsc_data.10yr$PRECIP[t] <- 1366
+  growth_nsc_data.10yr$PRECIP[f] <- 1298
+
   
   #new dataframe for use with site analysis and full model
   full.site.dat <-rbind(growth_nsc_data.10yr[w,],
@@ -523,14 +545,18 @@ summary(co.dom.full.lm2) ##All of the same terms as the full data set are signif
   anova.site <- anova(site.lm)
   summary(site.lm)
   
+    #site variances
+site.ss <- anova.site$`Sum Sq`/sum(anova.site$`Sum Sq`)
+site.part.vars <- cbind(rownames(anova.site), anova.site$Df, anova.site$`F value`, anova.site$`Pr(>F)`, site.ss)
+  
   #Site lm with temp and precip explicit
   site.t.p.lm <- lm(total.nsc ~ mean.2010.2001 + TEMP_C*mean.2010.2001 + PRECIP*mean.2010.2001 + Site*mean.2010.2001, data = full.site.dat) #Site*mean.2010.2001 +
-  anova(site.t.p.lm)
+  anova.site.t.p <- anova(site.t.p.lm)
   summary(site.t.p.lm)
   
   #site variances
-site.ss <- anova.site$`Sum Sq`/sum(anova.site$`Sum Sq`)
-site.part.vars <- cbind(rownames(anova.site), anova.site$Df, anova.site$`F value`, anova.site$`Pr(>F)`, site.ss)
+site.t.p.ss <- anova.site.t.p$`Sum Sq`/sum(anova.site.t.p$`Sum Sq`)
+site.t.p.part.vars <- cbind(rownames(anova.site.t.p), anova.site.t.p$Df, anova.site.t.p$`F value`, anova.site.t.p$`Pr(>F)`, site.t.p.ss)
 
   #W site lm
   w.dat <- growth_nsc_data.10yr[w,]
