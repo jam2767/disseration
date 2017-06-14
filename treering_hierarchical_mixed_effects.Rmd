@@ -1586,6 +1586,79 @@ growth.50yr.QC.increment.final$PLOT <- factor(growth.50yr.QC.increment.final$PLO
 
 growth.50yr.QC.increment.final$SUB <- factor(growth.50yr.QC.increment.final$SUB, ordered = FALSE)
 
+
+######## Final datasets used: mean.growth.fig.data.50yr.QC and growth.50yr.QC.increment.final
+######## fixing temp and precip data in both datasets #########
+#fix mean dataset
+  w.m <- which(mean.growth.fig.data.50yr.QC$Site == "W")
+  b.m <- which(mean.growth.fig.data.50yr.QC$Site == "B")
+  h.m <- which(mean.growth.fig.data.50yr.QC$Site == "H")
+  v.m <- which(mean.growth.fig.data.50yr.QC$Site == "V")
+  s.m <- which(mean.growth.fig.data.50yr.QC$Site == "S")
+  m.m <- which(mean.growth.fig.data.50yr.QC$Site == "M")
+  t.m <- which(mean.growth.fig.data.50yr.QC$Site == "T")
+  f.m <- which(mean.growth.fig.data.50yr.QC$Site == "F")
+  c.m <- which(mean.growth.fig.data.50yr.QC$Site == "C")
+  d.m <- which(mean.growth.fig.data.50yr.QC$Site == "D")
+  
+  #########Correct temperature and precip data for sites used############
+  mean.growth.fig.data.50yr.QC$TEMP_C[w.m] <- 4.08
+  mean.growth.fig.data.50yr.QC$TEMP_C[b.m] <- 4.85
+  mean.growth.fig.data.50yr.QC$TEMP_C[h.m] <- 7.05
+  mean.growth.fig.data.50yr.QC$TEMP_C[v.m] <- 10.99
+  mean.growth.fig.data.50yr.QC$TEMP_C[s.m] <- 12.25
+  mean.growth.fig.data.50yr.QC$TEMP_C[m.m] <- 12.62
+  mean.growth.fig.data.50yr.QC$TEMP_C[t.m] <- 14.11
+  mean.growth.fig.data.50yr.QC$TEMP_C[f.m] <- 20.81
+  mean.growth.fig.data.50yr.QC$TEMP_C[c.m] <- 11.22
+  mean.growth.fig.data.50yr.QC$TEMP_C[d.m] <- 14.88
+
+  mean.growth.fig.data.50yr.QC$PRECIP[w.m] <- 804
+  mean.growth.fig.data.50yr.QC$PRECIP[b.m] <- 1378
+  mean.growth.fig.data.50yr.QC$PRECIP[h.m] <- 1135
+  mean.growth.fig.data.50yr.QC$PRECIP[v.m] <- 985
+  mean.growth.fig.data.50yr.QC$PRECIP[s.m] <- 970
+  mean.growth.fig.data.50yr.QC$PRECIP[m.m] <- 1037
+  mean.growth.fig.data.50yr.QC$PRECIP[t.m] <- 1366
+  mean.growth.fig.data.50yr.QC$PRECIP[f.m] <- 1298
+  mean.growth.fig.data.50yr.QC$PRECIP[c.m] <- 2193
+  mean.growth.fig.data.50yr.QC$PRECIP[d.m] <- 1165
+
+#Fix increment dataset
+  w.i <- which(growth.50yr.QC.increment.final$Site == "W")
+  b.i <- which(growth.50yr.QC.increment.final$Site == "B")
+  h.i <- which(growth.50yr.QC.increment.final$Site == "H")
+  v.i <- which(growth.50yr.QC.increment.final$Site == "V")
+  s.i <- which(growth.50yr.QC.increment.final$Site == "S")
+  m.i <- which(growth.50yr.QC.increment.final$Site == "M")
+  t.i <- which(growth.50yr.QC.increment.final$Site == "T")
+  f.i <- which(growth.50yr.QC.increment.final$Site == "F")
+  c.i <- which(growth.50yr.QC.increment.final$Site == "C")
+  d.i <- which(growth.50yr.QC.increment.final$Site == "D")
+  
+  #########Correct temperature and precip data for sites used############
+  growth.50yr.QC.increment.final$TEMP_C[w.i] <- 4.08
+  growth.50yr.QC.increment.final$TEMP_C[b.i] <- 4.85
+  growth.50yr.QC.increment.final$TEMP_C[h.i] <- 7.05
+  growth.50yr.QC.increment.final$TEMP_C[v.i] <- 10.99
+  growth.50yr.QC.increment.final$TEMP_C[s.i] <- 12.25
+  growth.50yr.QC.increment.final$TEMP_C[m.i] <- 12.62
+  growth.50yr.QC.increment.final$TEMP_C[t.i] <- 14.11
+  growth.50yr.QC.increment.final$TEMP_C[f.i] <- 20.81
+  growth.50yr.QC.increment.final$TEMP_C[c.i] <- 11.22
+  growth.50yr.QC.increment.final$TEMP_C[d.i] <- 14.88
+
+  growth.50yr.QC.increment.final$PRECIP[w.i] <- 804
+  growth.50yr.QC.increment.final$PRECIP[b.i] <- 1378
+  growth.50yr.QC.increment.final$PRECIP[h.i] <- 1135
+  growth.50yr.QC.increment.final$PRECIP[v.i] <- 985
+  growth.50yr.QC.increment.final$PRECIP[s.i] <- 970
+  growth.50yr.QC.increment.final$PRECIP[m.i] <- 1037
+  growth.50yr.QC.increment.final$PRECIP[t.i] <- 1366
+  growth.50yr.QC.increment.final$PRECIP[f.i] <- 1298
+  growth.50yr.QC.increment.final$PRECIP[c.i] <- 2193
+  growth.50yr.QC.increment.final$PRECIP[d.i] <- 1165
+  
 #boxplot
 growth.spp.plot <- ggplot(mean.growth.fig.data.50yr.QC, aes(x = GenusSpecies, y = mean.growth.50yr.QC, fill = PFT)) + 
   geom_boxplot() + theme(axis.text.x = element_text(angle=90,hjust=1,vjust=.5,size=10)) +
