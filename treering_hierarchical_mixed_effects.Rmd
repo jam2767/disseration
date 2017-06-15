@@ -1490,12 +1490,59 @@ summary(lm.spp.site.avg)
 # summary(lmer.spp.int)
 
 #### Going to just run the full model and see what happens ###
-lmer.full.annual <- lmer(INCREMENT ~ PFT + DBH15 + CANOPY15 + (1|SITE/PLOT/SUB/CORE_ID15) + (1|GenusSpecies) + (1|YEAR) + (1|SITE:YEAR) + (1|GenusSpecies:SITE) + (1|PFT:SITE))
+lmer.full.annual <- lmer(INCREMENT ~ PFT + DBH15 + CANOPY15 + (1|SITE/PLOT/SUB/CORE_ID15) + (1|GenusSpecies) + (1|YEAR) + (1|SITE:YEAR) + (1|GenusSpecies:SITE) + (1|PFT:SITE), data = combined.all.diss.common)
+summary(lmer.full.annual)
+anova.full.anual <- anova(lmer.full.annual)
 
-#Space ANNUAL Growth
-lm.space.annual <- lm(INCREMENT ~ YEAR + SITE/PLOT/SUB, data = combined.all.diss.common)
-anova(lm.space.simp)
-summary(lm.space.simp)
+#Proportion of variance for fixed effects
+fixed.full.lm <- lm(INCREMENT ~ PFT + DBH15 + CANOPY15, data = combined.all.diss.common)
+anova.full.fix <- anova(fixed.full.lm)
+summary(fixed.full.lm)
+
+#var(predict(lm(INCREMENT ~ PFT + DBH15 + CANOPY15, data = combined.all.diss.common)))
+full.inc.ss <- anova.full.fix$`Sum Sq`/sum(anova.full.fix$`Sum Sq`)
+full.fix.part.vars <- cbind(rownames(anova.full.fix), anova.full.fix$Df, anova.full.fix$`F value`, anova.full.fix$`Pr(>F)`, full.inc.ss)
+
+#variances for random effects & fixed effects
+full.vars <- as.data.frame(VarCorr(lmer.full.annual, order = "cov.last")) #random effect variances
+fix.part.vars <- full.fix.part.vars[1:3,5]
+random.part.vars <- full.vars$vcov
+full.total.part.vars <- c(fix.part.vars,random.part.vars)
+names.fix <- full.fix.part.vars[1:3,1]
+names.rand <- full.vars$grp
+names.total <- c(names.fix, names.rand)
+full.part.vars.table <- cbind(names.total,full.total.part.vars)
+fullmodel.part.vars <- as.numeric(full.part.vars.table[,2])/sum(as.numeric(full.part.vars.table[,2]))
+percent.fullmodel.part.vars <- fullmodel.part.vars*100 ### This is proportion of variance for random and fixed effects
+
+# grp.n <- c(ngrps(lmer.full.annual),69980) #total N - groups
+# full.vars.n <-cbind(full.vars, grp.n)
+# full.model.vars <- full.vars.n$vcov*full.vars.n$grp.n
+# fullmodel.part.vars.notcorrect <- full.model.vars/sum(full.model.vars) #this doesn't work
+# percent.fullmodel.part.vars.notcorrect <- fullmodel.part.vars.correct*100
+
+# #calculating partial variances for random effects
+# var.full.vars = full.vars$vcov/sum(full.vars$vcov)
+# full.part.vars <- cbind(full.vars$grp,var.full.vars)
+# #test
+# sum(as.numeric(space.part.vars[,2]))
+# #now have proportions of variance explained by each effect
+# #Environment
+# #1,2,7
+# site.partvar <- sum(as.numeric(part.vars[1,2]),as.numeric(part.vars[2,2]),as.numeric(part.vars[7,2])) #sub, plot, site 11.88 %
+
+
+#Space ANNUAL Growth, only #PFT included, Canopy & DBH not included
+#running to test validity of my method for combining fixed and random variances
+lmer.space.annual <- lmer(INCREMENT ~ PFT + (1|SITE/PLOT/SUB/CORE_ID15) + (1|YEAR) + (1|SPP), data = combined.all.diss.common)
+anova(lmer.space.annual)
+summary(lmer.space.annual)
+
+#variances
+space.vars <- as.data.frame(VarCorr(lmer.space.annual, order = "cov.last")) #random effect variances
+var.space.vars = space.vars$vcov/sum(space.vars$vcov)
+percent.var.space <- var.space.vars*100
+
 
 #wood
 lm.wood.simp <- lm(INCREMENT ~ WOOD, data = combined.all.diss.common)
