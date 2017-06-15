@@ -1462,20 +1462,35 @@ wood.avg.ss <- anova.wood.avg$`Sum Sq`/sum(anova.wood.avg$`Sum Sq`)
 wood.avg.part.vars <- cbind(rownames(anova.wood.avg), anova.wood.avg$Df, anova.wood.avg$`F value`, anova.wood.avg$`Pr(>F)`, wood.avg.ss)
 
 ## Interactions for AVERAGE growth ##
+#Find that pft and species are responding differently to temperature and overall site effect
 # PFT * Temperature
 lm.pft.temp.avg <- lm(mean.growth.50yr ~ PFT*TEMP_C, data = mean.growth.fig.data)
 anova.pft.tmp.avg <- anova(lm.pft.temp.avg)
 summary(lm.pft.temp.avg)
 
 # SPP * Temperature
+lm.spp.temp.avg <- lm(mean.growth.50yr ~ SPP*TEMP_C, data = mean.growth.fig.data)
+anova.spp.tmp.avg <- anova(lm.spp.temp.avg)
+summary(lm.spp.temp.avg)
 
 #PFT * Site
+lm.pft.site.avg <- lm(mean.growth.50yr ~ PFT*SITE, data = mean.growth.fig.data)
+anova.pft.site.avg <- anova(lm.pft.site.avg)
+summary(lm.pft.site.avg)
 
 #SPP * Site
+lm.spp.site.avg <- lm(mean.growth.50yr ~ SPP*SITE, data = mean.growth.fig.data)
+anova.spp.site.avg <- anova(lm.spp.site.avg)
+summary(lm.spp.site.avg)
 
 
 ####################### Switching to ANNUAL growth ###########################
+#Final Full model from Draft 3
+# lmer.spp.int <- lmer(INCREMENT ~ YEAR + (1|SITE:YEAR) + (1|SITE/PLOT/SUB/TAG) + (1|GenusSpecies) + (1|GenusSpecies:SITE) + (1|PFT) + (1|PFT:SITE) + (1|DBH15) + (1|CANOPY15) , data = growth.50yr.QC.increment.final)
+# summary(lmer.spp.int)
+
 #### Going to just run the full model and see what happens ###
+lmer.full.annual <- lmer(INCREMENT ~ PFT + DBH15 + CANOPY15 + (1|SITE/PLOT/SUB/CORE_ID15) + (1|GenusSpecies) + (1|YEAR) + (1|SITE:YEAR) + (1|GenusSpecies:SITE) + (1|PFT:SITE))
 
 #Space ANNUAL Growth
 lm.space.annual <- lm(INCREMENT ~ YEAR + SITE/PLOT/SUB, data = combined.all.diss.common)
