@@ -1330,6 +1330,10 @@ mean.growth.fig.data$PFT <- factor(mean.growth.fig.data$PFT,
 mean.growth.fig.data$GenusSpecies <- factor(mean.growth.fig.data$GenusSpecies,
                   levels = c("Juniperus virginiana","Thuja occidentalis","Abies balsamea","Tsuga canadensis","Picea mariana", "Picea rubens","Pinus strobus","Pinus taeda","Pinus palustris","Sassafras albidum","Magnolia virginiana","Liriodendron tulipifera","Oxydendrum arboreum","Nyssa sylvatica","Fraxinus nigra","Fraxinus americana","Acer rubrum","Acer saccharum","Prunus serotina","Ulmus americana","Populus grandidentata","Populus tremuloides","Carya glabra","Carya tomentosa","Betula lenta","Betula alleghaniensis","Betula papyrifera","Fagus grandifolia","Quercus alba","Quercus laevis","Quercus velutina","Quercus rubra","Quercus laurifolia","Quercus coccinea","Quercus nigra","Quercus montana","Quercus virginiana","Quercus muehlenbergii"))
 
+#as factor: PLOT
+mean.growth.fig.data$PLOT <- factor(mean.growth.fig.data$PLOT)
+combined.all.diss.common$PLOT <- factor(combined.all.diss.common$PLOT) 
+
 #boxplot
 growth.spp.plot <- ggplot(mean.growth.fig.data, aes(x = GenusSpecies, y = mean.growth.50yr, fill = PFT)) +
   geom_boxplot() + theme(axis.text.x = element_text(angle=90,hjust=1,vjust=.5,size=10)) +
@@ -1378,9 +1382,88 @@ year.growth.sd <- ggplot(combined.all.diss.common, aes(x = as.factor(YEAR), y = 
   
 ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings/Figures/Final/annual.growth.sd.redo.png", plot = year.growth.sd, dpi = 600, width = 6, height = 3.5, units = "in")
 
+#Individuals as factor
+combined.all.diss.common$TAG <- factor(combined.all.diss.common$TAG)
+combined.all.diss.common$CORE_ID15 <- factor(combined.all.diss.common$CORE_ID15) #use this for INDIVIDUALS
 
-#space
-lm.space.simp <- lm(INCREMENT ~ SITE/PLOT/SUB/TAG, data = combined.all.diss.common)
+#space AVERAGE growth
+lm.space.avg.final <- lm(mean.growth.50yr ~ SITE/PLOT/SUB, data = mean.growth.fig.data)
+anova.space.avg <- anova(lm.space.avg.final)
+summary(lm.space.avg.final)
+
+#variances AVERAGE growth
+space.avg.ss <- anova.space.avg$`Sum Sq`/sum(anova.space.avg$`Sum Sq`)
+space.avg.part.vars <- cbind(rownames(anova.space.avg), anova.space.avg$Df, anova.space.avg$`F value`, anova.space.avg$`Pr(>F)`, space.avg.ss)
+
+#Temperature AVERAGE
+lm.tmp.avg.final <- lm(mean.growth.50yr ~ TEMP_C, data = mean.growth.fig.data)
+anova.tmp.avg <- anova(lm.tmp.avg.final)
+summary(lm.tmp.avg.final)
+
+#temperature variances AVERAGE growth
+temp.avg.ss <- anova.tmp.avg$`Sum Sq`/sum(anova.tmp.avg$`Sum Sq`)
+temp.avg.part.vars <- cbind(rownames(anova.tmp.avg), anova.tmp.avg$Df, anova.tmp.avg$`F value`, anova.tmp.avg$`Pr(>F)`, temp.avg.ss)
+
+#Precip AVERAGE
+lm.precip.avg.final <- lm(mean.growth.50yr ~ PRECIP, data = mean.growth.fig.data)
+anova.precip.avg <- anova(lm.precip.avg.final)
+summary(lm.precip.avg.final)
+
+#Precipitation variances AVERAGE growth
+precip.avg.ss <- anova.precip.avg$`Sum Sq`/sum(anova.precip.avg$`Sum Sq`)
+precip.avg.part.vars <- cbind(rownames(anova.precip.avg), anova.precip.avg$Df, anova.precip.avg$`F value`, anova.precip.avg$`Pr(>F)`, precip.avg.ss)
+
+#DBH AVERAGE
+lm.dbh.avg.final <- lm(mean.growth.50yr ~ DBH15, data = mean.growth.fig.data)
+anova.dbh.avg <- anova(lm.dbh.avg.final)
+summary(lm.dbh.avg.final)
+
+#DBH variances AVERAGE growth
+dbh.avg.ss <- anova.dbh.avg$`Sum Sq`/sum(anova.dbh.avg$`Sum Sq`)
+dbh.avg.part.vars <- cbind(rownames(anova.dbh.avg), anova.dbh.avg$Df, anova.dbh.avg$`F value`, anova.dbh.avg$`Pr(>F)`, dbh.avg.ss)
+
+#Canopy Position AVERAGE
+lm.can.avg.final <- lm(mean.growth.50yr ~ CANOPY15, data = mean.growth.fig.data)
+anova.can.avg <- anova(lm.can.avg.final)
+summary(lm.can.avg.final)
+
+#Canopy Position variances AVERAGE growth
+can.avg.ss <- anova.can.avg$`Sum Sq`/sum(anova.can.avg$`Sum Sq`)
+can.avg.part.vars <- cbind(rownames(anova.can.avg), anova.can.avg$Df, anova.can.avg$`F value`, anova.can.avg$`Pr(>F)`, can.avg.ss)
+
+#PFT AVERAGE
+lm.pft.avg.final <- lm(mean.growth.50yr ~ PFT, data = mean.growth.fig.data)
+anova.pft.avg <- anova(lm.pft.avg.final)
+summary(lm.pft.avg.final)
+
+#PFT variances AVERAGE growth
+pft.avg.ss <- anova.pft.avg$`Sum Sq`/sum(anova.pft.avg$`Sum Sq`)
+pft.avg.part.vars <- cbind(rownames(anova.pft.avg), anova.pft.avg$Df, anova.pft.avg$`F value`, anova.pft.avg$`Pr(>F)`, pft.avg.ss)
+
+#Species AVERAGE
+#### Need to add growth rate by species plot just like nsc-growth by spp plot in chapter 3
+#### If keeping this comparison should probably set ACRU as reference species
+lm.spp.avg.final <- lm(mean.growth.50yr ~ SPP, data = mean.growth.fig.data)
+anova.spp.avg <- anova(lm.spp.avg.final)
+summary(lm.spp.avg.final)
+
+#Species variances AVERAGE growth
+spp.avg.ss <- anova.spp.avg$`Sum Sq`/sum(anova.spp.avg$`Sum Sq`)
+spp.avg.part.vars <- cbind(rownames(anova.spp.avg), anova.spp.avg$Df, anova.spp.avg$`F value`, anova.spp.avg$`Pr(>F)`, spp.avg.ss)
+
+#Wood Anatomy AVERAGE
+#Check to see what I want as the reference group
+lm.wood.avg.final <- lm(mean.growth.50yr ~ WOOD, data = mean.growth.fig.data)
+anova.wood.avg <- anova(lm.wood.avg.final)
+summary(lm.wood.avg.final)
+
+#Wood Anatomy variances AVERAGE growth
+wood.avg.ss <- anova.wood.avg$`Sum Sq`/sum(anova.wood.avg$`Sum Sq`)
+wood.avg.part.vars <- cbind(rownames(anova.wood.avg), anova.wood.avg$Df, anova.wood.avg$`F value`, anova.wood.avg$`Pr(>F)`, wood.avg.ss)
+
+#Space Annual Growth
+lm.space.annual <- lm(INCREMENT ~ YEAR + SITE/PLOT/SUB, data = combined.all.diss.common)
+anova(lm.space.simp)
 summary(lm.space.simp)
 
 #wood
@@ -1396,8 +1479,34 @@ lm.pft.simp <- lm(INCREMENT ~ PFT, data = combined.all.diss.common)
 summary(lm.pft.simp)
 
 #DBH
-lm.size.simp <- lm(INCREMENT ~ DBH14, data = combined.all.diss.common)
+lm.size.simp <- lm(INCREMENT ~ DBH15, data = combined.all.diss.common)
 summary(lm.size.simp)
+
+lm.size.yr <- lm(INCREMENT ~ TAG + DBH15, data = combined.all.diss.common)
+anova(lm.size.yr)
+summary(lm.size.yr)
+
+lm.size.avg <- lm(mean.growth.50yr ~ DBH15, data = mean.growth.fig.data)
+anova(lm.size.avg)
+summary(lm.size.avg)
+
+plot(mean.growth.50yr ~ DBH15, data = mean.growth.fig.data)
+abline(lm.size.avg)
+
+dbh.growth.plot.avg <- ggplot(mean.growth.fig.data, aes(x = DBH15, y = mean.growth.50yr)) +
+  geom_point(alpha = .3) +
+  coord_cartesian(ylim = c(0,6)) +
+  geom_smooth(method = "lm", aes(color = "yellow")) +
+  theme(axis.title.y = element_text(size = 14)) +
+  theme(axis.title.x = element_text(size = 14)) +
+  annotate("text",x=40.1,y=5.9,label = "*", size = 6) + #point moved into frame dbh = 40.1 mean growth = 7.42
+  scale_color_manual(name = "Fit", values = "yellow", labels = "linear") + 
+  theme(legend.position = "none") +
+  ylab(expression(paste("Mean Ring Width mm yr"^"-1"))) + xlab("DBH (cm)")
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings/Figures/Final/DBH.growth.png", plot = dbh.growth.plot.avg, dpi = 600, width = 5, height = 3.5, units = "in")
+
+
 
 #species
 lm.spp.simp <- lm(INCREMENT ~ GenusSpecies, data = combined.all.diss.common)
