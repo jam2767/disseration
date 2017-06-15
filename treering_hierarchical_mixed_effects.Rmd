@@ -1461,7 +1461,23 @@ summary(lm.wood.avg.final)
 wood.avg.ss <- anova.wood.avg$`Sum Sq`/sum(anova.wood.avg$`Sum Sq`)
 wood.avg.part.vars <- cbind(rownames(anova.wood.avg), anova.wood.avg$Df, anova.wood.avg$`F value`, anova.wood.avg$`Pr(>F)`, wood.avg.ss)
 
-#Space Annual Growth
+## Interactions for AVERAGE growth ##
+# PFT * Temperature
+lm.pft.temp.avg <- lm(mean.growth.50yr ~ PFT*TEMP_C, data = mean.growth.fig.data)
+anova.pft.tmp.avg <- anova(lm.pft.temp.avg)
+summary(lm.pft.temp.avg)
+
+# SPP * Temperature
+
+#PFT * Site
+
+#SPP * Site
+
+
+####################### Switching to ANNUAL growth ###########################
+#### Going to just run the full model and see what happens ###
+
+#Space ANNUAL Growth
 lm.space.annual <- lm(INCREMENT ~ YEAR + SITE/PLOT/SUB, data = combined.all.diss.common)
 anova(lm.space.simp)
 summary(lm.space.simp)
