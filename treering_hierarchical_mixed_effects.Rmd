@@ -1409,6 +1409,42 @@ ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings/Figures/Final/
 combined.all.diss.common$TAG <- factor(combined.all.diss.common$TAG)
 combined.all.diss.common$CORE_ID15 <- factor(combined.all.diss.common$CORE_ID15) #use this for INDIVIDUALS
 
+#Relevel sites
+mean.growth.fig.data$SITE <- factor(mean.growth.fig.data$SITE, levels = c("W","B","H","V","C","S","M","T","D","F"))
+
+#lm
+lm.site.avg.final <- lm(mean.growth.50yr ~ SITE, data = mean.growth.fig.data)
+anova.site.avg <- anova(lm.site.avg.final)
+summary(lm.site.avg.final)
+
+summary(aov.site <- aov(lm.site.avg.final))
+tukey.site.gr <- TukeyHSD(aov.site, "SITE", ordered = FALSE)
+plot(tukey.site.gr)
+site.levels.gr <- tukey.site.gr[["SITE"]][,4]
+site.labels.gr <- multcompLetters(site.levels.gr)['Letters']
+site.plot.labels <- names(site.labels.gr[['Letters']])
+
+#site.n <- table(growth.50yr.QC.increment.final$SITE)/50
+
+#Site plot ordered from low to high temperature
+site.growth.violin <- ggplot(mean.growth.fig.data, aes(x = SITE, y = mean.growth.50yr))+
+  geom_violin() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
+  theme(axis.text.y = element_text(size=12)) +
+  theme(axis.title.x = element_text(size=14)) +
+  theme(axis.title.y = element_text(size=14)) +
+  theme(axis.text.x = element_text(size = 12)) +
+  theme(legend.text = element_blank()) +
+  theme(legend.position = "none") +
+  stat_summary(fun.data = give.n, geom= "text", size = 3.5,aes(y= 5.2)) + 
+  stat_summary(fun.y="median", geom="point") +
+  coord_cartesian(ylim = c(0,5.25)) +
+  ylab(expression(paste("Ring Width mm yr"^"-1"))) + xlab("Site") +
+  scale_x_discrete(labels = c("W","B","H","V","C","S","M","T","D","F")) +
+  scale_fill_manual(values=rev(cbPalette)) +
+  annotate("text", x = c(1.25, 2.2, 3.2, 4.3, 5.2, 6.2, 7.25, 8.3, 9.35, 10.2), y = c(3.2, 4.6, 3.55, 3.45, 4.9, 4.9, 3.85, 3.8, 4.2, 4.9), label = c("ce","e","d","cde","e","b","bd","bcd","bcde","a"))
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings/Figures/Final/site.growth.violin.png", plot = site.growth.violin, dpi = 600, width = 7.5, height = 3.5, units = "in")
+
 #space AVERAGE growth
 lm.space.avg.final <- lm(mean.growth.50yr ~ SITE/PLOT/SUB, data = mean.growth.fig.data)
 anova.space.avg <- anova(lm.space.avg.final)
@@ -1528,11 +1564,6 @@ pft.growth.violin <- ggplot(mean.growth.fig.data, aes(x = PFT, y = mean.growth.5
   theme(axis.text.x = element_text(size = 12)) +
   theme(legend.text = element_blank()) +
   theme(legend.position = "none") +
-  # annotate("text", x = .8, y = 5.2, label = pft.n[1], size = 3.5) +
-  # annotate("text", x = 1.8, y = 5.2, label = pft.n[2], size = 3.5) +
-  # annotate("text", x = 2.8, y = 5.2, label = pft.n[3], size = 3.5) +
-  # annotate("text", x = 3.8, y = 5.2, label = pft.n[4], size = 3.5) +
-  # annotate("text", x = 4.8, y = 5.2, label = pft.n[5], size = 3.5) +
   stat_summary(fun.data = give.n, geom= "text", size = 3.5, aes(y= 5.25)) + 
   stat_summary(fun.y="mean", geom="point") +
   ylim(0,5.25) +
@@ -1556,6 +1587,11 @@ spp.avg.ss <- anova.spp.avg$`Sum Sq`/sum(anova.spp.avg$`Sum Sq`)
 spp.avg.part.vars <- cbind(rownames(anova.spp.avg), anova.spp.avg$Df, anova.spp.avg$`F value`, anova.spp.avg$`Pr(>F)`, spp.avg.ss)
 
 #Wood Anatomy AVERAGE
+mean.growth.fig.data$WOOD <- factor(mean.growth.fig.data$WOOD, 
+                                    levels = c("large.resin","small.resin","no.resin",
+                                               "ring.porous","semiring.porous",
+                                               "diffuse.porous"))
+
 #Check to see what I want as the reference group
 lm.wood.avg.final <- lm(mean.growth.50yr ~ WOOD, data = mean.growth.fig.data)
 anova.wood.avg <- anova(lm.wood.avg.final)
@@ -1566,16 +1602,23 @@ wood.avg.ss <- anova.wood.avg$`Sum Sq`/sum(anova.wood.avg$`Sum Sq`)
 wood.avg.part.vars <- cbind(rownames(anova.wood.avg), anova.wood.avg$Df, anova.wood.avg$`F value`, anova.wood.avg$`Pr(>F)`, wood.avg.ss)
 
 #TukeyHSD WOOD
-summary(aov.wood <- aov(lm.wood.simp))
+summary(aov.wood <- aov(lm.wood.avg.final))
 tukey.wood.gr <- TukeyHSD(aov.wood, "WOOD", ordered = FALSE)
 plot(tukey.wood.gr)
 wood.levels.gr <- tukey.wood.gr[["WOOD"]][,4]
 wood.labels.gr <- multcompLetters(wood.levels.gr)['Letters']
 wood.plot.labels <- names(wood.labels.gr[['Letters']])
 
-wood.n <- table(growth.50yr.QC.increment.final$WOOD)/50
+#wood.n <- table(growth.50yr.QC.increment.final$WOOD)/50
+#limiting range of wood violinplot for visualization
+ringpor <- which(mean.growth.fig.data$WOOD == "ring.porous")
+difpor <- which(mean.growth.fig.data$WOOD == "diffuse.porous")
 
-wood.growth.violin <- ggplot(growth.50yr.QC.increment.final, aes(x = WOOD, y = INCREMENT, fill = NULL))+
+max(mean.growth.fig.data$mean.growth.50yr[ringpor])   ### max is 7.420526 mm/yr
+max(mean.growth.fig.data$mean.growth.50yr[difpor])   ### max is 5.629344 mm/yr
+
+
+wood.growth.violin <- ggplot(mean.growth.fig.data, aes(x = WOOD, y = mean.growth.50yr, fill = NULL))+
   geom_violin() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
   theme(axis.text.y = element_text(size=12)) +
   theme(axis.title.x = element_text(size=14)) +
@@ -1583,34 +1626,160 @@ wood.growth.violin <- ggplot(growth.50yr.QC.increment.final, aes(x = WOOD, y = I
   theme(axis.text.x = element_text(size = 12)) +
   theme(legend.text = element_blank()) +
   theme(legend.position = "none") +
-  annotate("text", x = .8, y = 5.2, label = wood.n[1], size = 3.5) +
-  annotate("text", x = 1.8, y = 5.2, label = wood.n[2], size = 3.5) +
-  annotate("text", x = 2.8, y = 5.2, label = wood.n[3], size = 3.5) +
-  annotate("text", x = 3.8, y = 5.2, label = wood.n[4], size = 3.5) +
-  annotate("text", x = 4.8, y = 5.2, label = wood.n[5], size = 3.5) +
-  annotate("text", x = 5.8, y = 5.2, label = wood.n[6], size = 3.5) +
-  # stat_summary_bin(fun.data = function(x){give.n(x)/50}, geom= "text", size = 3.5, aes(y= 15.75)) +
+  stat_summary_bin(fun.data = give.n, geom= "text", size = 3.5, aes(y= 5.2)) +
   stat_summary(fun.y="median", geom="point") +
   ylab(expression(paste("Ring Width mm yr"^"-1"))) + xlab("Wood Anatomy") + #ggtitle("All Wood Types") +
   scale_x_discrete(labels = c("Large Resin", "Small Resin", "No Resin", "Ring Porous", "Semi-ring Porous", "Diffuse Porous")) +
   scale_fill_manual(values=rev(cbPalette)) +
-  ylim(0,5.2) +
-  annotate("text", x = 1.1:6.1, y = c(5, 4.7, 5, 5, 5, 5), label = c("e","a","c","c","b","d"))
+  coord_cartesian(ylim = c(0,5.25)) +
+  annotate("text", x = 1.15:6.15, y = c(4.9, 2.4, 3.6, 4.9, 2.9, 4.9), label = c("c","a","ab","b","ab","a"))
 
-ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings//Figures/growth.wood.anat.png", plot = wood.growth.violin, dpi = 600, width = 5, height = 3.5, units = "in")
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings/Figures/Final/growth.wood.anat.png", plot = wood.growth.violin, dpi = 600, width = 5, height = 3.5, units = "in")
 
 
 ## Interactions for AVERAGE growth ##
 #Find that pft and species are responding differently to temperature and overall site effect
+#Wood type categories: Hardwood, Conifer
+mean.growth.fig.data$PFT <- as.character(mean.growth.fig.data$PFT)
+
+  hardwood <- which(mean.growth.fig.data$PFT == "Early.Hardwood")
+  hardwood2 <- which(mean.growth.fig.data$PFT == "Mid.Hardwood")
+  hardwood3 <- which(mean.growth.fig.data$PFT == "Late.Hardwood")
+                      
+  conifer <- which(mean.growth.fig.data$PFT == "Early.Conifer")
+  conifer2 <- which(mean.growth.fig.data$PFT == "Late.Conifer")
+  
+  mean.growth.fig.data$woodgroup <- NA
+  mean.growth.fig.data$woodgroup[hardwood] <- "Hardwood"
+  mean.growth.fig.data$woodgroup[hardwood2] <- "Hardwood"
+  mean.growth.fig.data$woodgroup[hardwood3] <- "Hardwood"
+  mean.growth.fig.data$woodgroup[conifer] <- "Conifer"
+  mean.growth.fig.data$woodgroup[conifer2] <- "Conifer"
+  
+    #Hardwood as reference
+mean.growth.fig.data$woodgroup <- factor(mean.growth.fig.data$woodgroup, 
+                                    levels = c("Hardwood","Conifer"),
+                                    ordered = FALSE)
+
+  #Set succession
+  mean.growth.fig.data$succession <- NA
+  mean.growth.fig.data$succession[hardwood] <- "Early"
+  mean.growth.fig.data$succession[conifer] <- "Early"
+  mean.growth.fig.data$succession[hardwood2] <- "Mid"
+  mean.growth.fig.data$succession[hardwood3] <- "Late"
+  mean.growth.fig.data$succession[conifer2] <- "Late"
+  
+  #Early as reference
+mean.growth.fig.data$succession <- factor(mean.growth.fig.data$succession, 
+                            levels = c("Early","Mid","Late"),
+                            ordered = FALSE)
+
+# #create dataframe from labeling the outlier on mid hardwood
+# ann.txt <- data.frame(mean.growth.50yr = 4.9, TEMP_C = 10, lab = " ",
+#                       succession = factor("Mid", levels = c("Early","Mid","Late")))
+
 # PFT * Temperature
 lm.pft.temp.avg <- lm(mean.growth.50yr ~ PFT*TEMP_C, data = mean.growth.fig.data)
 anova.pft.tmp.avg <- anova(lm.pft.temp.avg)
 summary(lm.pft.temp.avg)
 
+### regressions that match the plots now ###
+early.con <- which(mean.growth.fig.data$PFT == "Early.Conifer")
+late.con <- which(mean.growth.fig.data$PFT == "Late.Conifer")
+early.hard <- which(mean.growth.fig.data$PFT == "Early.Hardwood")
+mid.hard <- which(mean.growth.fig.data$PFT == "Mid.Hardwood")
+late.hard <- which(mean.growth.fig.data$PFT == "Late.Hardwood")
+
+### Temperature ###
+lm.pft.tmp.early.con <- lm(mean.growth.50yr[early.con] ~ TEMP_C[early.con], data = mean.growth.fig.data)
+summary(lm.pft.tmp.early.con)
+
+lm.pft.tmp.late.con <- lm(mean.growth.50yr[late.con] ~ TEMP_C[late.con], data = mean.growth.fig.data)
+summary(lm.pft.tmp.late.con)
+
+lm.pft.tmp.early.hard <- lm(mean.growth.50yr[early.hard] ~ TEMP_C[early.hard], data = mean.growth.fig.data)
+summary(lm.pft.tmp.early.hard)
+
+lm.pft.tmp.mid.hard <- lm(mean.growth.50yr[mid.hard] ~ TEMP_C[mid.hard], data = mean.growth.fig.data)
+summary(lm.pft.tmp.mid.hard)
+
+lm.pft.tmp.late.hard <- lm(mean.growth.50yr[late.hard] ~ TEMP_C[late.hard], data = mean.growth.fig.data)
+summary(lm.pft.tmp.late.hard)
+
+
+###ggplot graph of each pft by temperature
+pft.growth.temp.plot <- ggplot(mean.growth.fig.data, aes(x = TEMP_C, y = mean.growth.50yr)) +
+  geom_point(alpha = .1) +
+  coord_cartesian(ylim = c(0,5.2)) +
+  ylab(expression(paste("Ring Width mm yr"^"-1"))) + xlab("Temperature (C)") +
+  geom_smooth(method = "lm") + facet_grid(woodgroup ~ succession) +
+  theme(axis.title.y = element_text(size = 14)) +
+  theme(axis.title.x = element_text(size = 14)) 
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings/Figures/Final/pft.growth.temp.plot.png", plot = pft.growth.temp.plot, dpi = 600, width = 5, height = 3.5, units = "in")
+
+
+# PFT * Precip
+lm.pft.precip.avg <- lm(mean.growth.50yr ~ PFT*PRECIP, data = mean.growth.fig.data)
+anova.pft.precip.avg <- anova(lm.pft.precip.avg)
+summary(lm.pft.precip.avg)
+
+lm.pft.precip.early.con <- lm(mean.growth.50yr[early.con] ~ PRECIP[early.con], data = mean.growth.fig.data)
+summary(lm.pft.precip.early.con)
+
+lm.pft.precip.late.con <- lm(mean.growth.50yr[late.con] ~ PRECIP[late.con], data = mean.growth.fig.data)
+summary(lm.pft.precip.late.con)
+
+lm.pft.precip.early.hard <- lm(mean.growth.50yr[early.hard] ~ PRECIP[early.hard], data = mean.growth.fig.data)
+summary(lm.pft.precip.early.hard)
+
+lm.pft.precip.mid.hard <- lm(mean.growth.50yr[mid.hard] ~ PRECIP[mid.hard], data = mean.growth.fig.data)
+summary(lm.pft.precip.mid.hard)
+
+lm.pft.precip.late.hard <- lm(mean.growth.50yr[late.hard] ~ PRECIP[late.hard], data = mean.growth.fig.data)
+summary(lm.pft.precip.late.hard)
+
+###ggplot graph of each pft by precipitation
+pft.growth.precip.plot <- ggplot(mean.growth.fig.data, aes(x = PRECIP, y = mean.growth.50yr)) +
+  geom_point(alpha = .1) +
+  coord_cartesian(ylim = c(0,5.2)) +
+  ylab(expression(paste("Ring Width mm yr"^"-1"))) + xlab(expression(paste("Precipitation mm yr"^"-1"))) +
+  geom_smooth(method = "lm") + facet_grid(woodgroup ~ succession) +
+  theme(axis.title.y = element_text(size = 14)) +
+  theme(axis.title.x = element_text(size = 14)) 
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings/Figures/Final/pft.growth.precip.plot.png", plot = pft.growth.precip.plot, dpi = 600, width = 5, height = 3.5, units = "in")
+
+
 # SPP * Temperature
-lm.spp.temp.avg <- lm(mean.growth.50yr ~ SPP*TEMP_C, data = mean.growth.fig.data)
+lm.spp.temp.avg <- lm(mean.growth.50yr ~ GenusSpecies*TEMP_C, data = mean.growth.fig.data)
 anova.spp.tmp.avg <- anova(lm.spp.temp.avg)
 summary(lm.spp.temp.avg)
+
+spp.growth.temp.plot <- ggplot(mean.growth.fig.data, aes(x = TEMP_C, y = mean.growth.50yr)) +
+  geom_point(alpha = .1) +
+  coord_cartesian(ylim = c(0,5.2)) +
+  ylab(expression(paste("Ring Width mm yr"^"-1"))) + xlab("Temperature (C)") +
+  geom_smooth(method = "lm") + facet_wrap(~ GenusSpecies)
+  theme(axis.title.y = element_text(size = 14)) +
+  theme(axis.title.x = element_text(size = 14)) 
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings/Figures/Final/spp.growth.temp.plot.png", plot = spp.growth.temp.plot, dpi = 600, width = 5, height = 3.5, units = "in")
+
+# SPP * Precip
+lm.spp.precip.avg <- lm(mean.growth.50yr ~ GenusSpecies*PRECIP, data = mean.growth.fig.data)
+anova.spp.precip.avg <- anova(lm.spp.precip.avg)
+summary(lm.spp.precip.avg)
+
+spp.growth.precip.plot <- ggplot(mean.growth.fig.data, aes(x = PRECIP, y = mean.growth.50yr)) +
+  geom_point(alpha = .1) +
+  coord_cartesian(ylim = c(0,5.2)) +
+  ylab(expression(paste("Ring Width mm yr"^"-1"))) + xlab("Precipitation (mm)") +
+  geom_smooth(method = "lm") + facet_wrap(~ GenusSpecies)
+  theme(axis.title.y = element_text(size = 14)) +
+  theme(axis.title.x = element_text(size = 14)) 
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings/Figures/Final/spp.growth.precip.plot.png", plot = spp.growth.precip.plot, dpi = 600, width = 5, height = 3.5, units = "in")
 
 #PFT * Site
 lm.pft.site.avg <- lm(mean.growth.50yr ~ PFT*SITE, data = mean.growth.fig.data)
@@ -1661,6 +1830,7 @@ names.total <- c(names.fix, names.rand)
 full.part.vars.table <- cbind(names.total,full.total.part.vars)
 fullmodel.part.vars <- as.numeric(full.part.vars.table[,2])/sum(as.numeric(full.part.vars.table[,2]))
 percent.fullmodel.part.vars <- fullmodel.part.vars*100 ### This is proportion of variance for random and fixed effects
+final.annual.table <- cbind(full.part.vars.table,percent.fullmodel.part.vars)
 
 # grp.n <- c(ngrps(lmer.full.annual),69980) #total N - groups
 # full.vars.n <-cbind(full.vars, grp.n)
