@@ -339,7 +339,7 @@ nsc.adult.total.mass <- data.frame(nsc.adult.sugar.mass,starch.only[matches.suga
 nsc.adult.total.mass$total.nsc <- mapply(nsc.adult.total.mass$nsc.adult.starch.mass.Starch.mg.g,
                                       nsc.adult.total.mass$glucose.mg.g,
                                       nsc.adult.total.mass$fructose.mg.g,
-                                      nsc.adult.total.mass$sucrose.mg.g, FUN=sum, na.rm=FALSE)                                      
+                                      nsc.adult.total.mass$sucrose.mg.g, FUN=sum, na.rm=FALSE)                                   
 #rename starch column
 colnames(nsc.adult.total.mass)[115] <- "core.id.starch"
 colnames(nsc.adult.total.mass)[116] <- "starch.mg.g"
@@ -349,6 +349,10 @@ colnames(nsc.adult.total.mass)[116] <- "starch.mg.g"
 
 #remove NAs for total.nsc
 nsc.adult.total.mass <- nsc.adult.total.mass[which(nsc.adult.total.mass$total.nsc != "NA"),]
+
+nsc.adult.total.mass$sugar.mg.g <- mapply(nsc.adult.total.mass$glucose.mg.g,
+                                          nsc.adult.total.mass$fructose.mg.g,
+                                          nsc.adult.total.mass$sucrose.mg.g, FUN=sum, na.rm=FALSE)
 
 ### END combine sugar and starch ###
 ```
@@ -1234,14 +1238,53 @@ nsc.adult.total.mass.alive.common <- rbind(
                              nsc.adult.total.mass.alive[tsca,],
                              nsc.adult.total.mass.alive[ulam,])
 
-write.csv(x = nsc.adult.total.mass.alive.common, file = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Data/nsc.adult.total.mass.alive.common.csv")
+#Add temperature and precipitation data
+#fix mean dataset
+  W <- which(nsc.adult.total.mass.alive.common$Site == "W")
+  B <- which(nsc.adult.total.mass.alive.common$Site == "B")
+  H <- which(nsc.adult.total.mass.alive.common$Site == "H")
+  V <- which(nsc.adult.total.mass.alive.common$Site == "V")
+  S <- which(nsc.adult.total.mass.alive.common$Site == "S")
+  M <- which(nsc.adult.total.mass.alive.common$Site == "M")
+  Tr <- which(nsc.adult.total.mass.alive.common$Site == "T")
+  Fa <- which(nsc.adult.total.mass.alive.common$Site == "F")
+  C <- which(nsc.adult.total.mass.alive.common$Site == "C")
+  D <- which(nsc.adult.total.mass.alive.common$Site == "D")
+  
+  #########Correct temperature and precip data for sites used############
+  nsc.adult.total.mass.alive.common$TEMP_C <- NA
+  nsc.adult.total.mass.alive.common$TEMP_C[W] <- 4.08
+  nsc.adult.total.mass.alive.common$TEMP_C[B] <- 4.85
+  nsc.adult.total.mass.alive.common$TEMP_C[H] <- 7.05
+  nsc.adult.total.mass.alive.common$TEMP_C[V] <- 10.99
+  nsc.adult.total.mass.alive.common$TEMP_C[S] <- 12.25
+  nsc.adult.total.mass.alive.common$TEMP_C[M] <- 12.62
+  nsc.adult.total.mass.alive.common$TEMP_C[Tr] <- 14.11
+  nsc.adult.total.mass.alive.common$TEMP_C[Fa] <- 20.81
+  nsc.adult.total.mass.alive.common$TEMP_C[C] <- 11.22
+  nsc.adult.total.mass.alive.common$TEMP_C[D] <- 14.88
+
+  nsc.adult.total.mass.alive.common$PRECIP <- NA
+  nsc.adult.total.mass.alive.common$PRECIP[W] <- 804
+  nsc.adult.total.mass.alive.common$PRECIP[B] <- 1378
+  nsc.adult.total.mass.alive.common$PRECIP[H] <- 1135
+  nsc.adult.total.mass.alive.common$PRECIP[V] <- 985
+  nsc.adult.total.mass.alive.common$PRECIP[S] <- 970
+  nsc.adult.total.mass.alive.common$PRECIP[M] <- 1037
+  nsc.adult.total.mass.alive.common$PRECIP[Tr] <- 1366
+  nsc.adult.total.mass.alive.common$PRECIP[Fa] <- 1298
+  nsc.adult.total.mass.alive.common$PRECIP[C] <- 2193
+  nsc.adult.total.mass.alive.common$PRECIP[D] <- 1165
+
+
+write.csv(x = nsc.adult.total.mass.alive.common, file = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Data/nsc.adult.total.mass.alive.common.DissertationDraftFinal.csv")
 
 nsc.adult.total.mass.alive.common$GenusSpecies <- factor(nsc.adult.total.mass.alive.common$GenusSpecies, 
-                  levels = c("Juniperus virginiana","Thuja occidentalis","Abies balsamea","Tsuga canadensis","Picea mariana", "Picea rubens","Pinus strobus","Pinus palustris","Pinus taeda","Pinus rigida","Sassafras albidum","Magnolia virginiana","Liriodendron tulipifera","Liquidambar styraciflua","Oxydendrum arboreum","Nyssa sylvatica","Fraxinus americana","Fraxinus nigra","Tilia americana","Acer rubrum","Acer saccharum","Acer negundo","Populus grandidentata","Populus tremuloides","Prunus serotina","Ulmus americana","Betula lenta","Betula papyrifera","Betula alleghaniensis","Juglans nigra","Carya glabra","Carya cordiformis","Carya ovata","Carya tomentosa","Fagus grandifolia","Quercus laurifolia","Quercus alba","Quercus velutina","Quercus nigra","Quercus laevis","Quercus montana","Quercus rubra","Quercus virginiana","Quercus muehlenbergii","Quercus phellos"), ordered = TRUE)
+                  levels = c("Juniperus virginiana","Thuja occidentalis","Abies balsamea","Tsuga canadensis","Picea mariana", "Picea rubens","Pinus strobus","Pinus palustris","Pinus taeda","Pinus rigida","Sassafras albidum","Magnolia virginiana","Liriodendron tulipifera","Liquidambar styraciflua","Oxydendrum arboreum","Nyssa sylvatica","Fraxinus americana","Fraxinus nigra","Tilia americana","Acer rubrum","Acer saccharum","Acer negundo","Populus grandidentata","Populus tremuloides","Prunus serotina","Ulmus americana","Betula lenta","Betula papyrifera","Betula alleghaniensis","Juglans nigra","Carya glabra","Carya cordiformis","Carya ovata","Carya tomentosa","Fagus grandifolia","Quercus laurifolia","Quercus alba","Quercus velutina","Quercus nigra","Quercus laevis","Quercus montana","Quercus rubra","Quercus virginiana","Quercus muehlenbergii","Quercus phellos"))
 
-nsc.adult.total.mass.alive.common$wood <- factor(nsc.adult.total.mass.alive.common$wood, levels = c("large.resin","small.resin", "no.resin","ring.porous","semiring.porous","diffuse.porous"), ordered = TRUE)
+nsc.adult.total.mass.alive.common$wood <- factor(nsc.adult.total.mass.alive.common$wood, levels = c("large.resin","small.resin", "no.resin","ring.porous","semiring.porous","diffuse.porous"))
 
-nsc.adult.total.mass.alive.common$PFT <- factor(nsc.adult.total.mass.alive.common$PFT, levels = c("Early.Conifer","Late.Conifer","Early.Hardwood","Mid.Hardwood","Late.Hardwood"), ordered = TRUE)
+nsc.adult.total.mass.alive.common$PFT <- factor(nsc.adult.total.mass.alive.common$PFT, levels = c("Early.Conifer","Late.Conifer","Early.Hardwood","Mid.Hardwood","Late.Hardwood"))
 
 # read.nexus(file = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Data/NSCnexus.txt")
 # read.newick(file = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Data/NSCnewick.txt")
@@ -1958,6 +2001,7 @@ median(nsc.adult.total.mass.alive.common$sucrose.mg.g, na.rm = TRUE) #13.6
 median(nsc.adult.total.mass.alive.common$fructose.mg.g, na.rm = TRUE) #7.10
 median(nsc.adult.total.mass.alive.common$starch.mg.g, na.rm = TRUE) #22.10
 median(nsc.adult.total.mass.alive.common$total.nsc, na.rm = TRUE) #53.52
+
 
 ```
 You can also embed plots, for example:
