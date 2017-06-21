@@ -1303,17 +1303,37 @@ lm.species.total <- lm(total.nsc ~ GenusSpecies, data = nsc.adult.total.mass.ali
 anova(lm.species.total)
 summary(lm.species.total) #R^2 = .5877
 
+lm.species.starch <- lm(starch.mg.g ~ GenusSpecies, data = nsc.adult.total.mass.alive.common)
+anova(lm.species.starch)
+summary(lm.species.starch) #R^2 = 0.5368
+
+lm.species.sugar <- lm(sugar.mg.g ~ GenusSpecies, data = nsc.adult.total.mass.alive.common)
+anova(lm.species.sugar)
+summary(lm.species.sugar) #R^2 = 0.4987
+
+lm.species.glucose <- lm(glucose.mg.g ~ GenusSpecies, data = nsc.adult.total.mass.alive.common)
+anova(lm.species.glucose)
+summary(lm.species.glucose) #R^2 = 0.3569
+
+lm.species.fructose <- lm(fructose.mg.g ~ GenusSpecies, data = nsc.adult.total.mass.alive.common)
+anova(lm.species.fructose)
+summary(lm.species.fructose) #R^2 = 0.4379
+
+lm.species.sucrose <- lm(sucrose.mg.g ~ GenusSpecies, data = nsc.adult.total.mass.alive.common)
+anova(lm.species.sucrose)
+summary(lm.species.sucrose) #R^2 = 0.4098
+
 #TukeyHSD species
 #too many groups, not good to visualize
-# summary(aov.species <- aov(lm.species.total))
-# tukey.species <- TukeyHSD(aov.species, "GenusSpecies", ordered = FALSE)
-# plot(tukey.species)
-# species.levels <- tukey.species[["GenusSpecies"]][,4]
-# species.labels <- multcompLetters(species.levels)['Letters']
-# species.plot.labels <- names(species.labels[['Letters']])
+summary(aov.species <- aov(lm.species.total))
+tukey.species <- TukeyHSD(aov.species, "GenusSpecies", ordered = FALSE)
+plot(tukey.species)
+species.levels <- tukey.species[["GenusSpecies"]][,4]
+species.labels <- multcompLetters(species.levels)['Letters']
+species.plot.labels <- names(species.labels[['Letters']])
 
-#Species boxplot
-nsc.species <- ggplot(nsc.adult.total.mass.alive.common, aes(x = GenusSpecies, y = total.nsc, fill = wood)) + 
+#Species boxplots
+nsc.species.total <- ggplot(nsc.adult.total.mass.alive.common, aes(x = GenusSpecies, y = total.nsc, fill = wood)) + 
   geom_boxplot() + theme(axis.text.x = element_text(angle=90,hjust=1,vjust=.5,size=10)) +
   theme(axis.text.y = element_text(size=12)) +
   #theme(axis.title.x = element_text(size=16)) +
@@ -1323,10 +1343,87 @@ nsc.species <- ggplot(nsc.adult.total.mass.alive.common, aes(x = GenusSpecies, y
   theme(legend.key.size = unit(.4, "cm")) +
   labs(fill = "Wood\nAnatomy") +
   stat_summary(fun.data = give.n, geom= "text", size = 2.5, aes(y= 160)) + 
-  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("") + ggtitle("All Species") +
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("") +
   scale_fill_manual(values=rev(cbPalette), labels = c("Large Resin", "Small Resin", "No Resin", "Ring Porous", "Semi-ring\nPorous", "Diffuse Porous"))
 
-ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/TotalNSC.AllCommonSpp.png", plot = nsc.species, dpi = 600, width = 10, height = 4.75, units = "in")
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/Final/TotalNSC.AllCommonSpp.png", plot = nsc.species.total, dpi = 600, width = 10, height = 4.75, units = "in")
+
+nsc.species.starch <- ggplot(nsc.adult.total.mass.alive.common, aes(x = GenusSpecies, y = starch.mg.g, fill = wood)) + 
+  geom_boxplot() + theme(axis.text.x = element_text(angle=90,hjust=1,vjust=.5,size=10)) +
+  theme(axis.text.y = element_text(size=12)) +
+  #theme(axis.title.x = element_text(size=16)) +
+  theme(axis.title.y = element_text(size=14)) +
+  theme(legend.text = element_text(size=10)) + 
+  theme(legend.title = element_text(size = 14)) +
+  theme(legend.key.size = unit(.4, "cm")) +
+  labs(fill = "Wood\nAnatomy") +
+  stat_summary(fun.data = give.n, geom= "text", size = 2.5, aes(y= 101)) + 
+  ylab(expression(paste("Starch mg g"^"-1"))) + xlab("") +
+  scale_fill_manual(values=rev(cbPalette), labels = c("Large Resin", "Small Resin", "No Resin", "Ring Porous", "Semi-ring\nPorous", "Diffuse Porous"))
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/Final/Starch.AllCommonSpp.png", plot = nsc.species.starch, dpi = 600, width = 10, height = 4.75, units = "in")
+
+nsc.species.sugar <- ggplot(nsc.adult.total.mass.alive.common, aes(x = GenusSpecies, y = sugar.mg.g, fill = wood)) + 
+  geom_boxplot() + theme(axis.text.x = element_text(angle=90,hjust=1,vjust=.5,size=10)) +
+  theme(axis.text.y = element_text(size=12)) +
+  #theme(axis.title.x = element_text(size=16)) +
+  theme(axis.title.y = element_text(size=14)) +
+  theme(legend.text = element_text(size=10)) + 
+  theme(legend.title = element_text(size = 14)) +
+  theme(legend.key.size = unit(.4, "cm")) +
+  labs(fill = "Wood\nAnatomy") +
+  stat_summary(fun.data = give.n, geom= "text", size = 2.5, aes(y= 80)) + 
+  ylab(expression(paste("Total Sugar mg g"^"-1"))) + xlab("") +
+  scale_fill_manual(values=rev(cbPalette), labels = c("Large Resin", "Small Resin", "No Resin", "Ring Porous", "Semi-ring\nPorous", "Diffuse Porous"))
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/Final/Sugar.AllCommonSpp.png", plot = nsc.species.sugar, dpi = 600, width = 10, height = 4.75, units = "in")
+
+nsc.species.glucose <- ggplot(nsc.adult.total.mass.alive.common, aes(x = GenusSpecies, y = glucose.mg.g, fill = wood)) + 
+  geom_boxplot() + theme(axis.text.x = element_text(angle=90,hjust=1,vjust=.5,size=10)) +
+  theme(axis.text.y = element_text(size=12)) +
+  #theme(axis.title.x = element_text(size=16)) +
+  theme(axis.title.y = element_text(size=14)) +
+  theme(legend.text = element_text(size=10)) + 
+  theme(legend.title = element_text(size = 14)) +
+  theme(legend.key.size = unit(.4, "cm")) +
+  labs(fill = "Wood\nAnatomy") +
+  stat_summary(fun.data = give.n, geom= "text", size = 2.5, aes(y= 40)) + 
+  ylab(expression(paste("Glucose mg g"^"-1"))) + xlab("") +
+  scale_fill_manual(values=rev(cbPalette), labels = c("Large Resin", "Small Resin", "No Resin", "Ring Porous", "Semi-ring\nPorous", "Diffuse Porous"))
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/Final/Glucose.AllCommonSpp.png", plot = nsc.species.glucose, dpi = 600, width = 10, height = 4.75, units = "in")
+
+nsc.species.fructose <- ggplot(nsc.adult.total.mass.alive.common, aes(x = GenusSpecies, y = fructose.mg.g, fill = wood)) + 
+  geom_boxplot() + theme(axis.text.x = element_text(angle=90,hjust=1,vjust=.5,size=10)) +
+  theme(axis.text.y = element_text(size=12)) +
+  #theme(axis.title.x = element_text(size=16)) +
+  theme(axis.title.y = element_text(size=14)) +
+  theme(legend.text = element_text(size=10)) + 
+  theme(legend.title = element_text(size = 14)) +
+  theme(legend.key.size = unit(.4, "cm")) +
+  coord_cartesian(ylim = c(0,34)) +
+  labs(fill = "Wood\nAnatomy") +
+  stat_summary(fun.data = give.n, geom= "text", size = 2.5, aes(y= 34)) + 
+  ylab(expression(paste("Fructose mg g"^"-1"))) + xlab("") +
+  scale_fill_manual(values=rev(cbPalette), labels = c("Large Resin", "Small Resin", "No Resin", "Ring Porous", "Semi-ring\nPorous", "Diffuse Porous"))
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/Final/Fructose.AllCommonSpp.png", plot = nsc.species.fructose, dpi = 600, width = 10, height = 4.75, units = "in")
+
+nsc.species.sucrose <- ggplot(nsc.adult.total.mass.alive.common, aes(x = GenusSpecies, y = sucrose.mg.g, fill = wood)) + 
+  geom_boxplot() + theme(axis.text.x = element_text(angle=90,hjust=1,vjust=.5,size=10)) +
+  theme(axis.text.y = element_text(size=12)) +
+  #theme(axis.title.x = element_text(size=16)) +
+  theme(axis.title.y = element_text(size=14)) +
+  theme(legend.text = element_text(size=10)) + 
+  theme(legend.title = element_text(size = 14)) +
+  theme(legend.key.size = unit(.4, "cm")) +
+  #coord_cartesian(ylim = c(0,34)) +
+  labs(fill = "Wood\nAnatomy") +
+  stat_summary(fun.data = give.n, geom= "text", size = 2.5, aes(y= 56)) + 
+  ylab(expression(paste("Sucrose mg g"^"-1"))) + xlab("") +
+  scale_fill_manual(values=rev(cbPalette), labels = c("Large Resin", "Small Resin", "No Resin", "Ring Porous", "Semi-ring\nPorous", "Diffuse Porous"))
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/Final/Sucrose.AllCommonSpp.png", plot = nsc.species.sucrose, dpi = 600, width = 10, height = 4.75, units = "in")
 
 #Genus anova
 lm.genus.total <- lm(total.nsc ~ genus, data = nsc.adult.total.mass.alive.common)
@@ -1409,7 +1506,94 @@ ggplot(nsc.adult.total.mass.alive.common, aes(x = subclass, y = total.nsc, fill 
   scale_fill_manual(values=rev(cbPalette))
 
 
-#PFT anova
+#PFT anova total
+lm.pft.total <- lm(total.nsc ~ PFT, data = nsc.adult.total.mass.alive.common)
+anova(lm.pft.total)
+summary(lm.pft.total) #R^2 = .363
+
+#TukeyHSD PFT
+summary(aov.pft <- aov(lm.pft.total))
+tukey.pft <- TukeyHSD(aov.pft, "PFT", ordered = FALSE)
+plot(tukey.pft)
+pft.levels <- tukey.pft[["PFT"]][,4]
+pft.labels <- multcompLetters(pft.levels)['Letters']
+pft.plot.labels <- names(pft.labels[['Letters']])
+
+#PFT ggplot 
+pft.violin <- ggplot(nsc.adult.total.mass.alive.common, aes(x = PFT, y = total.nsc)) + #, fill = PFT
+  geom_violin() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
+  theme(axis.text.y = element_text(size=12)) +
+  theme(axis.title.x = element_text(size=14)) +
+  theme(axis.title.y = element_text(size=14)) +
+  theme(axis.text.x = element_text(size=12)) +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 205)) + 
+  stat_summary(fun.y="median", geom="point") +
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Plant Functional Type") +
+  annotate("text", x = 1:5, y = c(110, 95, 165, 185, 135), 
+           label = c("b","a","c","e","d"))
+
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/Final/TotalNSC.AllCommonPFT.png", plot = pft.violin, dpi = 600, width = 7.5, height = 3.5, units = "in")
+
+#PFT ANOVA Starch
+lm.pft.starch <- lm(starch.mg.g ~ PFT, data = nsc.adult.total.mass.alive.common)
+anova(lm.pft.starch)
+summary(lm.pft.starch) #R^2 = .3612
+
+#TukeyHSD PFT
+summary(aov.pft.starch <- aov(lm.pft.starch))
+tukey.pft.starch <- TukeyHSD(aov.pft.starch, "PFT", ordered = FALSE)
+plot(tukey.pft.starch)
+pft.levels.starch <- tukey.pft.starch[["PFT"]][,4]
+pft.labels.starch <- multcompLetters(pft.levels.starch)['Letters']
+pft.plot.labels.starch <- names(pft.labels.starch[['Letters']])
+
+#PFT ggplot 
+pft.violin.starch <- ggplot(nsc.adult.total.mass.alive.common, aes(x = PFT, y = starch.mg.g)) + #, fill = PFT
+  geom_violin() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
+  theme(axis.text.y = element_text(size=12)) +
+  theme(axis.title.x = element_text(size=14)) +
+  theme(axis.title.y = element_text(size=14)) +
+  theme(axis.text.x = element_text(size=12)) +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 115)) + 
+  stat_summary(fun.y="median", geom="point") +
+  ylab(expression(paste("Starch mg g"^"-1"))) + xlab("Plant Functional Type") +
+  annotate("text", x = 1:5, y = c(40, 41, 97, 110, 87), 
+           label = c("b","a","c","e","d"))
+
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/Final/Starch.AllCommonPFT.png", plot = pft.violin.starch, dpi = 600, width = 7.5, height = 3.5, units = "in")
+
+#PFT ANOVA Sugar
+lm.pft.sugar <- lm(sugar.mg.g ~ PFT, data = nsc.adult.total.mass.alive.common)
+anova(lm.pft.sugar)
+summary(lm.pft.sugar) #R^2 = .2076
+
+#TukeyHSD PFT
+summary(aov.pft.sugar <- aov(lm.pft.sugar))
+tukey.pft.sugar <- TukeyHSD(aov.pft.sugar, "PFT", ordered = FALSE)
+plot(tukey.pft.sugar)
+pft.levels.sugar <- tukey.pft.sugar[["PFT"]][,4]
+pft.labels.sugar <- multcompLetters(pft.levels.sugar)['Letters']
+pft.plot.labels.sugar <- names(pft.labels.sugar[['Letters']])
+
+#PFT ggplot 
+pft.violin <- ggplot(nsc.adult.total.mass.alive.common, aes(x = PFT, y = total.nsc)) + #, fill = PFT
+  geom_violin() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
+  theme(axis.text.y = element_text(size=12)) +
+  theme(axis.title.x = element_text(size=14)) +
+  theme(axis.title.y = element_text(size=14)) +
+  theme(axis.text.x = element_text(size=12)) +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 205)) + 
+  stat_summary(fun.y="median", geom="point") +
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Plant Functional Type") +
+  annotate("text", x = 1:5, y = c(110, 95, 165, 185, 135), 
+           label = c("e","a","b","c","d"))
+
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/TotalNSC.AllCommonPFT.png", plot = pft.violin, dpi = 600, width = 7.5, height = 3.5, units = "in")
+
+#PFT ANOVA Glucose
 lm.pft.total <- lm(total.nsc ~ PFT, data = nsc.adult.total.mass.alive.common)
 anova(lm.pft.total)
 summary(lm.pft.total) #R^2 = .363
@@ -1437,6 +1621,65 @@ pft.violin <- ggplot(nsc.adult.total.mass.alive.common, aes(x = PFT, y = total.n
 
 
 ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/TotalNSC.AllCommonPFT.png", plot = pft.violin, dpi = 600, width = 7.5, height = 3.5, units = "in")
+
+#PFT ANOVA Fructose
+lm.pft.total <- lm(total.nsc ~ PFT, data = nsc.adult.total.mass.alive.common)
+anova(lm.pft.total)
+summary(lm.pft.total) #R^2 = .363
+
+#TukeyHSD PFT
+summary(aov.pft <- aov(lm.pft.total))
+tukey.pft <- TukeyHSD(aov.pft, "PFT", ordered = FALSE)
+plot(tukey.pft)
+pft.levels <- tukey.pft[["PFT"]][,4]
+pft.labels <- multcompLetters(pft.levels)['Letters']
+pft.plot.labels <- names(pft.labels[['Letters']])
+
+#PFT ggplot 
+pft.violin <- ggplot(nsc.adult.total.mass.alive.common, aes(x = PFT, y = total.nsc)) + #, fill = PFT
+  geom_violin() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
+  theme(axis.text.y = element_text(size=12)) +
+  theme(axis.title.x = element_text(size=14)) +
+  theme(axis.title.y = element_text(size=14)) +
+  theme(axis.text.x = element_text(size=12)) +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 205)) + 
+  stat_summary(fun.y="median", geom="point") +
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Plant Functional Type") +
+  annotate("text", x = 1:5, y = c(110, 95, 165, 185, 135), 
+           label = c("e","a","b","c","d"))
+
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/TotalNSC.AllCommonPFT.png", plot = pft.violin, dpi = 600, width = 7.5, height = 3.5, units = "in")
+
+#PFT ANOVA Sucrose
+lm.pft.total <- lm(total.nsc ~ PFT, data = nsc.adult.total.mass.alive.common)
+anova(lm.pft.total)
+summary(lm.pft.total) #R^2 = .363
+
+#TukeyHSD PFT
+summary(aov.pft <- aov(lm.pft.total))
+tukey.pft <- TukeyHSD(aov.pft, "PFT", ordered = FALSE)
+plot(tukey.pft)
+pft.levels <- tukey.pft[["PFT"]][,4]
+pft.labels <- multcompLetters(pft.levels)['Letters']
+pft.plot.labels <- names(pft.labels[['Letters']])
+
+#PFT ggplot 
+pft.violin <- ggplot(nsc.adult.total.mass.alive.common, aes(x = PFT, y = total.nsc)) + #, fill = PFT
+  geom_violin() + theme(axis.text.x = element_text(angle=45,hjust=1,size=16)) +
+  theme(axis.text.y = element_text(size=12)) +
+  theme(axis.title.x = element_text(size=14)) +
+  theme(axis.title.y = element_text(size=14)) +
+  theme(axis.text.x = element_text(size=12)) +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 205)) + 
+  stat_summary(fun.y="median", geom="point") +
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Plant Functional Type") +
+  annotate("text", x = 1:5, y = c(110, 95, 165, 185, 135), 
+           label = c("e","a","b","c","d"))
+
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/TotalNSC.AllCommonPFT.png", plot = pft.violin, dpi = 600, width = 7.5, height = 3.5, units = "in")
+
 
 #wood anatomy anova
 lm.wood.total <- lm(total.nsc ~ wood, data = nsc.adult.total.mass.alive.common)
