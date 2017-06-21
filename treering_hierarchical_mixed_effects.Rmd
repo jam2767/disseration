@@ -1690,6 +1690,10 @@ lm.pft.temp.avg <- lm(mean.growth.50yr ~ PFT*TEMP_C, data = mean.growth.fig.data
 anova.pft.tmp.avg <- anova(lm.pft.temp.avg)
 summary(lm.pft.temp.avg)
 
+#PFT * Temperature variances AVERAGE growth
+pft.temp.ss <- anova.pft.tmp.avg$`Sum Sq`/sum(anova.pft.tmp.avg$`Sum Sq`)
+pft.temp.part.vars <- cbind(rownames(anova.pft.tmp.avg), anova.pft.tmp.avg$Df, anova.pft.tmp.avg$`F value`, anova.pft.tmp.avg$`Pr(>F)`, pft.temp.ss)
+
 ### regressions that match the plots now ###
 early.con <- which(mean.growth.fig.data$PFT == "Early.Conifer")
 late.con <- which(mean.growth.fig.data$PFT == "Late.Conifer")
@@ -1731,6 +1735,10 @@ lm.pft.precip.avg <- lm(mean.growth.50yr ~ PFT*PRECIP, data = mean.growth.fig.da
 anova.pft.precip.avg <- anova(lm.pft.precip.avg)
 summary(lm.pft.precip.avg)
 
+#PFT * Precip variances AVERAGE growth
+pft.precip.ss <- anova.pft.precip.avg$`Sum Sq`/sum(anova.pft.precip.avg$`Sum Sq`)
+pft.precip.part.vars <- cbind(rownames(anova.pft.precip.avg), anova.pft.precip.avg$Df, anova.pft.precip.avg$`F value`, anova.pft.precip.avg$`Pr(>F)`, pft.precip.ss)
+
 lm.pft.precip.early.con <- lm(mean.growth.50yr[early.con] ~ PRECIP[early.con], data = mean.growth.fig.data)
 summary(lm.pft.precip.early.con)
 
@@ -1763,30 +1771,40 @@ lm.spp.temp.avg <- lm(mean.growth.50yr ~ GenusSpecies*TEMP_C, data = mean.growth
 anova.spp.tmp.avg <- anova(lm.spp.temp.avg)
 summary(lm.spp.temp.avg)
 
+#Spp * Temperature variances AVERAGE growth
+spp.temp.ss <- anova.spp.tmp.avg$`Sum Sq`/sum(anova.spp.tmp.avg$`Sum Sq`)
+spp.temp.part.vars <- cbind(rownames(anova.spp.tmp.avg), anova.spp.tmp.avg$Df, anova.spp.tmp.avg$`F value`, anova.spp.tmp.avg$`Pr(>F)`, spp.temp.ss)
+
 spp.growth.temp.plot <- ggplot(mean.growth.fig.data, aes(x = TEMP_C, y = mean.growth.50yr)) +
   geom_point(alpha = .1) +
   coord_cartesian(ylim = c(0,5.2)) +
   ylab(expression(paste("Ring Width mm yr"^"-1"))) + xlab("Temperature (C)") +
-  geom_smooth(method = "lm") + facet_wrap(~ GenusSpecies)
-  theme(axis.title.y = element_text(size = 14)) +
-  theme(axis.title.x = element_text(size = 14)) 
+  geom_smooth(method = "lm") + facet_wrap(~ GenusSpecies) +
+  theme(axis.title.y = element_text(size = 12)) +
+  theme(strip.text.x = element_text(size=7)) +
+  theme(axis.title.x = element_text(size = 12)) 
 
-ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings/Figures/Final/spp.growth.temp.plot.png", plot = spp.growth.temp.plot, dpi = 600, width = 5, height = 3.5, units = "in")
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings/Figures/Final/spp.growth.temp.plot.png", plot = spp.growth.temp.plot, dpi = 600, width = 7, height = 9, units = "in")
 
 # SPP * Precip
 lm.spp.precip.avg <- lm(mean.growth.50yr ~ GenusSpecies*PRECIP, data = mean.growth.fig.data)
 anova.spp.precip.avg <- anova(lm.spp.precip.avg)
 summary(lm.spp.precip.avg)
 
+#Spp * Precip variances AVERAGE growth
+spp.precip.ss <- anova.spp.precip.avg$`Sum Sq`/sum(anova.spp.precip.avg$`Sum Sq`)
+spp.precip.part.vars <- cbind(rownames(anova.spp.precip.avg), anova.spp.precip.avg$Df, anova.spp.precip.avg$`F value`, anova.spp.precip.avg$`Pr(>F)`, spp.precip.ss)
+
 spp.growth.precip.plot <- ggplot(mean.growth.fig.data, aes(x = PRECIP, y = mean.growth.50yr)) +
   geom_point(alpha = .1) +
   coord_cartesian(ylim = c(0,5.2)) +
   ylab(expression(paste("Ring Width mm yr"^"-1"))) + xlab("Precipitation (mm)") +
-  geom_smooth(method = "lm") + facet_wrap(~ GenusSpecies)
-  theme(axis.title.y = element_text(size = 14)) +
-  theme(axis.title.x = element_text(size = 14)) 
+  geom_smooth(method = "lm") + facet_wrap(~ GenusSpecies) +
+  theme(axis.title.y = element_text(size = 12)) +
+  theme(strip.text.x = element_text(size=7)) +
+  theme(axis.title.x = element_text(size = 12)) 
 
-ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings/Figures/Final/spp.growth.precip.plot.png", plot = spp.growth.precip.plot, dpi = 600, width = 5, height = 3.5, units = "in")
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings/Figures/Final/spp.growth.precip.plot.png", plot = spp.growth.precip.plot, dpi = 600, width = 7, height = 9, units = "in")
 
 #PFT * Site
 lm.pft.site.avg <- lm(mean.growth.50yr ~ PFT*SITE, data = mean.growth.fig.data)
