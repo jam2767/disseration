@@ -1383,6 +1383,8 @@ lm.year <- lm(INCREMENT ~ YEAR, data = combined.all.diss.common)
 anova(lm.year)
 summary(lm.year)
 
+lm.year
+
 #Tukey's HSD year
 summary(aov.year <- aov(lm.year))
 tukey.year.gr <- TukeyHSD(aov.year, "YEAR", ordered = FALSE)
@@ -1412,7 +1414,7 @@ combined.all.diss.common$CORE_ID15 <- factor(combined.all.diss.common$CORE_ID15)
 #Relevel sites
 mean.growth.fig.data$SITE <- factor(mean.growth.fig.data$SITE, levels = c("W","B","H","V","C","S","M","T","D","F"))
 
-#lm
+#lm site
 lm.site.avg.final <- lm(mean.growth.50yr ~ SITE, data = mean.growth.fig.data)
 anova.site.avg <- anova(lm.site.avg.final)
 summary(lm.site.avg.final)
@@ -1449,6 +1451,11 @@ ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings/Figures/Final/
 lm.space.avg.final <- lm(mean.growth.50yr ~ SITE/PLOT/SUB, data = mean.growth.fig.data)
 anova.space.avg <- anova(lm.space.avg.final)
 summary(lm.space.avg.final)
+
+#variances
+avg.space.ss <- anova.space.avg$`Sum Sq`/sum(anova.space.avg$`Sum Sq`)
+avg.space.part.vars <- cbind(rownames(anova.space.avg), anova.space.avg$Df, anova.space.avg$`F value`, anova.space.avg$`Pr(>F)`, avg.space.ss)
+
 
 #variances AVERAGE growth
 space.avg.ss <- anova.space.avg$`Sum Sq`/sum(anova.space.avg$`Sum Sq`)
@@ -1858,6 +1865,16 @@ summary(lmer.space.annual)
 space.vars <- as.data.frame(VarCorr(lmer.space.annual, order = "cov.last")) #random effect variances
 var.space.vars = space.vars$vcov/sum(space.vars$vcov)
 percent.var.space <- var.space.vars*100
+
+fixed.pft.lm <- lm(INCREMENT ~ PFT, data = combined.all.diss.common)
+anova.pft.fix <- anova(fixed.pft.lm)
+summary(fixed.pft.lm)
+
+#matches what I've done for the full model
+var(predict(lm(INCREMENT ~ PFT, data = combined.all.diss.common)))
+var(predict(lm(INCREMENT ~ CANOPY15, data = combined.all.diss.common)))
+var(predict(lm(INCREMENT ~ DBH15 + PFT + CANOPY15, data = combined.all.diss.common)))
+
 
 #below not used in final analysis#
 ####################################################################
