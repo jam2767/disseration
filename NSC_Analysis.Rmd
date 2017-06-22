@@ -2688,9 +2688,9 @@ canopy.nsc.fagus.sucrose <- ggplot(nsc.adult.fagus[!is.na(nsc.adult.fagus$Canopy
 tsuga.sort <- which(nsc.adult.total.mass.alive.common$genus == "Tsuga")
 nsc.adult.tsuga <- nsc.adult.total.mass.alive.common[tsuga.sort,]
 
+#TSCA DBH total NSC
 dbh.nsc.tsuga <- ggplot(nsc.adult.tsuga, aes(x = DBH14, y = total.nsc)) +
   geom_point(alpha = .3) +
-  geom_smooth() +
   #geom_smooth(method = "gam", formula = y ~ s(x), size = 1) + # GAM model with smooth
   geom_smooth(method = "lm", col = "yellow") +
   theme(axis.title.y = element_blank()) +
@@ -2700,6 +2700,71 @@ dbh.nsc.tsuga <- ggplot(nsc.adult.tsuga, aes(x = DBH14, y = total.nsc)) +
 lm.dbh.tsuga <- lm(total.nsc ~ DBH14, data = nsc.adult.tsuga)
 anova(lm.dbh.tsuga)
 summary(lm.dbh.tsuga)
+
+#TSCA DBH starch
+dbh.nsc.tsuga.starch <- ggplot(nsc.adult.tsuga, aes(x = DBH14, y = starch.mg.g)) +
+  geom_point(alpha = .3) +
+  #geom_smooth(method = "gam", formula = y ~ s(x), size = 1) + # GAM model with smooth
+  geom_smooth(method = "lm", col = "yellow") +
+  theme(axis.title.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
+  ggtitle("Tsuga canadensis")
+
+lm.dbh.tsuga.starch <- lm(starch.mg.g ~ DBH14, data = nsc.adult.tsuga)
+anova(lm.dbh.tsuga.starch)
+summary(lm.dbh.tsuga.starch)
+
+#TSCA DBH sugar
+dbh.nsc.tsuga.sugar <- ggplot(nsc.adult.tsuga, aes(x = DBH14, y = sugar.mg.g)) +
+  geom_point(alpha = .3) +
+  #geom_smooth(method = "gam", formula = y ~ s(x), size = 1) + # GAM model with smooth
+  geom_smooth(method = "lm", col = "yellow") +
+  theme(axis.title.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
+  ggtitle("Tsuga canadensis")
+
+lm.dbh.tsuga.sugar <- lm(sugar.mg.g ~ DBH14, data = nsc.adult.tsuga)
+anova(lm.dbh.tsuga.sugar)
+summary(lm.dbh.tsuga.sugar)
+
+#TSCA DBH glucose
+dbh.nsc.tsuga.glucose <- ggplot(nsc.adult.tsuga, aes(x = DBH14, y = glucose.mg.g)) +
+  geom_point(alpha = .3) +
+  #geom_smooth(method = "gam", formula = y ~ s(x), size = 1) + # GAM model with smooth
+  geom_smooth(method = "lm", col = "yellow") +
+  theme(axis.title.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
+  ggtitle("Tsuga canadensis")
+
+lm.dbh.tsuga.glucose <- lm(glucose.mg.g ~ DBH14, data = nsc.adult.tsuga)
+anova(lm.dbh.tsuga.glucose)
+summary(lm.dbh.tsuga.glucose)
+
+#TSCA DBH fructose
+dbh.nsc.tsuga.fructose <- ggplot(nsc.adult.tsuga, aes(x = DBH14, y = fructose.mg.g)) +
+  geom_point(alpha = .3) +
+  #geom_smooth(method = "gam", formula = y ~ s(x), size = 1) + # GAM model with smooth
+  geom_smooth(method = "lm", col = "yellow") +
+  theme(axis.title.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
+  ggtitle("Tsuga canadensis")
+
+lm.dbh.tsuga.fructose <- lm(fructose.mg.g ~ DBH14, data = nsc.adult.tsuga)
+anova(lm.dbh.tsuga.fructose)
+summary(lm.dbh.tsuga.fructose)
+
+#TSCA DBH sucrose
+dbh.nsc.tsuga.sucrose <- ggplot(nsc.adult.tsuga, aes(x = DBH14, y = sucrose.mg.g)) +
+  geom_point(alpha = .3) +
+  #geom_smooth(method = "gam", formula = y ~ s(x), size = 1) + # GAM model with smooth
+  geom_smooth(method = "lm", col = "yellow") +
+  theme(axis.title.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
+  ggtitle("Tsuga canadensis")
+
+lm.dbh.tsuga.sucrose <- lm(sucrose.mg.g ~ DBH14, data = nsc.adult.tsuga)
+anova(lm.dbh.tsuga.sucrose)
+summary(lm.dbh.tsuga.sucrose)
 
 #Canopy Tsuga
 #lm for Canopy:NSC
@@ -2721,59 +2786,116 @@ canopy.nsc.tsuga <- ggplot(nsc.adult.tsuga[!is.na(nsc.adult.tsuga$Canopy15),], a
   annotate("text", x = 1:2, y = c(59, 47), label = c("a","b")) +
   ggtitle("Tsuga canadensis")
 
-#ACRU dataframe
-acru.sort <- which(nsc.adult.total.mass.alive.common$GenusSpecies == "Acer rubrum")
-nsc.adult.acru <- nsc.adult.total.mass.alive.common[acru.sort,]
+#Canopy Tsuga starch
+#lm for Canopy:NSC
+lm.can.tsuga.starch <- lm(starch.mg.g ~ Canopy15, data = nsc.adult.tsuga)
+anova(lm.can.tsuga.starch)
+summary(lm.can.tsuga.starch)
 
-#DBH ACRU
-dbh.nsc.acru <- ggplot(nsc.adult.acru, aes(x = DBH14, y = total.nsc)) +
-  geom_point(alpha = .3) +
-  geom_smooth() + # GAM model
-  xlab("DBH") + ylab(expression(paste("Total NSC (mg g"^"-1",")"))) +
-  theme(axis.text.x = element_text(size = 14))
+#only understory and co-dominant. so doing t-test for groups
+t.test(starch.mg.g ~ Canopy15, data = nsc.adult.tsuga)
 
-canopy.nsc.acru <- ggplot(nsc.adult.acru[!is.na(nsc.adult.acru$Canopy15),], aes(x = as.factor(Canopy15), y = total.nsc)) +
-  geom_boxplot() + theme(axis.text.x = element_text(angle=0,hjust=.5,vjust = .5, size=16)) +
-  theme(axis.text.y = element_text(size=12)) +
-  theme(axis.title.x = element_text(size=14)) +
-  theme(axis.title.y = element_text(size=14)) +
-  theme(axis.text.x = element_text(size=12)) +
+canopy.nsc.tsuga.starch <- ggplot(nsc.adult.tsuga[!is.na(nsc.adult.tsuga$Canopy15),], aes(x = as.factor(Canopy15), y = starch.mg.g)) +
+  geom_violin() + theme(axis.text.x = element_text(angle=0,hjust=.5,vjust = .5, size=8)) +
+  theme(axis.title.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
   stat_summary(fun.y="median", geom="point") +
-  stat_summary(fun.data = give.n, geom= "text", aes(y= 180)) + 
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 37)) + 
   scale_x_discrete(labels = c("Understory", "Co-dominant", "Dominant")) +
-  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Canopy Status") # + ggtitle("All Canopy Statuses") +
-  #scale_fill_manual(values=rev(cbPalette))
+  ylab(expression(paste("Starch mg g"^"-1"))) + xlab("Canopy Status") +
+  annotate("text", x = 1:2, y = c(34, 12.5), label = c("a","a")) +
+  ggtitle("Tsuga canadensis")
 
-#ACSA3 dataframe
-acsa.sort <- which(nsc.adult.total.mass.alive.common$GenusSpecies == "Acer saccharum")
-nsc.adult.acsa <- nsc.adult.total.mass.alive.common[acsa.sort,]
+#Canopy Tsuga sugar
+#lm for Canopy:NSC
+lm.can.tsuga.sugar <- lm(sugar.mg.g ~ Canopy15, data = nsc.adult.tsuga)
+anova(lm.can.tsuga.sugar)
+summary(lm.can.tsuga.sugar)
 
-#DBH ACSA3
-dbh.nsc.acsa <- ggplot(nsc.adult.acsa, aes(x = DBH14, y = total.nsc)) +
-  geom_point(alpha = .3) +
-  geom_smooth() + # GAM model
-  xlab("DBH") + ylab(expression(paste("Total NSC (mg g"^"-1",")"))) +
-  theme(axis.text.x = element_text(size = 14))
+#only understory and co-dominant. so doing t-test for groups
+t.test(sugar.mg.g ~ Canopy15, data = nsc.adult.tsuga)
 
-canopy.nsc.acsa <- ggplot(nsc.adult.acsa[!is.na(nsc.adult.acsa$Canopy15),], aes(x = as.factor(Canopy15), y = total.nsc)) +
-  geom_boxplot() + theme(axis.text.x = element_text(angle=0,hjust=.5,vjust = .5, size=16)) +
-  theme(axis.text.y = element_text(size=12)) +
-  theme(axis.title.x = element_text(size=14)) +
-  theme(axis.title.y = element_text(size=14)) +
-  theme(axis.text.x = element_text(size=12)) +
+canopy.nsc.tsuga.sugar <- ggplot(nsc.adult.tsuga[!is.na(nsc.adult.tsuga$Canopy15),], aes(x = as.factor(Canopy15), y = sugar.mg.g)) +
+  geom_violin() + theme(axis.text.x = element_text(angle=0,hjust=.5,vjust = .5, size=8)) +
+  theme(axis.title.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
   stat_summary(fun.y="median", geom="point") +
-  stat_summary(fun.data = give.n, geom= "text", aes(y= 180)) + 
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 37)) + 
   scale_x_discrete(labels = c("Understory", "Co-dominant", "Dominant")) +
-  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Canopy Status") # + ggtitle("All Canopy Statuses") +
-  #scale_fill_manual(values=rev(cbPalette))
+  ylab(expression(paste("Total Sugar mg g"^"-1"))) + xlab("Canopy Status") +
+  annotate("text", x = 1:2, y = c(29, 35), label = c("a","b")) +
+  ggtitle("Tsuga canadensis")
 
-#DBH Acer
+#Canopy Tsuga glucose
+#lm for Canopy:NSC
+lm.can.tsuga.glucose <- lm(glucose.mg.g ~ Canopy15, data = nsc.adult.tsuga)
+anova(lm.can.tsuga.glucose)
+summary(lm.can.tsuga.glucose)
+
+#only understory and co-dominant. so doing t-test for groups
+t.test(glucose.mg.g ~ Canopy15, data = nsc.adult.tsuga)
+
+canopy.nsc.tsuga.glucose <- ggplot(nsc.adult.tsuga[!is.na(nsc.adult.tsuga$Canopy15),], aes(x = as.factor(Canopy15), y = glucose.mg.g)) +
+  geom_violin() + theme(axis.text.x = element_text(angle=0,hjust=.5,vjust = .5, size=8)) +
+  theme(axis.title.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
+  stat_summary(fun.y="median", geom="point") +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 16.5)) + 
+  scale_x_discrete(labels = c("Understory", "Co-dominant", "Dominant")) +
+  ylab(expression(paste("Glucose mg g"^"-1"))) + xlab("Canopy Status") +
+  annotate("text", x = 1:2, y = c(13.5, 15.25), label = c("a","b")) +
+  ggtitle("Tsuga canadensis")
+
+#Canopy Tsuga fructose
+#lm for Canopy:NSC
+lm.can.tsuga.fructose <- lm(fructose.mg.g ~ Canopy15, data = nsc.adult.tsuga)
+anova(lm.can.tsuga.fructose)
+summary(lm.can.tsuga.fructose)
+
+#only understory and co-dominant. so doing t-test for groups
+t.test(fructose.mg.g ~ Canopy15, data = nsc.adult.tsuga)
+
+canopy.nsc.tsuga.fructose <- ggplot(nsc.adult.tsuga[!is.na(nsc.adult.tsuga$Canopy15),], aes(x = as.factor(Canopy15), y = fructose.mg.g)) +
+  geom_violin() + theme(axis.text.x = element_text(angle=0,hjust=.5,vjust = .5, size=8)) +
+  theme(axis.title.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
+  stat_summary(fun.y="median", geom="point") +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 11.5)) + 
+  scale_x_discrete(labels = c("Understory", "Co-dominant", "Dominant")) +
+  ylab(expression(paste("Fructose mg g"^"-1"))) + xlab("Canopy Status") +
+  annotate("text", x = 1:2, y = c(8.75, 11), label = c("a","b")) +
+  ggtitle("Tsuga canadensis")
+
+#Canopy Tsuga sucrose
+#lm for Canopy:NSC
+lm.can.tsuga.sucrose <- lm(sucrose.mg.g ~ Canopy15, data = nsc.adult.tsuga)
+anova(lm.can.tsuga.sucrose)
+summary(lm.can.tsuga.sucrose)
+
+#only understory and co-dominant. so doing t-test for groups
+t.test(sucrose.mg.g ~ Canopy15, data = nsc.adult.tsuga)
+
+canopy.nsc.tsuga.sucrose <- ggplot(nsc.adult.tsuga[!is.na(nsc.adult.tsuga$Canopy15),], aes(x = as.factor(Canopy15), y = sucrose.mg.g)) +
+  geom_violin() + theme(axis.text.x = element_text(angle=0,hjust=.5,vjust = .5, size=8)) +
+  theme(axis.title.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
+  stat_summary(fun.y="median", geom="point") +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 16)) + 
+  scale_x_discrete(labels = c("Understory", "Co-dominant", "Dominant")) +
+  ylab(expression(paste("Sucrose mg g"^"-1"))) + xlab("Canopy Status") +
+  annotate("text", x = 1:2, y = c(12, 14.9), label = c("a","b")) +
+  ggtitle("Tsuga canadensis")
+
+#DBH Acer total
 acer.sort <- which(nsc.adult.total.mass.alive.common$genus == "Acer")
 nsc.adult.acer <- nsc.adult.total.mass.alive.common[acer.sort,]
 
+lm.dbh.acer <- lm(total.nsc ~ DBH14, data = nsc.adult.acer)
+anova(lm.dbh.acer)
+summary(lm.dbh.acer)
+
 dbh.nsc.acer <- ggplot(nsc.adult.acer, aes(x = DBH14, y = total.nsc)) +
   geom_point(alpha = .3) +
-  geom_smooth() +
   #geom_smooth(method = "gam", formula = y ~ s(x), size = 1) + # GAM model with smooth
   geom_smooth(method = "lm", col = "yellow") +
   theme(axis.title.y = element_blank()) +
@@ -2782,9 +2904,85 @@ dbh.nsc.acer <- ggplot(nsc.adult.acer, aes(x = DBH14, y = total.nsc)) +
   #theme(axis.text.x = element_text(size = 14)) +
   ggtitle("Acer")
 
+#DBH Acer starch
+lm.dbh.acer.starch <- lm(starch.mg.g ~ DBH14, data = nsc.adult.acer)
+anova(lm.dbh.acer.starch)
+summary(lm.dbh.acer.starch)
+
+dbh.nsc.acer.starch <- ggplot(nsc.adult.acer, aes(x = DBH14, y = starch.mg.g)) +
+  geom_point(alpha = .3) +
+  #geom_smooth(method = "gam", formula = y ~ s(x), size = 1) + # GAM model with smooth
+  geom_smooth(method = "lm", col = "yellow") +
+  theme(axis.title.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
+  #xlab("DBH") + 
+  #theme(axis.text.x = element_text(size = 14)) +
+  ggtitle("Acer")
+
+#DBH Acer sugar
+lm.dbh.acer.sugar <- lm(sugar.mg.g ~ DBH14, data = nsc.adult.acer)
+anova(lm.dbh.acer.sugar)
+summary(lm.dbh.acer.sugar)
+
+dbh.nsc.acer.sugar <- ggplot(nsc.adult.acer, aes(x = DBH14, y = sugar.mg.g)) +
+  geom_point(alpha = .3) +
+  #geom_smooth(method = "gam", formula = y ~ s(x), size = 1) + # GAM model with smooth
+  geom_smooth(method = "lm", col = "yellow") +
+  theme(axis.title.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
+  #xlab("DBH") + 
+  #theme(axis.text.x = element_text(size = 14)) +
+  ggtitle("Acer")
+
+#DBH Acer glucose
+lm.dbh.acer.glucose <- lm(glucose.mg.g ~ DBH14, data = nsc.adult.acer)
+anova(lm.dbh.acer.glucose)
+summary(lm.dbh.acer.glucose)
+
+dbh.nsc.acer.glucose <- ggplot(nsc.adult.acer, aes(x = DBH14, y = glucose.mg.g)) +
+  geom_point(alpha = .3) +
+  #geom_smooth(method = "gam", formula = y ~ s(x), size = 1) + # GAM model with smooth
+  geom_smooth(method = "lm", col = "yellow") +
+  theme(axis.title.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
+  #xlab("DBH") + 
+  #theme(axis.text.x = element_text(size = 14)) +
+  ggtitle("Acer")
+
+#DBH Acer fructose
+lm.dbh.acer.fructose <- lm(fructose.mg.g ~ DBH14, data = nsc.adult.acer)
+anova(lm.dbh.acer.fructose)
+summary(lm.dbh.acer.fructose)
+
+dbh.nsc.acer.fructose <- ggplot(nsc.adult.acer, aes(x = DBH14, y = fructose.mg.g)) +
+  geom_point(alpha = .3) +
+  #geom_smooth(method = "gam", formula = y ~ s(x), size = 1) + # GAM model with smooth
+  geom_smooth(method = "lm", col = "yellow") +
+  theme(axis.title.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
+  #xlab("DBH") + 
+  #theme(axis.text.x = element_text(size = 14)) +
+  ggtitle("Acer")
+
+#DBH Acer sucrose
+lm.dbh.acer.sucrose <- lm(sucrose.mg.g ~ DBH14, data = nsc.adult.acer)
+anova(lm.dbh.acer.sucrose)
+summary(lm.dbh.acer.sucrose)
+
+dbh.nsc.acer.sucrose <- ggplot(nsc.adult.acer, aes(x = DBH14, y = sucrose.mg.g)) +
+  geom_point(alpha = .3) +
+  #geom_smooth(method = "gam", formula = y ~ s(x), size = 1) + # GAM model with smooth
+  geom_smooth(method = "lm", col = "yellow") +
+  theme(axis.title.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
+  #xlab("DBH") + 
+  #theme(axis.text.x = element_text(size = 14)) +
+  ggtitle("Acer")
+
+#Acer canopy
 lm.can.acer <- lm(total.nsc ~ Canopy15, data = nsc.adult.acer)
-anova(lm.dbh.acer)
-summary(lm.dbh.acer)
+anova(lm.can.acer)
+summary(lm.can.acer)
 
 summary(aov.can.acer <- aov(lm.can.acer))
 tukey.can.acer <- TukeyHSD(aov.can.acer, "Canopy15", ordered = FALSE)
@@ -2799,11 +2997,179 @@ canopy.nsc.acer <- ggplot(nsc.adult.acer[!is.na(nsc.adult.acer$Canopy15),], aes(
   theme(axis.title.y = element_blank()) +
   theme(axis.title.x = element_blank()) +
   stat_summary(fun.y="median", geom="point") +
-  stat_summary(fun.data = give.n, geom= "text", aes(y= 180)) + 
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 140)) + 
   scale_x_discrete(labels = c("Understory", "Co-dominant", "Dominant")) +
   ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Canopy Status") +
   annotate("text", x = 1:3, y = c(106, 129, 90), label = c("a","a","a")) +
   ggtitle("Acer")
+
+#Acer canopy starch
+lm.can.acer.starch <- lm(starch.mg.g ~ Canopy15, data = nsc.adult.acer)
+anova(lm.can.acer.starch)
+summary(lm.can.acer.starch)
+
+summary(aov.can.acer.starch <- aov(lm.can.acer.starch))
+tukey.can.acer.starch <- TukeyHSD(aov.can.acer.starch, "Canopy15", ordered = FALSE)
+plot(tukey.can.acer.starch)
+canopy.levels.acer.starch <- tukey.can.acer.starch[["Canopy15"]][,4]
+canopy.labels.acer.starch <- multcompLetters(canopy.levels.acer.starch)['Letters']
+canopy.plot.labels.acer.starch <- names(canopy.labels.acer.starch[['Letters']])
+
+#Acer canopy 
+canopy.nsc.acer.starch <- ggplot(nsc.adult.acer[!is.na(nsc.adult.acer$Canopy15),], aes(x = as.factor(Canopy15), y = starch.mg.g)) +
+  geom_violin() + theme(axis.text.x =   element_text(angle=0,hjust=.5,vjust = .5, size=8)) +
+  theme(axis.title.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
+  stat_summary(fun.y="median", geom="point") +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 94)) + 
+  scale_x_discrete(labels = c("Understory", "Co-dominant", "Dominant")) +
+  ylab(expression(paste("Starch mg g"^"-1"))) + xlab("Canopy Status") +
+  annotate("text", x = 1:3, y = c(73, 86, 52), label = c("a","a","a")) +
+  ggtitle("Acer")
+
+#Acer canopy sugar
+lm.can.acer.sugar <- lm(sugar.mg.g ~ Canopy15, data = nsc.adult.acer)
+anova(lm.can.acer.sugar)
+summary(lm.can.acer.sugar)
+
+summary(aov.can.acer.sugar <- aov(lm.can.acer.sugar))
+tukey.can.acer.sugar <- TukeyHSD(aov.can.acer.sugar, "Canopy15", ordered = FALSE)
+plot(tukey.can.acer.sugar)
+canopy.levels.acer.sugar <- tukey.can.acer.sugar[["Canopy15"]][,4]
+canopy.labels.acer.sugar <- multcompLetters(canopy.levels.acer.sugar)['Letters']
+canopy.plot.labels.acer.sugar <- names(canopy.labels.acer.sugar[['Letters']])
+
+#Acer canopy 
+canopy.nsc.acer.sugar <- ggplot(nsc.adult.acer[!is.na(nsc.adult.acer$Canopy15),], aes(x = as.factor(Canopy15), y = sugar.mg.g)) +
+  geom_violin() + theme(axis.text.x =   element_text(angle=0,hjust=.5,vjust = .5, size=8)) +
+  theme(axis.title.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
+  stat_summary(fun.y="median", geom="point") +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 74)) + 
+  scale_x_discrete(labels = c("Understory", "Co-dominant", "Dominant")) +
+  ylab(expression(paste("Total Sugar mg g"^"-1"))) + xlab("Canopy Status") +
+  annotate("text", x = 1:3, y = c(54, 70, 39), label = c("a","a","a")) +
+  ggtitle("Acer")
+
+#Acer canopy glucose
+lm.can.acer.glucose <- lm(glucose.mg.g ~ Canopy15, data = nsc.adult.acer)
+anova(lm.can.acer.glucose)
+summary(lm.can.acer.glucose)
+
+summary(aov.can.acer.glucose <- aov(lm.can.acer.glucose))
+tukey.can.acer.glucose <- TukeyHSD(aov.can.acer.glucose, "Canopy15", ordered = FALSE)
+plot(tukey.can.acer.glucose)
+canopy.levels.acer.glucose <- tukey.can.acer.glucose[["Canopy15"]][,4]
+canopy.labels.acer.glucose <- multcompLetters(canopy.levels.acer.glucose)['Letters']
+canopy.plot.labels.acer.glucose <- names(canopy.labels.acer.glucose[['Letters']])
+
+#Acer canopy 
+canopy.nsc.acer.glucose <- ggplot(nsc.adult.acer[!is.na(nsc.adult.acer$Canopy15),], aes(x = as.factor(Canopy15), y = glucose.mg.g)) +
+  geom_violin() + theme(axis.text.x =   element_text(angle=0,hjust=.5,vjust = .5, size=8)) +
+  theme(axis.title.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
+  stat_summary(fun.y="median", geom="point") +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 21)) + 
+  scale_x_discrete(labels = c("Understory", "Co-dominant", "Dominant")) +
+  ylab(expression(paste("Glucose mg g"^"-1"))) + xlab("Canopy Status") +
+  annotate("text", x = 1:3, y = c(19.75, 18.35, 10.35), label = c("a","a","a")) +
+  ggtitle("Acer")
+
+#Acer canopy fructose
+lm.can.acer.fructose <- lm(fructose.mg.g ~ Canopy15, data = nsc.adult.acer)
+anova(lm.can.acer.fructose)
+summary(lm.can.acer.fructose)
+
+summary(aov.can.acer.fructose <- aov(lm.can.acer.fructose))
+tukey.can.acer.fructose <- TukeyHSD(aov.can.acer.fructose, "Canopy15", ordered = FALSE)
+plot(tukey.can.acer.fructose)
+canopy.levels.acer.fructose <- tukey.can.acer.fructose[["Canopy15"]][,4]
+canopy.labels.acer.fructose <- multcompLetters(canopy.levels.acer.fructose)['Letters']
+canopy.plot.labels.acer.fructose <- names(canopy.labels.acer.fructose[['Letters']])
+
+#Acer canopy 
+canopy.nsc.acer.fructose <- ggplot(nsc.adult.acer[!is.na(nsc.adult.acer$Canopy15),], aes(x = as.factor(Canopy15), y = fructose.mg.g)) +
+  geom_violin() + theme(axis.text.x =   element_text(angle=0,hjust=.5,vjust = .5, size=8)) +
+  theme(axis.title.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
+  stat_summary(fun.y="median", geom="point") +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 22)) + 
+  scale_x_discrete(labels = c("Understory", "Co-dominant", "Dominant")) +
+  ylab(expression(paste("Fructose mg g"^"-1"))) + xlab("Canopy Status") +
+  annotate("text", x = 1:3, y = c(20.25, 15, 11.25), label = c("a","a","a")) +
+  ggtitle("Acer")
+
+#Acer canopy sucrose
+lm.can.acer.sucrose <- lm(sucrose.mg.g ~ Canopy15, data = nsc.adult.acer)
+anova(lm.can.acer.sucrose)
+summary(lm.can.acer.sucrose)
+
+summary(aov.can.acer.sucrose <- aov(lm.can.acer.sucrose))
+tukey.can.acer.sucrose <- TukeyHSD(aov.can.acer.sucrose, "Canopy15", ordered = FALSE)
+plot(tukey.can.acer.sucrose)
+canopy.levels.acer.sucrose <- tukey.can.acer.sucrose[["Canopy15"]][,4]
+canopy.labels.acer.sucrose <- multcompLetters(canopy.levels.acer.sucrose)['Letters']
+canopy.plot.labels.acer.sucrose <- names(canopy.labels.acer.sucrose[['Letters']])
+
+#Acer canopy 
+canopy.nsc.acer.sucrose <- ggplot(nsc.adult.acer[!is.na(nsc.adult.acer$Canopy15),], aes(x = as.factor(Canopy15), y = sucrose.mg.g)) +
+  geom_violin() + theme(axis.text.x =   element_text(angle=0,hjust=.5,vjust = .5, size=8)) +
+  theme(axis.title.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
+  stat_summary(fun.y="median", geom="point") +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 49)) + 
+  scale_x_discrete(labels = c("Understory", "Co-dominant", "Dominant")) +
+  ylab(expression(paste("Sucrose mg g"^"-1"))) + xlab("Canopy Status") +
+  annotate("text", x = 1:3, y = c(31, 46, 29), label = c("ab","a","b")) +
+  ggtitle("Acer")
+
+# #ACRU dataframe
+# acru.sort <- which(nsc.adult.total.mass.alive.common$GenusSpecies == "Acer rubrum")
+# nsc.adult.acru <- nsc.adult.total.mass.alive.common[acru.sort,]
+# 
+# #DBH ACRU
+# dbh.nsc.acru <- ggplot(nsc.adult.acru, aes(x = DBH14, y = total.nsc)) +
+#   geom_point(alpha = .3) +
+#   geom_smooth() + # GAM model
+#   xlab("DBH") + ylab(expression(paste("Total NSC (mg g"^"-1",")"))) +
+#   theme(axis.text.x = element_text(size = 14))
+# 
+# canopy.nsc.acru <- ggplot(nsc.adult.acru[!is.na(nsc.adult.acru$Canopy15),], aes(x = as.factor(Canopy15), y = total.nsc)) +
+#   geom_boxplot() + theme(axis.text.x = element_text(angle=0,hjust=.5,vjust = .5, size=16)) +
+#   theme(axis.text.y = element_text(size=12)) +
+#   theme(axis.title.x = element_text(size=14)) +
+#   theme(axis.title.y = element_text(size=14)) +
+#   theme(axis.text.x = element_text(size=12)) +
+#   stat_summary(fun.y="median", geom="point") +
+#   stat_summary(fun.data = give.n, geom= "text", aes(y= 180)) + 
+#   scale_x_discrete(labels = c("Understory", "Co-dominant", "Dominant")) +
+#   ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Canopy Status") # + ggtitle("All Canopy Statuses") +
+#   #scale_fill_manual(values=rev(cbPalette))
+# 
+# #ACSA3 dataframe
+# acsa.sort <- which(nsc.adult.total.mass.alive.common$GenusSpecies == "Acer saccharum")
+# nsc.adult.acsa <- nsc.adult.total.mass.alive.common[acsa.sort,]
+# 
+# #DBH ACSA3
+# dbh.nsc.acsa <- ggplot(nsc.adult.acsa, aes(x = DBH14, y = total.nsc)) +
+#   geom_point(alpha = .3) +
+#   geom_smooth() + # GAM model
+#   xlab("DBH") + ylab(expression(paste("Total NSC (mg g"^"-1",")"))) +
+#   theme(axis.text.x = element_text(size = 14))
+# 
+# canopy.nsc.acsa <- ggplot(nsc.adult.acsa[!is.na(nsc.adult.acsa$Canopy15),], aes(x = as.factor(Canopy15), y = total.nsc)) +
+#   geom_boxplot() + theme(axis.text.x = element_text(angle=0,hjust=.5,vjust = .5, size=16)) +
+#   theme(axis.text.y = element_text(size=12)) +
+#   theme(axis.title.x = element_text(size=14)) +
+#   theme(axis.title.y = element_text(size=14)) +
+#   theme(axis.text.x = element_text(size=12)) +
+#   stat_summary(fun.y="median", geom="point") +
+#   stat_summary(fun.data = give.n, geom= "text", aes(y= 180)) + 
+#   scale_x_discrete(labels = c("Understory", "Co-dominant", "Dominant")) +
+#   ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Canopy Status") # + ggtitle("All Canopy Statuses") +
+#   #scale_fill_manual(values=rev(cbPalette))
+
+
 
 #Combining all DBH plots into one figure#
 nsc.dbh.common <- grid.arrange(dbh.nsc, dbh.nsc.quercus, dbh.nsc.fagus, dbh.nsc.tsuga, dbh.nsc.acer, ncol = 2, bottom = "DBH", left = textGrob(label = expression(paste("Total NSC mg g"^"-1")), rot = 90))
