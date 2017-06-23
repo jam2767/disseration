@@ -1838,13 +1838,36 @@ summary(lmer.full.avg)
 
 #### Going to just run the full model and see what happens ###
  ###############Final model for dissertation chapter #####################
-lmer.full.annual <- lmer(INCREMENT ~ PFT + DBH15 + CANOPY15 + (1|SITE/PLOT/SUB/CORE_ID15) + (1|GenusSpecies) + (1|YEAR) + (1|SITE:YEAR) + (1|GenusSpecies:SITE) + (1|PFT:SITE), data = combined.all.diss.common)
+lmer.full.annual <- lmer(INCREMENT ~ PFT + CANOPY15 + DBH15 + (1|SITE/PLOT/SUB/CORE_ID15) + (1|GenusSpecies) + (1|YEAR) + (1|SITE:YEAR) + (1|GenusSpecies:SITE) + (1|PFT:SITE), data = combined.all.diss.common)
 summary(lmer.full.annual)
 anova.full.anual <- anova(lmer.full.annual)
 
 #R2m - fixed effects, .1228853
 #R2c - random effects + fixed effects, .6002241
-r.squaredGLMM(lmer.full.annual)
+full.R2 <- r.squaredGLMM(lmer.full.annual)
+full.fix <- full.R2[1] #.123
+full.rand <- full.R2[2] - full.R2[1] #.477
+
+#proportion of variance for fixed effects from Sum Sq of ANOVA table
+full.fix.ss <- anova.full.anual$`Sum Sq`/sum(anova.full.anual$`Sum Sq`)
+full.fix.vars.table <- cbind(rownames(anova.full.anual), anova.full.anual$Df, anova.full.anual$`F value`, anova.full.anual$`Pr(>F)`, full.fix.ss)
+proportion.fix <- full.fix * as.numeric(full.fix.vars.table[,4]) #proportion of fixed effect explained by each variable - highly dependent on order - don't trust relative importance.
+full.fix.table <- cbind(rownames(anova.full.anual),proportion.fix) #final table fixed effects
+#random vars
+full.rand.vars <- as.data.frame(VarCorr(lmer.full.annual, order = "cov.last")) #random effect variances
+prop.full.rand.vars = full.rand.vars$vcov[1:9]/sum(full.rand.vars$vcov[1:9])
+#percent.full.rand.vars <- prop.nsc.full.rand.vars*100
+proportion.rand <- full.rand * prop.full.rand.vars #proportion of variance explained by each random effect
+full.rand.table <- cbind(full.rand.vars$grp[1:9], proportion.rand) #final table random effects
+full.residual <- 1 - full.R2[2] #residual
+sum(proportion.rand) #check sums
+sum(proportion.fix) #check sums
+
+
+
+
+
+
 
 #Proportion of variance for fixed effects
 fixed.full.lm <- lm(INCREMENT ~ PFT + DBH15 + CANOPY15, data = combined.all.diss.common)
