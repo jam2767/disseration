@@ -1868,12 +1868,49 @@ wood.anatomy.sucrose <- ggplot(nsc.adult.total.mass.alive.common, aes(x = wood, 
 
 ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/Final/Sucrose.AllCommonWoodAnat.png", plot = wood.anatomy.sucrose, dpi = 600, width = 7.5, height = 3.5, units = "in")
 
+#########Use for first ANOVA of spatial effects before individual tests - think about putting all in table ########
 ###Anovas for hierarchical and individual effects
-fit.total.nsc.nested = aov(total.nsc ~ Site/Plot/Sub, 
+###total R2 = .229
+fit.total.nsc.space = lm(total.nsc ~ Site/Plot/Sub, 
                  data = nsc.adult.total.mass.alive.common)
-summary(fit.total.nsc.nested)
-var.total.nsc.nested = anova(fit.total.nsc.nested)[,2]
-prop.var.total.nsc.nested = var.total.nsc.nested/sum(var.total.nsc.nested)
+summary(fit.total.nsc.space)
+var.total.nsc.space = anova(fit.total.nsc.space)[,2]
+prop.var.total.nsc.space = var.total.nsc.space/sum(var.total.nsc.space)
+
+###starch R2 = .1739
+fit.starch.space = lm(starch.mg.g ~ Site/Plot/Sub, 
+                 data = nsc.adult.total.mass.alive.common)
+summary(fit.starch.space)
+var.starch.space = anova(fit.starch.space)[,2]
+prop.var.starch.space = var.starch.space/sum(var.starch.space)
+
+###sugar R2 = .2669
+fit.sugar.space = lm(sugar.mg.g ~ Site/Plot/Sub, 
+                 data = nsc.adult.total.mass.alive.common)
+summary(fit.sugar.space)
+var.sugar.space = anova(fit.sugar.space)[,2]
+prop.var.sugar.space = var.sugar.space/sum(var.sugar.space)
+
+###glucose R2 = .2301
+fit.glucose.space = lm(glucose.mg.g ~ Site/Plot/Sub, 
+                 data = nsc.adult.total.mass.alive.common)
+summary(fit.glucose.space)
+var.glucose.space = anova(fit.glucose.space)[,2]
+prop.var.glucose.space = var.glucose.space/sum(var.glucose.space)
+
+###fructose R2 = .2375
+fit.fructose.space = lm(fructose.mg.g ~ Site/Plot/Sub, 
+                 data = nsc.adult.total.mass.alive.common)
+summary(fit.fructose.space)
+var.fructose.space = anova(fit.fructose.space)[,2]
+prop.var.fructose.space = var.fructose.space/sum(var.fructose.space)
+
+###sucrose R2 = .2043
+fit.sucrose.space = lm(sucrose.mg.g ~ Site/Plot/Sub, 
+                 data = nsc.adult.total.mass.alive.common)
+summary(fit.sucrose.space)
+var.sucrose.space = anova(fit.sucrose.space)[,2]
+prop.var.sucrose.space = var.sucrose.space/sum(var.sucrose.space)
 
 #Kitchen sink: phylogenetics fit independently
 nsc.kitchen.lm <- lmer(total.nsc ~ DBH14 + Canopy15 + (1|Site) + (1|Site:GenusSpecies) + (1|GenusSpecies) + (1|genus) + (1|family) + (1|order) + (1|subclass) + (1|PFT) + (1|wood), nsc.adult.total.mass.alive.common)
@@ -1899,10 +1936,19 @@ sum(as.numeric(part.vars[,2]))
 #1,2,7
 site.partvar <- sum(as.numeric(part.vars[1,2]),as.numeric(part.vars[2,2]),as.numeric(part.vars[7,2])) #sub, plot, site 11.88 %
 
+
+################ Final Model #############
+#old
 #include site x spp interaction
-nsc.phylo.int.lm <- lmer(total.nsc ~ DBH14 + Canopy15 + (1|Site/Plot/Sub) + (1|subclass/order/family/genus/GenusSpecies) + (1|PFT) + (1|wood) + (1|GenusSpecies:Site), nsc.adult.total.mass.alive.common)
-summary(nsc.phylo.int.lm)
-plot((nsc.phylo.int.lm))
+# nsc.phylo.int.lm <- lmer(total.nsc ~ DBH14 + Canopy15 + (1|Site/Plot/Sub) + (1|subclass/order/family/genus/GenusSpecies) + (1|PFT) + (1|wood) + (1|GenusSpecies:Site), nsc.adult.total.mass.alive.common)
+# summary(nsc.phylo.int.lm)
+# plot((nsc.phylo.int.lm))
+
+#Full model with effects specified correctly - used in final dissertation draft!
+nsc.full.lm <- lmer(total.nsc ~ DBH14 + Canopy15 + PFT + wood + (1|Site/Plot/Sub) + (1|subclass/order/family/genus/GenusSpecies) + (1|GenusSpecies:Site) + (1|TEMP_C), nsc.adult.total.mass.alive.common)
+summary(nsc.full.lm)
+anova(nsc.full.lm)
+plot((nsc.full.lm))
 
 #variances
 #vcov = variances of random effects
