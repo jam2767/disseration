@@ -14,6 +14,7 @@ library(plyr)
 library(gridExtra)
 library(multcompView)
 library(grid)
+library(MuMIn)
 
 #helper functions
 #function to find last value of vector
@@ -1912,6 +1913,13 @@ summary(fit.sucrose.space)
 var.sucrose.space = anova(fit.sucrose.space)[,2]
 prop.var.sucrose.space = var.sucrose.space/sum(var.sucrose.space)
 
+nsc.adult.total.mass.alive.common$Canopy15 <- as.character(nsc.adult.total.mass.alive.common$Canopy15)
+nsc.adult.total.mass.alive.common$Canopy15[nsc.adult.total.mass.alive.common$Canopy15 == "0"] <- "Understory"
+nsc.adult.total.mass.alive.common$Canopy15[nsc.adult.total.mass.alive.common$Canopy15 == "1"] <- "CoDominant"
+nsc.adult.total.mass.alive.common$Canopy15[nsc.adult.total.mass.alive.common$Canopy15 == "2"] <- "Dominant"
+
+nsc.adult.total.mass.alive.common$Canopy15 <- factor(nsc.adult.total.mass.alive.common$Canopy15, levels = c("Understory","CoDominant","Dominant"))
+
 #Kitchen sink: phylogenetics fit independently
 nsc.kitchen.lm <- lmer(total.nsc ~ DBH14 + Canopy15 + (1|Site) + (1|Site:GenusSpecies) + (1|GenusSpecies) + (1|genus) + (1|family) + (1|order) + (1|subclass) + (1|PFT) + (1|wood), nsc.adult.total.mass.alive.common)
 summary(nsc.kitchen.lm)
@@ -1937,18 +1945,246 @@ sum(as.numeric(part.vars[,2]))
 site.partvar <- sum(as.numeric(part.vars[1,2]),as.numeric(part.vars[2,2]),as.numeric(part.vars[7,2])) #sub, plot, site 11.88 %
 
 
-################ Final Model #############
+################ Final Models #############
 #old
 #include site x spp interaction
 # nsc.phylo.int.lm <- lmer(total.nsc ~ DBH14 + Canopy15 + (1|Site/Plot/Sub) + (1|subclass/order/family/genus/GenusSpecies) + (1|PFT) + (1|wood) + (1|GenusSpecies:Site), nsc.adult.total.mass.alive.common)
 # summary(nsc.phylo.int.lm)
 # plot((nsc.phylo.int.lm))
 
-#Full model with effects specified correctly - used in final dissertation draft!
-nsc.full.lm <- lmer(total.nsc ~ DBH14 + Canopy15 + PFT + wood + (1|Site/Plot/Sub) + (1|subclass/order/family/genus/GenusSpecies) + (1|GenusSpecies:Site) + (1|TEMP_C), nsc.adult.total.mass.alive.common)
+#Full model with effects specified correctly - used in final dissertation draft! total.NSC
+nsc.full.lm <- lmer(total.nsc ~ DBH14 + Canopy15 + wood + PFT  + (1|Site/Plot/Sub) + (1|TEMP_C) + (1|GenusSpecies:Site) + (1|subclass/order/family/genus/GenusSpecies), nsc.adult.total.mass.alive.common)
 summary(nsc.full.lm)
 anova(nsc.full.lm)
-plot((nsc.full.lm))
+# plot((nsc.full.lm))
+
+#put fixed effects in order of explanatory power when isolated
+nsc.full.lm2 <- lmer(total.nsc ~ wood + PFT + DBH14 + Canopy15 + (1|Site/Plot/Sub) + (1|subclass/order/family/genus/GenusSpecies) + (1|GenusSpecies:Site) + (1|TEMP_C), nsc.adult.total.mass.alive.common)
+summary(nsc.full.lm2)
+anova.nsc.full.lm2 <- anova(nsc.full.lm2)
+# plot((nsc.full.lm2)) #looking at residuals
+
+#Gives me the R2 for fixed effects (R2m - marginal) and fixed + random effects (R2c - conditional) 0.3500509 0.7281469 
+nsc.full.R2 <- r.squaredGLMM(nsc.full.lm2)
+total.fix <- nsc.full.R2[1] #.35
+total.rand <- nsc.full.R2[2] - nsc.full.R2[1] #.37
+
+#proportion of variance for fixed effects from Sum Sq of ANOVA table
+nsc.full.fix.ss <- anova.nsc.full.lm2$`Sum Sq`/sum(anova.nsc.full.lm2$`Sum Sq`)
+nsc.full.fix.vars.table <- cbind(rownames(anova.nsc.full.lm2), anova.nsc.full.lm2$Df, anova.nsc.full.lm2$`F value`, anova.nsc.full.lm2$`Pr(>F)`, nsc.full.fix.ss)
+total.nsc.proportion.fix <- total.fix * as.numeric(nsc.full.fix.vars.table[,4]) #proportion of fixed effect explained by each variable - highly dependent on order - don't trust relative importance.
+total.fix.table <- cbind(rownames(anova.nsc.full.lm2),total.nsc.proportion.fix) #final table fixed effects
+#random vars
+nsc.full.rand.vars <- as.data.frame(VarCorr(nsc.full.lm2, order = "cov.last")) #random effect variances
+prop.nsc.full.rand.vars = nsc.full.rand.vars$vcov[1:10]/sum(nsc.full.rand.vars$vcov[1:10])
+#percent.full.rand.vars <- prop.nsc.full.rand.vars*100
+total.nsc.proportion.rand <- total.rand * prop.nsc.full.rand.vars #proportion of variance explained by each random effect
+total.rand.table <- cbind(nsc.full.rand.vars$grp[1:10], total.nsc.proportion.rand) #final table random effects
+total.residual <- 1 - nsc.full.R2[2] #residual
+sum(total.nsc.proportion.rand) #check sums
+sum(total.nsc.proportion.fix) #check sums
+
+
+###Starch Full model###
+# nsc.full.lm <- lmer(total.nsc ~ DBH14 + Canopy15 + wood + PFT  + (1|Site/Plot/Sub) + (1|TEMP_C) + (1|GenusSpecies:Site) + (1|subclass/order/family/genus/GenusSpecies), nsc.adult.total.mass.alive.common)
+# summary(nsc.full.lm)
+# anova(nsc.full.lm)
+# # plot((nsc.full.lm))
+
+#put fixed effects in order of explanatory power when isolated
+starch.full.lm2 <- lmer(starch.mg.g ~ wood + PFT + DBH14 + Canopy15 + (1|Site/Plot/Sub) + (1|subclass/order/family/genus/GenusSpecies) + (1|GenusSpecies:Site) + (1|TEMP_C), nsc.adult.total.mass.alive.common)
+summary(starch.full.lm2)
+anova.starch.full.lm2 <- anova(starch.full.lm2)
+# plot((nsc.full.lm2)) #looking at residuals
+
+#Gives me the R2 for fixed effects (R2m - marginal) and fixed + random effects (R2c - conditional) 0.3500509 0.7281469 
+starch.full.R2 <- r.squaredGLMM(starch.full.lm2)
+starch.fix <- starch.full.R2[1] #.27
+starch.rand <- starch.full.R2[2] - starch.full.R2[1] #.42
+
+#proportion of variance for fixed effects from Sum Sq of ANOVA table
+starch.full.fix.ss <- anova.starch.full.lm2$`Sum Sq`/sum(anova.starch.full.lm2$`Sum Sq`)
+starch.full.fix.vars.table <- cbind(rownames(anova.starch.full.lm2), anova.starch.full.lm2$Df, anova.starch.full.lm2$`F value`, anova.starch.full.lm2$`Pr(>F)`, starch.full.fix.ss)
+starch.proportion.fix <- starch.fix * as.numeric(starch.full.fix.vars.table[,4]) #proportion of fixed effect explained by each variable - highly dependent on order - don't trust relative importance.
+starch.fix.table <- cbind(rownames(anova.starch.full.lm2),starch.proportion.fix) #final table fixed effects
+#random vars
+starch.full.rand.vars <- as.data.frame(VarCorr(starch.full.lm2, order = "cov.last")) #random effect variances
+prop.starch.full.rand.vars = starch.full.rand.vars$vcov[1:10]/sum(starch.full.rand.vars$vcov[1:10])
+#percent.full.rand.vars <- prop.nsc.full.rand.vars*100
+starch.proportion.rand <- starch.rand * prop.starch.full.rand.vars #proportion of variance explained by each random effect
+starch.rand.table <- cbind(starch.full.rand.vars$grp[1:10], starch.proportion.rand) #final table random effects
+starch.residual <- 1 - starch.full.R2[2] #residual
+sum(starch.proportion.rand) #check sums
+sum(starch.proportion.fix) #check sums
+
+###Sugar Full model###
+# nsc.full.lm <- lmer(total.nsc ~ DBH14 + Canopy15 + wood + PFT  + (1|Site/Plot/Sub) + (1|TEMP_C) + (1|GenusSpecies:Site) + (1|subclass/order/family/genus/GenusSpecies), nsc.adult.total.mass.alive.common)
+# summary(nsc.full.lm)
+# anova(nsc.full.lm)
+# # plot((nsc.full.lm))
+
+#put fixed effects in order of explanatory power when isolated
+sugar.full.lm2 <- lmer(sugar.mg.g ~ wood + PFT + DBH14 + Canopy15 + (1|Site/Plot/Sub) + (1|subclass/order/family/genus/GenusSpecies) + (1|GenusSpecies:Site) + (1|TEMP_C), nsc.adult.total.mass.alive.common)
+summary(sugar.full.lm2)
+anova.sugar.full.lm2 <- anova(sugar.full.lm2)
+# plot((nsc.full.lm2)) #looking at residuals
+
+#Gives me the R2 for fixed effects (R2m - marginal) and fixed + random effects (R2c - conditional) 0.3500509 0.7281469 
+sugar.full.R2 <- r.squaredGLMM(sugar.full.lm2)
+sugar.fix <- sugar.full.R2[1] #.27
+sugar.rand <- sugar.full.R2[2] - sugar.full.R2[1] #.42
+
+#proportion of variance for fixed effects from Sum Sq of ANOVA table
+sugar.full.fix.ss <- anova.sugar.full.lm2$`Sum Sq`/sum(anova.sugar.full.lm2$`Sum Sq`)
+sugar.full.fix.vars.table <- cbind(rownames(anova.sugar.full.lm2), anova.sugar.full.lm2$Df, anova.sugar.full.lm2$`F value`, anova.sugar.full.lm2$`Pr(>F)`, sugar.full.fix.ss)
+sugar.proportion.fix <- sugar.fix * as.numeric(sugar.full.fix.vars.table[,4]) #proportion of fixed effect explained by each variable - highly dependent on order - don't trust relative importance.
+sugar.fix.table <- cbind(rownames(anova.sugar.full.lm2),sugar.proportion.fix) #final table fixed effects
+#random vars
+sugar.full.rand.vars <- as.data.frame(VarCorr(sugar.full.lm2, order = "cov.last")) #random effect variances
+prop.sugar.full.rand.vars = sugar.full.rand.vars$vcov[1:10]/sum(sugar.full.rand.vars$vcov[1:10])
+#percent.full.rand.vars <- prop.nsc.full.rand.vars*100
+sugar.proportion.rand <- sugar.rand * prop.sugar.full.rand.vars #proportion of variance explained by each random effect
+sugar.rand.table <- cbind(sugar.full.rand.vars$grp[1:10], sugar.proportion.rand) #final table random effects
+sugar.residual <- 1 - sugar.full.R2[2] #residual
+sum(sugar.proportion.rand) #check sums
+sum(sugar.proportion.fix) #check sums
+
+
+###Glucose Full model###
+# nsc.full.lm <- lmer(total.nsc ~ DBH14 + Canopy15 + wood + PFT  + (1|Site/Plot/Sub) + (1|TEMP_C) + (1|GenusSpecies:Site) + (1|subclass/order/family/genus/GenusSpecies), nsc.adult.total.mass.alive.common)
+# summary(nsc.full.lm)
+# anova(nsc.full.lm)
+# # plot((nsc.full.lm))
+
+#put fixed effects in order of explanatory power when isolated
+glucose.full.lm2 <- lmer(glucose.mg.g ~ wood + PFT + DBH14 + Canopy15 + (1|Site/Plot/Sub) + (1|subclass/order/family/genus/GenusSpecies) + (1|GenusSpecies:Site) + (1|TEMP_C), nsc.adult.total.mass.alive.common)
+summary(glucose.full.lm2)
+anova.glucose.full.lm2 <- anova(glucose.full.lm2)
+# plot((nsc.full.lm2)) #looking at residuals
+
+#Gives me the R2 for fixed effects (R2m - marginal) and fixed + random effects (R2c - conditional) 0.3500509 0.7281469 
+glucose.full.R2 <- r.squaredGLMM(glucose.full.lm2)
+glucose.fix <- glucose.full.R2[1] #.27
+glucose.rand <- glucose.full.R2[2] - glucose.full.R2[1] #.42
+
+#proportion of variance for fixed effects from Sum Sq of ANOVA table
+glucose.full.fix.ss <- anova.glucose.full.lm2$`Sum Sq`/sum(anova.glucose.full.lm2$`Sum Sq`)
+glucose.full.fix.vars.table <- cbind(rownames(anova.glucose.full.lm2), anova.glucose.full.lm2$Df, anova.glucose.full.lm2$`F value`, anova.glucose.full.lm2$`Pr(>F)`, glucose.full.fix.ss)
+glucose.proportion.fix <- glucose.fix * as.numeric(glucose.full.fix.vars.table[,4]) #proportion of fixed effect explained by each variable - highly dependent on order - don't trust relative importance.
+glucose.fix.table <- cbind(rownames(anova.glucose.full.lm2),glucose.proportion.fix) #final table fixed effects
+#random vars
+glucose.full.rand.vars <- as.data.frame(VarCorr(glucose.full.lm2, order = "cov.last")) #random effect variances
+prop.glucose.full.rand.vars = glucose.full.rand.vars$vcov[1:10]/sum(glucose.full.rand.vars$vcov[1:10])
+#percent.full.rand.vars <- prop.nsc.full.rand.vars*100
+glucose.proportion.rand <- glucose.rand * prop.glucose.full.rand.vars #proportion of variance explained by each random effect
+glucose.rand.table <- cbind(glucose.full.rand.vars$grp[1:10], glucose.proportion.rand) #final table random effects
+glucose.residual <- 1 - glucose.full.R2[2] #residual
+sum(glucose.proportion.rand) #check sums
+sum(glucose.proportion.fix) #check sums
+
+
+###Fructose Full model###
+# nsc.full.lm <- lmer(total.nsc ~ DBH14 + Canopy15 + wood + PFT  + (1|Site/Plot/Sub) + (1|TEMP_C) + (1|GenusSpecies:Site) + (1|subclass/order/family/genus/GenusSpecies), nsc.adult.total.mass.alive.common)
+# summary(nsc.full.lm)
+# anova(nsc.full.lm)
+# # plot((nsc.full.lm))
+
+#put fixed effects in order of explanatory power when isolated
+fructose.full.lm2 <- lmer(fructose.mg.g ~ wood + PFT + DBH14 + Canopy15 + (1|Site/Plot/Sub) + (1|subclass/order/family/genus/GenusSpecies) + (1|GenusSpecies:Site) + (1|TEMP_C), nsc.adult.total.mass.alive.common)
+summary(fructose.full.lm2)
+anova.fructose.full.lm2 <- anova(fructose.full.lm2)
+# plot((nsc.full.lm2)) #looking at residuals
+
+#Gives me the R2 for fixed effects (R2m - marginal) and fixed + random effects (R2c - conditional) 0.3500509 0.7281469 
+fructose.full.R2 <- r.squaredGLMM(fructose.full.lm2)
+fructose.fix <- fructose.full.R2[1] #.27
+fructose.rand <- fructose.full.R2[2] - fructose.full.R2[1] #.42
+
+#proportion of variance for fixed effects from Sum Sq of ANOVA table
+fructose.full.fix.ss <- anova.fructose.full.lm2$`Sum Sq`/sum(anova.fructose.full.lm2$`Sum Sq`)
+fructose.full.fix.vars.table <- cbind(rownames(anova.fructose.full.lm2), anova.fructose.full.lm2$Df, anova.fructose.full.lm2$`F value`, anova.fructose.full.lm2$`Pr(>F)`, fructose.full.fix.ss)
+fructose.proportion.fix <- fructose.fix * as.numeric(fructose.full.fix.vars.table[,4]) #proportion of fixed effect explained by each variable - highly dependent on order - don't trust relative importance.
+fructose.fix.table <- cbind(rownames(anova.fructose.full.lm2),fructose.proportion.fix) #final table fixed effects
+#random vars
+fructose.full.rand.vars <- as.data.frame(VarCorr(fructose.full.lm2, order = "cov.last")) #random effect variances
+prop.fructose.full.rand.vars = fructose.full.rand.vars$vcov[1:10]/sum(fructose.full.rand.vars$vcov[1:10])
+#percent.full.rand.vars <- prop.nsc.full.rand.vars*100
+fructose.proportion.rand <- fructose.rand * prop.fructose.full.rand.vars #proportion of variance explained by each random effect
+fructose.rand.table <- cbind(fructose.full.rand.vars$grp[1:10], fructose.proportion.rand) #final table random effects
+fructose.residual <- 1 - fructose.full.R2[2] #residual
+sum(fructose.proportion.rand) #check sums
+sum(fructose.proportion.fix) #check sums
+
+
+###Sucrose Full model###
+# nsc.full.lm <- lmer(total.nsc ~ DBH14 + Canopy15 + wood + PFT  + (1|Site/Plot/Sub) + (1|TEMP_C) + (1|GenusSpecies:Site) + (1|subclass/order/family/genus/GenusSpecies), nsc.adult.total.mass.alive.common)
+# summary(nsc.full.lm)
+# anova(nsc.full.lm)
+# # plot((nsc.full.lm))
+
+#put fixed effects in order of explanatory power when isolated
+sucrose.full.lm2 <- lmer(sucrose.mg.g ~ wood + PFT + DBH14 + Canopy15 + (1|Site/Plot/Sub) + (1|subclass/order/family/genus/GenusSpecies) + (1|GenusSpecies:Site) + (1|TEMP_C), nsc.adult.total.mass.alive.common)
+summary(sucrose.full.lm2)
+anova.sucrose.full.lm2 <- anova(sucrose.full.lm2)
+# plot((nsc.full.lm2)) #looking at residuals
+
+#Gives me the R2 for fixed effects (R2m - marginal) and fixed + random effects (R2c - conditional) 0.3500509 0.7281469 
+sucrose.full.R2 <- r.squaredGLMM(sucrose.full.lm2)
+sucrose.fix <- sucrose.full.R2[1] #.27
+sucrose.rand <- sucrose.full.R2[2] - sucrose.full.R2[1] #.42
+
+#proportion of variance for fixed effects from Sum Sq of ANOVA table
+sucrose.full.fix.ss <- anova.sucrose.full.lm2$`Sum Sq`/sum(anova.sucrose.full.lm2$`Sum Sq`)
+sucrose.full.fix.vars.table <- cbind(rownames(anova.sucrose.full.lm2), anova.sucrose.full.lm2$Df, anova.sucrose.full.lm2$`F value`, anova.sucrose.full.lm2$`Pr(>F)`, sucrose.full.fix.ss)
+sucrose.proportion.fix <- sucrose.fix * as.numeric(sucrose.full.fix.vars.table[,4]) #proportion of fixed effect explained by each variable - highly dependent on order - don't trust relative importance.
+sucrose.fix.table <- cbind(rownames(anova.sucrose.full.lm2),sucrose.proportion.fix) #final table fixed effects
+#random vars
+sucrose.full.rand.vars <- as.data.frame(VarCorr(sucrose.full.lm2, order = "cov.last")) #random effect variances
+prop.sucrose.full.rand.vars = sucrose.full.rand.vars$vcov[1:10]/sum(sucrose.full.rand.vars$vcov[1:10])
+#percent.full.rand.vars <- prop.nsc.full.rand.vars*100
+sucrose.proportion.rand <- sucrose.rand * prop.sucrose.full.rand.vars #proportion of variance explained by each random effect
+sucrose.rand.table <- cbind(sucrose.full.rand.vars$grp[1:10], sucrose.proportion.rand) #final table random effects
+sucrose.residual <- 1 - sucrose.full.R2[2] #residual
+sum(sucrose.proportion.rand) #check sums
+sum(sucrose.proportion.fix) #check sums
+
+
+
+
+
+#fixed effect variances
+#Proportion of variance for fixed effects
+fixed.nsc.full.lm2 <- lm(total.nsc ~ DBH14 + Canopy15 + PFT + wood, data = nsc.adult.total.mass.alive.common)
+anova.fixed.nsc.full.lm2 <- anova(fixed.nsc.full.lm2)
+summary(anova.fixed.nsc.full.lm2)
+
+full.nsc.ss <- anova.fixed.nsc.full.lm2$`Sum Sq`/sum(anova.fixed.nsc.full.lm2$`Sum Sq`)
+full.nsc.part.vars <- cbind(rownames(anova.fixed.nsc.full.lm2), anova.fixed.nsc.full.lm2$Df, anova.fixed.nsc.full.lm2$`F value`, anova.fixed.nsc.full.lm2$`Pr(>F)`, full.nsc.ss)
+#check
+var(predict(lm(total.nsc ~ DBH14 + Canopy15 + PFT + wood, data = nsc.adult.total.mass.alive.common)))
+var(predict(lm(total.nsc ~ DBH14, data = nsc.adult.total.mass.alive.common)))
+var(predict(lm(total.nsc ~ Canopy15, data = nsc.adult.total.mass.alive.common)))
+var(predict(lm(total.nsc ~ PFT, data = nsc.adult.total.mass.alive.common)))
+var(predict(lm(total.nsc ~ wood, data = nsc.adult.total.mass.alive.common)))
+
+
+
+
+#variances for random effects & fixed effects
+full.rand.vars <- as.data.frame(VarCorr(lmer.full.annual, order = "cov.last")) #random effect variances
+var.full.rand.vars = full.rand.vars$vcov/sum(full.rand.vars$vcov)
+percent.full.rand.vars <- var.full.rand.vars*100
+
+fix.part.vars <- full.fix.part.vars[1:3,5]
+random.part.vars <- full.vars$vcov
+full.total.part.vars <- c(fix.part.vars,random.part.vars)
+names.fix <- full.fix.part.vars[1:3,1]
+names.rand <- full.vars$grp
+names.total <- c(names.fix, names.rand)
+full.part.vars.table <- cbind(names.total,full.total.part.vars)
+fullmodel.part.vars <- as.numeric(full.part.vars.table[,2])/sum(as.numeric(full.part.vars.table[,2]))
+percent.fullmodel.part.vars <- fullmodel.part.vars*100 ### This is proportion of variance for random and fixed effects
+final.annual.table <- cbind(full.part.vars.table,percent.fullmodel.part.vars)
 
 #variances
 #vcov = variances of random effects
