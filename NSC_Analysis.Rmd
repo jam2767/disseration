@@ -2149,91 +2149,89 @@ sum(sucrose.proportion.rand) #check sums
 sum(sucrose.proportion.fix) #check sums
 
 
-
-
-
-#fixed effect variances
-#Proportion of variance for fixed effects
-fixed.nsc.full.lm2 <- lm(total.nsc ~ DBH14 + Canopy15 + PFT + wood, data = nsc.adult.total.mass.alive.common)
-anova.fixed.nsc.full.lm2 <- anova(fixed.nsc.full.lm2)
-summary(anova.fixed.nsc.full.lm2)
-
-full.nsc.ss <- anova.fixed.nsc.full.lm2$`Sum Sq`/sum(anova.fixed.nsc.full.lm2$`Sum Sq`)
-full.nsc.part.vars <- cbind(rownames(anova.fixed.nsc.full.lm2), anova.fixed.nsc.full.lm2$Df, anova.fixed.nsc.full.lm2$`F value`, anova.fixed.nsc.full.lm2$`Pr(>F)`, full.nsc.ss)
-#check
-var(predict(lm(total.nsc ~ DBH14 + Canopy15 + PFT + wood, data = nsc.adult.total.mass.alive.common)))
-var(predict(lm(total.nsc ~ DBH14, data = nsc.adult.total.mass.alive.common)))
-var(predict(lm(total.nsc ~ Canopy15, data = nsc.adult.total.mass.alive.common)))
-var(predict(lm(total.nsc ~ PFT, data = nsc.adult.total.mass.alive.common)))
-var(predict(lm(total.nsc ~ wood, data = nsc.adult.total.mass.alive.common)))
-
-
-
-
-#variances for random effects & fixed effects
-full.rand.vars <- as.data.frame(VarCorr(lmer.full.annual, order = "cov.last")) #random effect variances
-var.full.rand.vars = full.rand.vars$vcov/sum(full.rand.vars$vcov)
-percent.full.rand.vars <- var.full.rand.vars*100
-
-fix.part.vars <- full.fix.part.vars[1:3,5]
-random.part.vars <- full.vars$vcov
-full.total.part.vars <- c(fix.part.vars,random.part.vars)
-names.fix <- full.fix.part.vars[1:3,1]
-names.rand <- full.vars$grp
-names.total <- c(names.fix, names.rand)
-full.part.vars.table <- cbind(names.total,full.total.part.vars)
-fullmodel.part.vars <- as.numeric(full.part.vars.table[,2])/sum(as.numeric(full.part.vars.table[,2]))
-percent.fullmodel.part.vars <- fullmodel.part.vars*100 ### This is proportion of variance for random and fixed effects
-final.annual.table <- cbind(full.part.vars.table,percent.fullmodel.part.vars)
-
-#variances
-#vcov = variances of random effects
-phylo.vars.int <- as.data.frame(VarCorr(nsc.phylo.int.lm, order = "cov.last"))
-#calculating partial variances for random effects
-var.phylo.vars.int = phylo.vars.int$vcov/sum(phylo.vars.int$vcov)
-part.vars.int <- cbind(phylo.vars.int$grp,var.phylo.vars.int)
-
-#file for table of mixed effects model partial variances
-write.csv(x = part.vars.int, file = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/part.variances.csv")
-#test
-sum(as.numeric(part.vars.int[,2]))
-#now have proportions of variance explained by each effect
-#Environment
-#1,2,7
-site.partvar.int <- sum(as.numeric(part.vars.int[1,2]),as.numeric(part.vars.int[3,2]),as.numeric(part.vars.int[8,2])) #sub, plot, site 11.875%
-
-trait.partvar.int <- sum(as.numeric(part.vars.int[9,2]),as.numeric(part.vars.int[11,2])) #pft & wood .5%
-
-Phylo.partvar.int <- sum(as.numeric(part.vars.int[4,2]),as.numeric(part.vars.int[5,2]),as.numeric(part.vars.int[6,2]),as.numeric(part.vars.int[7,2]),as.numeric(part.vars.int[10,2])) #species, genus, family, order, subclass, 45.08%, family & order alone: 38.3
-
-#Species * Site interaction: 6.2%
-
-#Everything - residual
-all.partvar.int <- sum(as.numeric(part.vars.int[,2])) - as.numeric(part.vars.int[12,2])
-#63.6%
-
-
-
-
-# total.var <- sum(52.68, 93.72, 207.88, 67.34, 36.01, 282.80)
-# phylo.vars <- sum(52.68, 93.72, 207.88,36.01)
-# phylo <- phylo.vars/total.var
-
-# total.var <- sum(57.37, 3.002, 167.924, 169.875, 70.315, 10.25, 282.812)
-# phylo.var <- sum(57.37, 3.002, 167.924, 169.875, 10.25)
-# phylo.tot <- phylo.var/total.var
- 
- # (Intercept)  57.370   7.574  
- # (Intercept)   3.002   1.733  
- # (Intercept) 167.924  12.959  
- # (Intercept) 169.875  13.034  
- # (Intercept)  70.315   8.385  
- # (Intercept)  10.250   3.201  
- #             282.812  16.817  
-
-nsc.trait.lm <- lmer(total.nsc ~ DBH14 + Canopy15 + (1|Site) + (1|PFT) + (1|wood), nsc.adult.total.mass.alive.common)
-summary(nsc.trait.lm)
-plot((nsc.trait.lm))
+#commented out stuff is old version of calculating variance partitioning - it is incorrect!
+# #fixed effect variances
+# #Proportion of variance for fixed effects
+# fixed.nsc.full.lm2 <- lm(total.nsc ~ DBH14 + Canopy15 + PFT + wood, data = nsc.adult.total.mass.alive.common)
+# anova.fixed.nsc.full.lm2 <- anova(fixed.nsc.full.lm2)
+# summary(anova.fixed.nsc.full.lm2)
+# 
+# full.nsc.ss <- anova.fixed.nsc.full.lm2$`Sum Sq`/sum(anova.fixed.nsc.full.lm2$`Sum Sq`)
+# full.nsc.part.vars <- cbind(rownames(anova.fixed.nsc.full.lm2), anova.fixed.nsc.full.lm2$Df, anova.fixed.nsc.full.lm2$`F value`, anova.fixed.nsc.full.lm2$`Pr(>F)`, full.nsc.ss)
+# #check
+# var(predict(lm(total.nsc ~ DBH14 + Canopy15 + PFT + wood, data = nsc.adult.total.mass.alive.common)))
+# var(predict(lm(total.nsc ~ DBH14, data = nsc.adult.total.mass.alive.common)))
+# var(predict(lm(total.nsc ~ Canopy15, data = nsc.adult.total.mass.alive.common)))
+# var(predict(lm(total.nsc ~ PFT, data = nsc.adult.total.mass.alive.common)))
+# var(predict(lm(total.nsc ~ wood, data = nsc.adult.total.mass.alive.common)))
+# 
+# 
+# 
+# 
+# #variances for random effects & fixed effects
+# full.rand.vars <- as.data.frame(VarCorr(lmer.full.annual, order = "cov.last")) #random effect variances
+# var.full.rand.vars = full.rand.vars$vcov/sum(full.rand.vars$vcov)
+# percent.full.rand.vars <- var.full.rand.vars*100
+# 
+# fix.part.vars <- full.fix.part.vars[1:3,5]
+# random.part.vars <- full.vars$vcov
+# full.total.part.vars <- c(fix.part.vars,random.part.vars)
+# names.fix <- full.fix.part.vars[1:3,1]
+# names.rand <- full.vars$grp
+# names.total <- c(names.fix, names.rand)
+# full.part.vars.table <- cbind(names.total,full.total.part.vars)
+# fullmodel.part.vars <- as.numeric(full.part.vars.table[,2])/sum(as.numeric(full.part.vars.table[,2]))
+# percent.fullmodel.part.vars <- fullmodel.part.vars*100 ### This is proportion of variance for random and fixed effects
+# final.annual.table <- cbind(full.part.vars.table,percent.fullmodel.part.vars)
+# 
+# #variances
+# #vcov = variances of random effects
+# phylo.vars.int <- as.data.frame(VarCorr(nsc.phylo.int.lm, order = "cov.last"))
+# #calculating partial variances for random effects
+# var.phylo.vars.int = phylo.vars.int$vcov/sum(phylo.vars.int$vcov)
+# part.vars.int <- cbind(phylo.vars.int$grp,var.phylo.vars.int)
+# 
+# #file for table of mixed effects model partial variances
+# write.csv(x = part.vars.int, file = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/part.variances.csv")
+# #test
+# sum(as.numeric(part.vars.int[,2]))
+# #now have proportions of variance explained by each effect
+# #Environment
+# #1,2,7
+# site.partvar.int <- sum(as.numeric(part.vars.int[1,2]),as.numeric(part.vars.int[3,2]),as.numeric(part.vars.int[8,2])) #sub, plot, site 11.875%
+# 
+# trait.partvar.int <- sum(as.numeric(part.vars.int[9,2]),as.numeric(part.vars.int[11,2])) #pft & wood .5%
+# 
+# Phylo.partvar.int <- sum(as.numeric(part.vars.int[4,2]),as.numeric(part.vars.int[5,2]),as.numeric(part.vars.int[6,2]),as.numeric(part.vars.int[7,2]),as.numeric(part.vars.int[10,2])) #species, genus, family, order, subclass, 45.08%, family & order alone: 38.3
+# 
+# #Species * Site interaction: 6.2%
+# 
+# #Everything - residual
+# all.partvar.int <- sum(as.numeric(part.vars.int[,2])) - as.numeric(part.vars.int[12,2])
+# #63.6%
+# 
+# 
+# 
+# 
+# # total.var <- sum(52.68, 93.72, 207.88, 67.34, 36.01, 282.80)
+# # phylo.vars <- sum(52.68, 93.72, 207.88,36.01)
+# # phylo <- phylo.vars/total.var
+# 
+# # total.var <- sum(57.37, 3.002, 167.924, 169.875, 70.315, 10.25, 282.812)
+# # phylo.var <- sum(57.37, 3.002, 167.924, 169.875, 10.25)
+# # phylo.tot <- phylo.var/total.var
+#  
+#  # (Intercept)  57.370   7.574  
+#  # (Intercept)   3.002   1.733  
+#  # (Intercept) 167.924  12.959  
+#  # (Intercept) 169.875  13.034  
+#  # (Intercept)  70.315   8.385  
+#  # (Intercept)  10.250   3.201  
+#  #             282.812  16.817  
+# 
+# nsc.trait.lm <- lmer(total.nsc ~ DBH14 + Canopy15 + (1|Site) + (1|PFT) + (1|wood), nsc.adult.total.mass.alive.common)
+# summary(nsc.trait.lm)
+# plot((nsc.trait.lm))
 
 
 ```
