@@ -3206,10 +3206,117 @@ ggplot(nsc.adult.total.mass, aes(x = Mortality14, y = total.nsc, fill = Mortalit
 Region, Landscape, Microsite ANOVA exploratory analysis
 
 ```{r}
+
+nsc.adult.total.mass.alive.common$Site <- factor(nsc.adult.total.mass.alive.common$Site, levels = c("W","B","H","V","C","S","M","T","D","F"))
+
 #, control=lmerControl(check.nobs.vs.nlev="ignore")
 hierarchy.test <- lmer(total.nsc ~ DBH14 + (1|Site/Plot/Sub) + (1|Spp), data = nsc.adult.total.mass.alive.common)
  summary(hierarchy.test)
  plot((hierarchy.test))
+ 
+#Temperature ANOVA total NSC
+lm.temp.total <- lm(total.nsc ~ TEMP_C, data = nsc.adult.total.mass.alive.common)
+anova(lm.temp.total)
+summary(lm.temp.total) #R^2 = 0.08642
+
+nsc.temp.plot <- ggplot(nsc.adult.total.mass.alive.common, aes(x = TEMP_C, y = total.nsc)) +
+  geom_point(alpha = .1) +
+  coord_cartesian(ylim = c(0,150)) +
+  ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Temperature (C)") +
+  geom_smooth(method = "lm") + #facet_wrap(~ PFT)
+  theme(axis.title.y = element_text(size = 14)) +
+  theme(axis.title.x = element_text(size = 14)) 
+
+#Temperature ANOVA starch
+lm.temp.starch <- lm(starch.mg.g ~ TEMP_C, data = nsc.adult.total.mass.alive.common)
+anova(lm.temp.starch)
+summary(lm.temp.starch) #R^2 = 0.02923
+
+nsc.temp.plot.starch <- ggplot(nsc.adult.total.mass.alive.common, aes(x = TEMP_C, y = starch.mg.g)) +
+  geom_point(alpha = .1) +
+  coord_cartesian(ylim = c(0,150)) +
+  ylab(expression(paste("Starch mg g"^"-1"))) + xlab("Temperature (C)") +
+  geom_smooth(method = "lm") + #facet_wrap(~ PFT)
+  theme(axis.title.y = element_text(size = 14)) +
+  theme(axis.title.x = element_text(size = 14)) 
+
+#Temperature ANOVA sugar
+lm.temp.sugar <- lm(sugar.mg.g ~ TEMP_C, data = nsc.adult.total.mass.alive.common)
+anova(lm.temp.sugar)
+summary(lm.temp.sugar) #R^2 = 0.1654
+
+nsc.temp.plot.sugar <- ggplot(nsc.adult.total.mass.alive.common, aes(x = TEMP_C, y = sugar.mg.g)) +
+  geom_point(alpha = .1) +
+  coord_cartesian(ylim = c(0,150)) +
+  ylab(expression(paste("Total Sugar mg g"^"-1"))) + xlab("Temperature (C)") +
+  geom_smooth(method = "lm") + #facet_wrap(~ PFT)
+  theme(axis.title.y = element_text(size = 14)) +
+  theme(axis.title.x = element_text(size = 14)) 
+
+#Temperature ANOVA glucose
+lm.temp.glucose <- lm(glucose.mg.g ~ TEMP_C, data = nsc.adult.total.mass.alive.common)
+anova(lm.temp.glucose)
+summary(lm.temp.glucose) #R^2 = 0.09796
+
+nsc.temp.plot.glucose <- ggplot(nsc.adult.total.mass.alive.common, aes(x = TEMP_C, y = glucose.mg.g)) +
+  geom_point(alpha = .1) +
+  coord_cartesian(ylim = c(0,150)) +
+  ylab(expression(paste("Glucose mg g"^"-1"))) + xlab("Temperature (C)") +
+  geom_smooth(method = "lm") + #facet_wrap(~ PFT)
+  theme(axis.title.y = element_text(size = 14)) +
+  theme(axis.title.x = element_text(size = 14)) 
+
+#Temperature ANOVA fructose
+lm.temp.fructose <- lm(fructose.mg.g ~ TEMP_C, data = nsc.adult.total.mass.alive.common)
+anova(lm.temp.fructose)
+summary(lm.temp.fructose) #R^2 = 0.1375
+
+nsc.temp.plot.fructose <- ggplot(nsc.adult.total.mass.alive.common, aes(x = TEMP_C, y = fructose.mg.g)) +
+  geom_point(alpha = .1) +
+  coord_cartesian(ylim = c(0,150)) +
+  ylab(expression(paste("Fructose mg g"^"-1"))) + xlab("Temperature (C)") +
+  geom_smooth(method = "lm") + #facet_wrap(~ PFT)
+  theme(axis.title.y = element_text(size = 14)) +
+  theme(axis.title.x = element_text(size = 14)) 
+
+#Temperature ANOVA sucrose
+lm.temp.sucrose <- lm(sucrose.mg.g ~ TEMP_C, data = nsc.adult.total.mass.alive.common)
+anova(lm.temp.sucrose)
+summary(lm.temp.sucrose) #R^2 = 0.03722
+
+nsc.temp.plot.sucrose <- ggplot(nsc.adult.total.mass.alive.common, aes(x = TEMP_C, y = sucrose.mg.g)) +
+  geom_point(alpha = .1) +
+  coord_cartesian(ylim = c(0,150)) +
+  ylab(expression(paste("Sucrose mg g"^"-1"))) + xlab("Temperature (C)") +
+  geom_smooth(method = "lm") + #facet_wrap(~ PFT)
+  theme(axis.title.y = element_text(size = 14)) +
+  theme(axis.title.x = element_text(size = 14)) 
+
+#Precipitation ANOVA
+lm.precip.total <- lm(total.nsc ~ PRECIP, data = nsc.adult.total.mass.alive.common)
+anova(lm.precip.total)
+summary(lm.precip.total) #R^2 = 0.001123
+
+lm.precip.starch <- lm(starch.mg.g ~ PRECIP, data = nsc.adult.total.mass.alive.common)
+anova(lm.precip.starch)
+summary(lm.precip.starch) #R^2 = 0.0006729
+
+lm.precip.sugar <- lm(sugar.mg.g ~ PRECIP, data = nsc.adult.total.mass.alive.common)
+anova(lm.precip.sugar)
+summary(lm.precip.sugar) #R^2 = 0.001239
+
+lm.precip.glucose <- lm(glucose.mg.g ~ PRECIP, data = nsc.adult.total.mass.alive.common)
+anova(lm.precip.glucose)
+summary(lm.precip.glucose) #R^2 = 0.01006
+
+lm.precip.fructose <- lm(fructose.mg.g ~ PRECIP, data = nsc.adult.total.mass.alive.common)
+anova(lm.precip.fructose)
+summary(lm.precip.fructose) #R^2 = 0.0003878
+
+lm.precip.sucrose <- lm(sucrose.mg.g ~ PRECIP, data = nsc.adult.total.mass.alive.common)
+anova(lm.precip.sucrose)
+summary(lm.precip.sucrose) #R^2 = 0.01125
+
 
 #Site ANOVA
 lm.site.total <- lm(total.nsc ~ Site, data = nsc.adult.total.mass.alive.common)
@@ -3231,14 +3338,160 @@ site.nsc <- ggplot(nsc.adult.total.mass.alive.common, aes(x = Site, y = total.ns
   theme(axis.title.x = element_text(size=14)) +
   theme(axis.title.y = element_text(size=14)) +
   theme(legend.text = element_text(size=12)) +
-  stat_summary(fun.y="median", geom="point") +
-  stat_summary(fun.data = give.n, geom= "text", aes(y= 200), size = 3) + 
+  stat_summary(fun.y="mean", geom="point") +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 190), size = 3) + 
   ylab(expression(paste("Total NSC mg g"^"-1"))) + xlab("Site") +
   scale_fill_manual(values=rev(cbPalette)) +
-  annotate("text", x = 1:10, y = c(125, 150, 128, 154, 148, 158, 162, 137, 182, 90), 
-           label = c("bc","ab","abc","a","cd","e","a","a","f","d"), size = 3.5)
+  annotate("text", x = 1:10, y = c(87, 120, 142, 178, 148, 158, 154, 134, 123, 150), 
+           label = c("b","ac","ab","f","cd","d","e","d","acd","d"), size = 3.5)
 
-ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/TotalNSC.AllCommonSite.png", plot = site.nsc, dpi = 600, width = 7.5, height = 3.5, units = "in")
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/Final/TotalNSC.AllCommonSite.png", plot = site.nsc, dpi = 600, width = 7.5, height = 3.5, units = "in")
+
+
+#Site ANOVA starch
+lm.site.starch <- lm(starch.mg.g ~ Site, data = nsc.adult.total.mass.alive.common)
+anova(lm.site.starch)
+summary(lm.site.starch) #R^2 = 0.1484
+
+#TukeyHSD site
+#TukeyHSD PFT # p = .05
+summary(aov.site.starch <- aov(lm.site.starch))
+tukey.site.starch <- TukeyHSD(aov.site.starch, "Site", ordered = FALSE)
+plot(tukey.site.starch)
+site.levels.starch <- tukey.site.starch[["Site"]][,4]
+site.labels.starch <- multcompLetters(site.levels.starch)['Letters']
+site.plot.labels.starch <- names(site.labels.starch[['Letters']])
+
+site.nsc.starch <- ggplot(nsc.adult.total.mass.alive.common, aes(x = Site, y = starch.mg.g)) +
+  geom_violin() + theme(axis.text.x = element_text(angle=45,hjust=1,size=12)) +
+  theme(axis.text.y = element_text(size=12)) +
+  theme(axis.title.x = element_text(size=14)) +
+  theme(axis.title.y = element_text(size=14)) +
+  theme(legend.text = element_text(size=12)) +
+  stat_summary(fun.y="mean", geom="point") +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 117), size = 3) + 
+  ylab(expression(paste("Starch mg g"^"-1"))) + xlab("Site") +
+  scale_fill_manual(values=rev(cbPalette)) +
+  annotate("text", x = 1:10, y = c(56, 84, 90, 110, 75, 98, 101, 72, 67, 105), 
+           label = c("a","b","b","d","bc","b","c","b","ab","b"), size = 3.5)
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/Final/Starch.AllCommonSite.png", plot = site.nsc.starch, dpi = 600, width = 7.5, height = 3.5, units = "in")
+
+#Site ANOVA sugar
+lm.site.sugar <- lm(sugar.mg.g ~ Site, data = nsc.adult.total.mass.alive.common)
+anova(lm.site.sugar)
+summary(lm.site.sugar) #R^2 = 0.2257
+
+#TukeyHSD site
+#TukeyHSD PFT # p = .05
+summary(aov.site.sugar <- aov(lm.site.sugar))
+tukey.site.sugar <- TukeyHSD(aov.site.sugar, "Site", ordered = FALSE)
+plot(tukey.site.sugar)
+site.levels.sugar <- tukey.site.sugar[["Site"]][,4]
+site.labels.sugar <- multcompLetters(site.levels.sugar)['Letters']
+site.plot.labels.sugar <- names(site.labels.sugar[['Letters']])
+
+site.nsc.sugar <- ggplot(nsc.adult.total.mass.alive.common, aes(x = Site, y = sugar.mg.g)) +
+  geom_violin() + theme(axis.text.x = element_text(angle=45,hjust=1,size=12)) +
+  theme(axis.text.y = element_text(size=12)) +
+  theme(axis.title.x = element_text(size=14)) +
+  theme(axis.title.y = element_text(size=14)) +
+  theme(legend.text = element_text(size=12)) +
+  stat_summary(fun.y="mean", geom="point") +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 85), size = 3) + 
+  ylab(expression(paste("Total Sugar mg g"^"-1"))) + xlab("Site") +
+  scale_fill_manual(values=rev(cbPalette)) +
+  annotate("text", x = 1:10, y = c(64, 61, 63, 72, 74, 70, 77, 78, 63, 79), 
+           label = c("a","a","a","c","b","bc","c","bc","bc","c"), size = 3.5)
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/Final/Sugar.AllCommonSite.png", plot = site.nsc.sugar, dpi = 600, width = 7.5, height = 3.5, units = "in")
+
+#Site ANOVA glucose
+lm.site.glucose <- lm(glucose.mg.g ~ Site, data = nsc.adult.total.mass.alive.common)
+anova(lm.site.glucose)
+summary(lm.site.glucose) #R^2 = 0.1932
+
+#TukeyHSD site
+#TukeyHSD PFT # p = .05
+summary(aov.site.glucose <- aov(lm.site.glucose))
+tukey.site.glucose <- TukeyHSD(aov.site.glucose, "Site", ordered = FALSE)
+plot(tukey.site.glucose)
+site.levels.glucose <- tukey.site.glucose[["Site"]][,4]
+site.labels.glucose <- multcompLetters(site.levels.glucose)['Letters']
+site.plot.labels.glucose <- names(site.labels.glucose[['Letters']])
+
+site.nsc.glucose <- ggplot(nsc.adult.total.mass.alive.common, aes(x = Site, y = glucose.mg.g)) +
+  geom_violin() + theme(axis.text.x = element_text(angle=45,hjust=1,size=12)) +
+  theme(axis.text.y = element_text(size=12)) +
+  theme(axis.title.x = element_text(size=14)) +
+  theme(axis.title.y = element_text(size=14)) +
+  theme(legend.text = element_text(size=12)) +
+  stat_summary(fun.y="mean", geom="point") +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 45), size = 3) + 
+  ylab(expression(paste("Glucose mg g"^"-1"))) + xlab("Site") +
+  scale_fill_manual(values=rev(cbPalette)) +
+  annotate("text", x = 1:10, y = c(26, 19, 25, 23, 16, 41, 37, 40, 29, 32), 
+           label = c("a","a","a","c","b","bc","c","bc","bc","c"), size = 3.5)
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/Final/Glucose.AllCommonSite.png", plot = site.nsc.glucose, dpi = 600, width = 7.5, height = 3.5, units = "in")
+
+#Site ANOVA fructose
+lm.site.fructose <- lm(fructose.mg.g ~ Site, data = nsc.adult.total.mass.alive.common)
+anova(lm.site.fructose)
+summary(lm.site.fructose) #R^2 = 0.196
+
+#TukeyHSD site
+#TukeyHSD PFT # p = .05
+summary(aov.site.fructose <- aov(lm.site.fructose))
+tukey.site.fructose <- TukeyHSD(aov.site.fructose, "Site", ordered = FALSE)
+plot(tukey.site.fructose)
+site.levels.fructose <- tukey.site.fructose[["Site"]][,4]
+site.labels.fructose <- multcompLetters(site.levels.fructose)['Letters']
+site.plot.labels.fructose <- names(site.labels.fructose[['Letters']])
+
+site.nsc.fructose <- ggplot(nsc.adult.total.mass.alive.common, aes(x = Site, y = fructose.mg.g)) +
+  geom_violin() + theme(axis.text.x = element_text(angle=45,hjust=1,size=12)) +
+  theme(axis.text.y = element_text(size=12)) +
+  theme(axis.title.x = element_text(size=14)) +
+  theme(axis.title.y = element_text(size=14)) +
+  theme(legend.text = element_text(size=12)) +
+  stat_summary(fun.y="mean", geom="point") +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 38), size = 3) + 
+  ylab(expression(paste("Fructose mg g"^"-1"))) + xlab("Site") +
+  scale_fill_manual(values=rev(cbPalette)) +
+  annotate("text", x = 1:10, y = c(23.5, 15, 22, 21, 17, 28, 25, 35, 23.5, 30), 
+           label = c("a","a","ab","c","abc","e","d","de","bcd","de"), size = 3.5)
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/Final/Fructose.AllCommonSite.png", plot = site.nsc.fructose, dpi = 600, width = 7.5, height = 3.5, units = "in")
+
+#Site ANOVA sucrose
+lm.site.sucrose <- lm(sucrose.mg.g ~ Site, data = nsc.adult.total.mass.alive.common)
+anova(lm.site.sucrose)
+summary(lm.site.sucrose) #R^2 = 0.1601
+
+#TukeyHSD site
+#TukeyHSD PFT # p = .05
+summary(aov.site.sucrose <- aov(lm.site.sucrose))
+tukey.site.sucrose <- TukeyHSD(aov.site.sucrose, "Site", ordered = FALSE)
+plot(tukey.site.sucrose)
+site.levels.sucrose <- tukey.site.sucrose[["Site"]][,4]
+site.labels.sucrose <- multcompLetters(site.levels.sucrose)['Letters']
+site.plot.labels.sucrose <- names(site.labels.sucrose[['Letters']])
+
+site.nsc.sucrose <- ggplot(nsc.adult.total.mass.alive.common, aes(x = Site, y = sucrose.mg.g)) +
+  geom_violin() + theme(axis.text.x = element_text(angle=45,hjust=1,size=12)) +
+  theme(axis.text.y = element_text(size=12)) +
+  theme(axis.title.x = element_text(size=14)) +
+  theme(axis.title.y = element_text(size=14)) +
+  theme(legend.text = element_text(size=12)) +
+  stat_summary(fun.y="mean", geom="point") +
+  stat_summary(fun.data = give.n, geom= "text", aes(y= 61), size = 3) + 
+  ylab(expression(paste("Sucrose mg g"^"-1"))) + xlab("Site") +
+  scale_fill_manual(values=rev(cbPalette)) +
+  annotate("text", x = 1:10, y = c(38, 48, 36, 57, 56.5, 35.5, 55, 47, 47, 56), 
+           label = c("a","cd","a","f","de","ab","e","bc","cde","de"), size = 3.5)
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/Final/Sucrose.AllCommonSite.png", plot = site.nsc.sucrose, dpi = 600, width = 7.5, height = 3.5, units = "in")
 
 #Site x Plot ANOVA
 lm.site.plot.total <- lm(total.nsc ~ Site/Plot, data = nsc.adult.total.mass.alive.common)
