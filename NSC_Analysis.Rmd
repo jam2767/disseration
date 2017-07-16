@@ -1302,26 +1302,32 @@ Phylogenetics Exploratory Analyses - ANOVA based
 #Species Anova
 lm.species.total <- lm(total.nsc ~ GenusSpecies, data = nsc.adult.total.mass.alive.common)
 anova(lm.species.total)
+sumsq.spp.total <- sum(anova(lm.species.total)[,2])
 summary(lm.species.total) #R^2 = .5877
 
 lm.species.starch <- lm(starch.mg.g ~ GenusSpecies, data = nsc.adult.total.mass.alive.common)
 anova(lm.species.starch)
+sumsq.spp.starch <- sum(anova(lm.species.starch)[,2])
 summary(lm.species.starch) #R^2 = 0.5368
 
 lm.species.sugar <- lm(sugar.mg.g ~ GenusSpecies, data = nsc.adult.total.mass.alive.common)
 anova(lm.species.sugar)
+sumsq.spp.sugar <- sum(anova(lm.species.sugar)[,2])
 summary(lm.species.sugar) #R^2 = 0.4987
 
 lm.species.glucose <- lm(glucose.mg.g ~ GenusSpecies, data = nsc.adult.total.mass.alive.common)
 anova(lm.species.glucose)
+sumsq.spp.glucose <- sum(anova(lm.species.glucose)[,2])
 summary(lm.species.glucose) #R^2 = 0.3569
 
 lm.species.fructose <- lm(fructose.mg.g ~ GenusSpecies, data = nsc.adult.total.mass.alive.common)
 anova(lm.species.fructose)
+sumsq.spp.fructose <- sum(anova(lm.species.fructose)[,2])
 summary(lm.species.fructose) #R^2 = 0.4379
 
 lm.species.sucrose <- lm(sucrose.mg.g ~ GenusSpecies, data = nsc.adult.total.mass.alive.common)
 anova(lm.species.sucrose)
+sumsq.spp.sucrose <- sum(anova(lm.species.sucrose)[,2])
 summary(lm.species.sucrose) #R^2 = 0.4098
 
 #TukeyHSD species
@@ -1953,10 +1959,40 @@ site.partvar <- sum(as.numeric(part.vars[1,2]),as.numeric(part.vars[2,2]),as.num
 # plot((nsc.phylo.int.lm))
 
 #Full model with effects specified correctly - used in final dissertation draft! total.NSC
-nsc.full.lm <- lmer(total.nsc ~ DBH14 + Canopy15 + wood + PFT  + (1|Site/Plot/Sub) + (1|TEMP_C) + (1|GenusSpecies:Site) + (1|subclass/order/family/genus/GenusSpecies), nsc.adult.total.mass.alive.common)
+#just replaced variable in lmer for total nsc, total sugar, glucose, fructose, sucrose and starch
+#instead of copying code
+nsc.full.lm <- lmer(starch.mg.g ~ TEMP_C + PFT + wood + Canopy15 + DBH14 + (1|Site/Plot/Sub) + (1|subclass/order/family/genus/GenusSpecies) + (1|GenusSpecies:Site), nsc.adult.total.mass.alive.common)
 summary(nsc.full.lm)
 anova(nsc.full.lm)
+anova.nsc.full.lm <- anova(nsc.full.lm)
 # plot((nsc.full.lm))
+
+#Gives me the R2 for fixed effects (R2m - marginal) and fixed + random effects (R2c - conditional) 0.3500509 0.7281469 
+nsc.full.R2.diss <- r.squaredGLMM(nsc.full.lm)
+total.fix.diss <- nsc.full.R2.diss[1] #.35
+total.rand.diss <- nsc.full.R2.diss[2] - nsc.full.R2.diss[1] #.37
+
+#proportion of variance for fixed effects from Sum Sq of ANOVA table
+nsc.full.fix.ss1 <- anova.nsc.full.lm$`Sum Sq`/sum(anova.nsc.full.lm$`Sum Sq`)
+nsc.full.fix.vars.table1 <- cbind(rownames(anova.nsc.full.lm), anova.nsc.full.lm$Df, anova.nsc.full.lm$`F value`, anova.nsc.full.lm$`Pr(>F)`, nsc.full.fix.ss1)
+total.nsc.proportion.fix1 <- total.fix.diss * as.numeric(nsc.full.fix.vars.table1[,4]) #proportion of fixed effect explained by each variable - highly dependent on order - don't trust relative importance.
+total.fix.table1 <- cbind(rownames(anova.nsc.full.lm),total.nsc.proportion.fix1) #final table fixed effects
+#random vars
+nsc.full.rand.vars1 <- as.data.frame(VarCorr(nsc.full.lm, order = "cov.last")) #random effect variances
+prop.nsc.full.rand.vars1 = nsc.full.rand.vars1$vcov[1:9]/sum(nsc.full.rand.vars1$vcov[1:9])
+#percent.full.rand.vars <- prop.nsc.full.rand.vars*100
+total.nsc.proportion.rand1 <- total.rand.diss * prop.nsc.full.rand.vars1 #proportion of variance explained by each random effect
+total.rand.table1 <- cbind(nsc.full.rand.vars1$grp[1:9], total.nsc.proportion.rand1) #final table random effects
+total.residual1 <- 1 - nsc.full.R2.diss[2] #residual
+sum(total.nsc.proportion.rand1) #check sums
+sum(total.nsc.proportion.fix1) #check sums
+
+#nsc as function of dbh14 alone
+nsc.dbh.lm <- lm(total.nsc ~ DBH14, nsc.adult.total.mass.alive.common)
+summary(nsc.dbh.lm)
+anova(nsc.dbh.lm)
+r.squaredGLMM(nsc.dbh.lm)
+
 
 #put fixed effects in order of explanatory power when isolated
 nsc.full.lm2 <- lmer(total.nsc ~ wood + PFT + DBH14 + Canopy15 + (1|Site/Plot/Sub) + (1|subclass/order/family/genus/GenusSpecies) + (1|GenusSpecies:Site) + (1|TEMP_C), nsc.adult.total.mass.alive.common)
@@ -3452,9 +3488,13 @@ canopy.nsc.acer.sucrose <- ggplot(nsc.adult.acer[!is.na(nsc.adult.acer$Canopy15)
 
 
 #Combining all DBH plots into one figure#
-nsc.dbh.common <- grid.arrange(dbh.nsc, dbh.nsc.quercus, dbh.nsc.fagus, dbh.nsc.tsuga, dbh.nsc.acer, ncol = 2, bottom = "DBH", left = textGrob(label = expression(paste("Total NSC mg g"^"-1")), rot = 90))
+nsc.dbh.common <- grid.arrange(dbh.nsc.total, dbh.nsc.quercus, dbh.nsc.fagus, dbh.nsc.tsuga, dbh.nsc.acer, ncol = 2, bottom = "DBH", left = textGrob(label = expression(paste("Total NSC mg g"^"-1")), rot = 90))
 
-ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/nsc.dbh.commonspp.png", plot = nsc.dbh.common, dpi = 600, width = 4.5, height = 6, units = "in")
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/Final/nsc.dbh.commonspp.png", plot = nsc.dbh.common, dpi = 600, width = 4.5, height = 6, units = "in")
+
+sugar.dbh.common <- grid.arrange(dbh.nsc.sugar, dbh.nsc.quercus.sugar, dbh.nsc.fagus.sugar, dbh.nsc.tsuga.sugar, dbh.nsc.acer.sugar, ncol = 2, bottom = "DBH", left = textGrob(label = expression(paste("Total Sugar mg g"^"-1")), rot = 90))
+
+ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH2_NSC_Empirical/Figures/Final/sugar.dbh.commonspp.png", plot = sugar.dbh.common, dpi = 600, width = 4.5, height = 6, units = "in")
 
 #Combining all Canopy plots into one figure
 nsc.can.common <- grid.arrange(canopy.nsc, canopy.nsc.quercus, canopy.nsc.fagus, canopy.nsc.tsuga, canopy.nsc.acer, ncol = 2, bottom = "Canopy Status", left = textGrob(label = expression(paste("Total NSC mg g"^"-1")), rot = 90))

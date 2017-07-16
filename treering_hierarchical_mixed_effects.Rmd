@@ -1397,11 +1397,20 @@ year.plot.labels <- names(year.labels.gr[['Letters']])
 
 boxplot(INCREMENT ~ YEAR, data = combined.all.diss.common)
 
+lmer.yr <- lmer(INCREMENT ~ YEAR + (1|YEAR), data = combined.all.diss.common)
+anova(lmer.yr)
+summary(lmer.yr)
+
+lmer.yr.R2 <- r.squaredGLMM(lmer.yr)
+fixed.yr <- lmer.yr.R2[1] #.35
+rand.yr <- lmer.yr.R2[2] - lmer.yr.R2[1] #.37
+
+
 ##growth by year - mean with sd
 year.growth.sd <- ggplot(combined.all.diss.common, aes(x = as.factor(YEAR), y = INCREMENT)) +
   stat_summary(fun.y = "mean", 
-               fun.ymin = function(x) mean(x) - sd(x),
-               fun.ymax = function(x) mean(x) + sd(x),
+               fun.ymin = function(x) mean(x) - 2*(sd(x)/sqrt(length(x))),
+               fun.ymax = function(x) mean(x) + 2*(sd(x)/sqrt(length(x))),
                geom = "pointrange", colour = "black") +
   theme(axis.text.x = element_text(angle=90,hjust=1,size=8)) +
   ylab(expression(paste("Ring Width mm yr"^"-1"))) + xlab("Year")
@@ -1605,6 +1614,9 @@ lm.wood.avg.final <- lm(mean.growth.50yr ~ WOOD, data = mean.growth.fig.data)
 anova.wood.avg <- anova(lm.wood.avg.final)
 summary(lm.wood.avg.final)
 
+###AIC for wood, pft and spp
+aic <- AIC(lm.wood.avg.final, lm.spp.avg.final, lm.pft.avg.final)
+
 #Wood Anatomy variances AVERAGE growth
 wood.avg.ss <- anova.wood.avg$`Sum Sq`/sum(anova.wood.avg$`Sum Sq`)
 wood.avg.part.vars <- cbind(rownames(anova.wood.avg), anova.wood.avg$Df, anova.wood.avg$`F value`, anova.wood.avg$`Pr(>F)`, wood.avg.ss)
@@ -1807,6 +1819,9 @@ spp.growth.precip.plot <- ggplot(mean.growth.fig.data, aes(x = PRECIP, y = mean.
 
 ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings/Figures/Final/spp.growth.precip.plot.png", plot = spp.growth.precip.plot, dpi = 600, width = 7, height = 9, units = "in")
 
+#AIC for climate interactions
+AIC(lm.pft.temp.avg, lm.pft.precip.avg, lm.spp.temp.avg, lm.spp.precip.avg)
+
 #PFT * Site
 lm.pft.site.avg <- lm(mean.growth.50yr ~ PFT*SITE, data = mean.growth.fig.data)
 anova.pft.site.avg <- anova(lm.pft.site.avg)
@@ -1821,6 +1836,26 @@ summary(lm.spp.site.avg)
 lmer.full.avg <- lmer(mean.growth.50yr ~ PFT + DBH15 + CANOPY15 + (1|SITE/PLOT/SUB) + (1|GenusSpecies) + (1|GenusSpecies:SITE) + (1|PFT:SITE), data = mean.growth.fig.data)
 anova.full.avg <- anova(lmer.full.avg)
 summary(lmer.full.avg)
+
+full.R2.avg <- r.squaredGLMM(lmer.full.avg)
+full.fix.avg <- full.R2.avg[1] #.123
+full.rand.avg <- full.R2.avg[2] - full.R2.avg[1] #.477
+
+#proportion of variance for fixed effects from Sum Sq of ANOVA table
+full.fix.ss <- anova.full.anual$`Sum Sq`/sum(anova.full.anual$`Sum Sq`)
+full.fix.vars.table <- cbind(rownames(anova.full.anual), anova.full.anual$Df, anova.full.anual$`F value`, anova.full.anual$`Pr(>F)`, full.fix.ss)
+proportion.fix <- full.fix * as.numeric(full.fix.vars.table[,4]) #proportion of fixed effect explained by each variable - highly dependent on order - don't trust relative importance.
+full.fix.table <- cbind(rownames(anova.full.anual),proportion.fix) #final table fixed effects
+#random vars
+full.rand.vars <- as.data.frame(VarCorr(lmer.full.annual, order = "cov.last")) #random effect variances
+prop.full.rand.vars = full.rand.vars$vcov[1:9]/sum(full.rand.vars$vcov[1:9])
+#percent.full.rand.vars <- prop.nsc.full.rand.vars*100
+proportion.rand <- full.rand * prop.full.rand.vars #proportion of variance explained by each random effect
+full.rand.table <- cbind(full.rand.vars$grp[1:9], proportion.rand) #final table random effects
+full.residual <- 1 - full.R2[2] #residual
+sum(proportion.rand) #check sums
+sum(proportion.fix) #check sums
+
 
 ####################### Switching to ANNUAL growth ###########################
 #Final Full model from Draft 3
@@ -1838,7 +1873,10 @@ summary(lmer.full.avg)
 
 #### Going to just run the full model and see what happens ###
  ###############Final model for dissertation chapter #####################
-lmer.full.annual <- lmer(INCREMENT ~ PFT + CANOPY15 + DBH15 + (1|SITE/PLOT/SUB/CORE_ID15) + (1|GenusSpecies) + (1|YEAR) + (1|SITE:YEAR) + (1|GenusSpecies:SITE) + (1|PFT:SITE), data = combined.all.diss.common)
+combined.all.diss.common$YEAR <- as.numeric(combined.all.diss.common$YEAR)
+ 
+ #add year as fixed effect for full model in main text. This model is in appendix
+lmer.full.annual <- lmer(INCREMENT ~ PFT + WOOD + CANOPY15 + DBH15 + (1|SITE/PLOT/SUB/CORE_ID15) + (1|GenusSpecies) + (1|YEAR) + (1|SITE:YEAR) + (1|GenusSpecies:SITE) + (1|PFT:SITE), data = combined.all.diss.common)
 summary(lmer.full.annual)
 anova.full.anual <- anova(lmer.full.annual)
 
@@ -2541,20 +2579,20 @@ pft.growth.violin <- ggplot(growth.50yr.QC.increment.final, aes(x = PFT, y = INC
 ggsave(filename = "/Users/josh/Dropbox/Dissertation/CH1_Treerings/Figures/pft.growth.violin.png", plot = pft.growth.violin, dpi = 600, width = 7, height = 3.5, units = "in")
 
 #DBH
-lm.size.simp15 <- lm(INCREMENT ~ DBH15, data = growth.50yr.QC.increment.final)
+lm.size.simp15 <- lm(mean.growth.50yr ~ DBH15, data = mean.growth.fig.data)
 summary(lm.size.simp15)
 
 ####Test with all years dbh to report R2####
-lm.size.simp14 <- lm(INCREMENT ~ DBH14, data = growth.50yr.QC.increment.final)
+lm.size.simp14 <- lm(mean.growth.50yr ~ DBH14, data = mean.growth.fig.data)
 summary(lm.size.simp14)
 
-lm.size.simp13 <- lm(INCREMENT ~ DBH13, data = growth.50yr.QC.increment.final)
+lm.size.simp13 <- lm(mean.growth.50yr ~ DBH13, data = mean.growth.fig.data)
 summary(lm.size.simp13)
 
-lm.size.simp12 <- lm(INCREMENT ~ DBH12, data = growth.50yr.QC.increment.final)
+lm.size.simp12 <- lm(mean.growth.50yr ~ DBH12, data = mean.growth.fig.data)
 summary(lm.size.simp12)
 
-lm.size.simp11 <- lm(INCREMENT ~ DBH11, data = growth.50yr.QC.increment.final)
+lm.size.simp11 <- lm(mean.growth.50yr ~ DBH11, data = mean.growth.fig.data)
 summary(lm.size.simp11)
 
 dbh.growth.plot <- ggplot(growth.50yr.QC.increment.final, aes(x = DBH15, y = INCREMENT)) +

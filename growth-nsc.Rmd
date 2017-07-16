@@ -169,6 +169,28 @@ summary(pft.full.part.cont.lm)
 full.ss <- anov.full$`Sum Sq`/sum(anov.full$`Sum Sq`)
 part.vars <- cbind(rownames(anov.full), anov.full$Df, anov.full$`F value`, anov.full$`Pr(>F)`, full.ss)
 
+early.sort <- which(growth_nsc_data.10yr$succession == "Early")
+early.dat <- growth_nsc_data.10yr[early.sort,]
+
+early.lm <- lm(total.nsc ~ mean.2010.2001, data = early.dat)
+summary(early.lm)
+
+mid.sort <- which(growth_nsc_data.10yr$succession == "Mid")
+mid.dat <- growth_nsc_data.10yr[mid.sort,]
+
+mid.lm <- lm(total.nsc ~ mean.2010.2001, data = mid.dat)
+summary(mid.lm)
+
+late.sort <- which(growth_nsc_data.10yr$succession == "Late")
+late.dat <- growth_nsc_data.10yr[late.sort,]
+
+late.lm <- lm(total.nsc ~ mean.2010.2001, data = late.dat)
+summary(late.lm)
+
+
+succession.lm <- lm(total.nsc ~ mean.2010.2001 + mean.2010.2001*succession, data = growth_nsc_data.10yr)
+summary(succession.lm)
+
 #Full model with three-way interaction and controlling for
 #canopy position, DBH, and site
 pft.full.cont.lm <- lm(total.nsc ~ mean.2010.2001 + succession + woodgroup + woodgroup*succession + mean.2010.2001*woodgroup + mean.2010.2001*succession + mean.2010.2001*woodgroup*succession + DBH14.x + CANOPY15 + Site + mean.2010.2001*Site + PFT.y*Site, data = growth_nsc_data.10yr)
